@@ -1,0 +1,31 @@
+# Core networking
+scapy==2.5.0
+pyshark==0.6
+
+# Data analysis & ML - Python 3.13 compatible versions
+numpy==2.4.2  # Latest version that supports Python 3.13
+pandas==2.2.3  # Latest that works with numpy 2.x
+scikit-learn==1.6.1  # Latest stable
+scipy==1.15.2  # Latest stable
+
+# Cryptography & encoding
+cryptography==44.0.2  # Latest
+pycryptodome==3.21.0  # Latest
+
+# Web framework
+flask==3.1.0  # Latest
+
+# Utilities
+colorama==0.4.6
+tqdm==4.67.1
+pyyaml==6.0.2
+python-magic==0.4.27
+pillow==11.1.0  # Latest
+psutil==5.9.8
+
+# Testing
+pytest==8.3.5
+pytest-cov==6.0.0
+
+# Documentation
+mkdocs==1.6.1
