@@ -10,7 +10,7 @@
   ![Status](https://img.shields.io/badge/Status-Development-orange?style=for-the-badge)
 
 [![GitHub](https://img.shields.io/badge/GitHub-Zoye--J-181717?style=for-the-badge&logo=github)](https://github.com/Zoye-J)
-  <img src="https://raw.githubusercontent.com/Zoye-J/protocol-decoder-ring/main/docs/images/architecture.png" alt="Architecture" width="600"/>
+  
   
 </div>
 
