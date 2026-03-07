@@ -9,9 +9,10 @@
   ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
   ![Status](https://img.shields.io/badge/Status-Development-orange?style=for-the-badge)
 
-[![GitHub](https://img.shields.io/badge/GitHub-Zoye--J-181717?style=for-the-badge&logo=github)](https://github.com/Zoye-J)
+  [![GitHub](https://img.shields.io/badge/GitHub-Zoye--J-181717?style=for-the-badge&logo=github)](https://github.com/Zoye-J)
   
-  
+
+ 
 </div>
 
 ---
@@ -29,12 +30,13 @@
 
 ---
 
-##  **Features**
+##  **The 6 Modules - Complete Pipeline**
 
 <table>
   <tr>
-    <td width="50%">
+    <td width="33%">
       <h3> Module 1: Sandbox Environment</h3>
+      <p><em> COMPLETED</em></p>
       <ul>
         <li> Isolated process execution</li>
         <li> Temporary directory creation</li>
@@ -43,33 +45,61 @@
         <li> Configurable timeouts</li>
       </ul>
     </td>
-    <td width="50%">
-      <h3> Module 2: Packet Capture (Coming Soon)</h3>
+    <td width="33%">
+      <h3> Module 2: Packet Capture Engine</h3>
+      <p><em> IN PROGRESS</em></p>
       <ul>
         <li> Live traffic sniffing</li>
         <li> PCAP file analysis</li>
-        <li> Traffic filtering</li>
+        <li> Traffic filtering (BPF)</li>
         <li> Bandwidth tracking</li>
+        <li> Connection reconstruction</li>
       </ul>
     </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h3> Module 3: Protocol Analysis (Coming Soon)</h3>
+    <td width="33%">
+      <h3> Module 3: Protocol Analysis</h3>
+      <p><em> PLANNED</em></p>
       <ul>
         <li> Entropy-based encryption detection</li>
         <li> DNS tunneling detection</li>
         <li> C2 pattern recognition</li>
         <li> Protocol fingerprinting</li>
+        <li> Behavioral analysis</li>
       </ul>
     </td>
-    <td width="50%">
-      <h3> Module 4: Exfiltration Detection (Coming Soon)</h3>
+  </tr>
+  <tr>
+    <td width="33%">
+      <h3> Module 4: Exfiltration Detection</h3>
+      <p><em> PLANNED</em></p>
       <ul>
         <li> Data leakage tracking</li>
         <li> Steganography detection</li>
         <li> Timing-based covert channels</li>
         <li> Packet size analysis</li>
+        <li> Unusual data flow detection</li>
+      </ul>
+    </td>
+    <td width="33%">
+      <h3> Module 5: Signature Generator</h3>
+      <p><em> PLANNED</em></p>
+      <ul>
+        <li> <strong>Snort Rules</strong> - IPS/IDS signatures</li>
+        <li> <strong>Suricata Rules</strong> - Compatible format</li>
+        <li> <strong>YARA Rules</strong> - For malware hunting</li>
+        <li> <strong>Sigma Rules</strong> - SIEM integration</li>
+        <li> <strong>Custom JSON</strong> - Threat intel feeds</li>
+      </ul>
+    </td>
+    <td width="33%">
+      <h3> Module 6: Web Dashboard</h3>
+      <p><em> PLANNED</em></p>
+      <ul>
+        <li> Real-time visualization</li>
+        <li> Interactive graphs</li>
+        <li> Report generation</li>
+        <li> Timeline analysis</li>
+        <li> API endpoint</li>
       </ul>
     </td>
   </tr>
