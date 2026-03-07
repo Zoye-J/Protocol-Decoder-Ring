@@ -12,7 +12,7 @@
   [![GitHub Stars](https://img.shields.io/github/stars/yourusername/protocol-decoder-ring?style=social)](https://github.com/yourusername/protocol-decoder-ring)
   [![GitHub Forks](https://img.shields.io/github/forks/yourusername/protocol-decoder-ring?style=social)](https://github.com/yourusername/protocol-decoder-ring)
 
-  <img src="https://raw.githubusercontent.com/yourusername/protocol-decoder-ring/main/docs/images/architecture.png" alt="Architecture" width="600"/>
+  <img src="https://raw.githubusercontent.com/Zoye-J/protocol-decoder-ring/main/docs/images/architecture.png" alt="Architecture" width="600"/>
   
 </div>
 
