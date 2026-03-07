@@ -9,9 +9,7 @@
   ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
   ![Status](https://img.shields.io/badge/Status-Development-orange?style=for-the-badge)
 
-  [![GitHub Stars](https://img.shields.io/github/stars/yourusername/protocol-decoder-ring?style=social)](https://github.com/yourusername/protocol-decoder-ring)
-  [![GitHub Forks](https://img.shields.io/github/forks/yourusername/protocol-decoder-ring?style=social)](https://github.com/yourusername/protocol-decoder-ring)
-
+[![GitHub](https://img.shields.io/badge/GitHub-Zoye--J-181717?style=for-the-badge&logo=github)](https://github.com/Zoye-J)
   <img src="https://raw.githubusercontent.com/Zoye-J/protocol-decoder-ring/main/docs/images/architecture.png" alt="Architecture" width="600"/>
   
 </div>
