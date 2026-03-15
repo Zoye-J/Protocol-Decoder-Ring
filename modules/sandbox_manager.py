@@ -1,7 +1,6 @@
 """
 Module 1: Sandbox Manager
 Creates isolated network environment for analyzing suspicious applications
-Fortinet Connections: NSE2 Module 2 (Secure Network), NSE2 Module 5 (Endpoint Security)
 """
 
 import os
@@ -60,7 +59,7 @@ class SandboxManager:
         logger = logging.getLogger(f"SandboxManager.{self.sandbox_id}")
         logger.setLevel(logging.DEBUG)
         
-        # Console handler - WITHOUT emojis for Windows compatibility
+        # Console handler 
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
         
