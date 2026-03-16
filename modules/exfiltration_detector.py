@@ -9,20 +9,10 @@ import json
 import math
 import time
 import struct
-import hashlib
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict
 from pathlib import Path
 import logging
-
-# Try to import image processing for steganography detection
-try:
-    from PIL import Image
-    import PIL.ImageOps
-    PIL_AVAILABLE = True
-except ImportError:
-    PIL_AVAILABLE = False
-    print("⚠️  PIL not installed. Run: pip install pillow")
 
 # Try to import numpy for statistical analysis
 try:
@@ -30,7 +20,21 @@ try:
     NUMPY_AVAILABLE = True
 except ImportError:
     NUMPY_AVAILABLE = False
-    print("⚠️  NumPy not installed. Run: pip install numpy")
+
+# Try to import PIL for image analysis
+try:
+    from PIL import Image
+    from PIL import ImageStat
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+
+# Try to import magic for file type detection
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
 
 # Check if running on Windows
 IS_WINDOWS = sys.platform == 'win32'
@@ -45,7 +49,7 @@ class ExfiltrationDetector:
         """
         Initialize the exfiltration detector
         """
-        self.detector_id = self._generate_detector_id()
+        self.detection_id = self._generate_detection_id()
         self.config = self._load_config(config_path)
         self.logger = self._setup_logging()
         
@@ -53,7 +57,7 @@ class ExfiltrationDetector:
         self.packets = []
         self.alerts = []
         self.suspicious_flows = {}
-        self.exfiltration_events = []
+        self.exfil_attempts = []
         
         # Statistics
         self.stats = {
@@ -62,38 +66,37 @@ class ExfiltrationDetector:
             "total_flows": 0,
             "start_time": None,
             "end_time": None,
-            "bytes_by_destination": defaultdict(int),
-            "packets_by_size": Counter(),
-            "flows_by_protocol": Counter()
+            "outbound_bytes": 0,
+            "inbound_bytes": 0,
+            "unique_destinations": set()
         }
         
         # Detection thresholds from config
         self.data_rate_threshold = self.config.get("data_rate_threshold_kbps", 100)  # KB/s
         self.packet_size_variance_threshold = self.config.get("packet_size_variance_threshold", 50)
-        self.timing_analysis_window = self.config.get("timing_analysis_window", 10)
+        self.timing_window = self.config.get("timing_analysis_window", 10)
         self.steganography_check = self.config.get("steganography_check", True)
         self.suspicious_extensions = self.config.get("suspicious_extensions", 
                                                     [".jpg", ".png", ".zip", ".rar", ".docx", ".pdf"])
         
-        # Known sensitive data patterns
-        self.sensitive_patterns = [
-            b"password", b"username", b"credit card", b"ssn", b"social security",
-            b"secret", b"confidential", b"api_key", b"token", b"authorization",
-            b"bearer", b"jwt", b"private key", b"certificate", b"passphrase"
-        ]
+        # Internal tracking
+        self.flow_bytes = defaultdict(int)
+        self.flow_packets = defaultdict(list)
+        self.flow_timestamps = defaultdict(list)
+        self.destination_stats = defaultdict(lambda: {"bytes": 0, "packets": 0, "flows": set()})
         
         # Create output directory
         os.makedirs("output/exfiltration", exist_ok=True)
         
-        self.logger.info(f"[TOOL] ExfiltrationDetector initialized with ID: {self.detector_id}")
+        self.logger.info(f"[TOOL] ExfiltrationDetector initialized with ID: {self.detection_id}")
     
-    def _generate_detector_id(self) -> str:
-        """Generate unique detector ID"""
+    def _generate_detection_id(self) -> str:
+        """Generate unique detection ID"""
         return f"exfil_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     
     def _setup_logging(self) -> logging.Logger:
         """Setup logging for exfiltration detector"""
-        logger = logging.getLogger(f"ExfiltrationDetector.{self.detector_id}")
+        logger = logging.getLogger(f"ExfiltrationDetector.{self.detection_id}")
         logger.setLevel(logging.DEBUG)
         
         # Console handler
@@ -107,7 +110,7 @@ class ExfiltrationDetector:
         
         # File handler
         try:
-            fh = logging.FileHandler(f"logs/exfiltration_{self.detector_id}.log", encoding='utf-8')
+            fh = logging.FileHandler(f"logs/exfiltration_{self.detection_id}.log", encoding='utf-8')
             fh.setLevel(logging.DEBUG)
             fh.setFormatter(formatter)
             logger.addHandler(fh)
@@ -125,10 +128,13 @@ class ExfiltrationDetector:
             "steganography_check": True,
             "suspicious_extensions": [".jpg", ".png", ".zip", ".rar", ".docx", ".pdf"],
             "exfiltration": {
-                "volume_threshold_mb": 10,
-                "unusual_hours_threshold": 0.7,
-                "destination_reputation_check": True,
-                "covert_channel_detection": True
+                "outbound_threshold_mb": 10,
+                "suspicious_countries": [],
+                "unusual_ports": [21, 22, 53, 123, 443, 8080],
+                "covert_channel_detection": True,
+                "dns_exfiltration_detection": True,
+                "icmp_exfiltration_detection": True,
+                "http_exfiltration_detection": True
             }
         }
         
@@ -146,38 +152,39 @@ class ExfiltrationDetector:
             print(f"[ERROR] Failed to load config: {e}")
             return default_config
     
-    def load_packets(self, packets, flows=None):
+    def load_packets(self, packets):
         """
-        Load packets and optional flow data for analysis
+        Load packets for exfiltration analysis
         """
         self.packets = packets
         self.stats["total_packets"] = len(packets)
+        self.logger.info(f"[LOAD] Loaded {len(packets)} packets for exfiltration analysis")
         
-        # Calculate total bytes
+        # Calculate total bytes and classify traffic
         total_bytes = 0
+        outbound_bytes = 0
+        inbound_bytes = 0
+        
         for packet in packets:
             if isinstance(packet, dict):
                 length = packet.get('length', 0)
                 total_bytes += length
                 
-                # Track bytes by destination
+                # Simple classification (assuming internal IP is 192.168.x.x or 10.x.x.x)
+                src = packet.get('src', '0.0.0.0')
+                if src.startswith(('192.168.', '10.', '172.16.')):
+                    outbound_bytes += length
+                    self.stats["outbound_bytes"] += length
+                else:
+                    inbound_bytes += length
+                    self.stats["inbound_bytes"] += length
+                
+                # Track unique destinations
                 dst = packet.get('dst', '0.0.0.0')
-                self.stats["bytes_by_destination"][dst] += length
-                
-                # Track packet sizes
-                self.stats["packets_by_size"][length] += 1
-                
-                # Track protocol
-                proto = packet.get('protocol', 'Unknown')
-                self.stats["flows_by_protocol"][proto] += 1
+                if dst and dst != '0.0.0.0':
+                    self.stats["unique_destinations"].add(dst)
         
         self.stats["total_bytes"] = total_bytes
-        
-        if flows:
-            self.flows = flows
-            self.stats["total_flows"] = len(flows)
-        
-        self.logger.info(f"[LOAD] Loaded {len(packets)} packets ({total_bytes/1024/1024:.2f} MB) for exfiltration analysis")
     
     def detect_exfiltration(self):
         """
@@ -186,679 +193,700 @@ class ExfiltrationDetector:
         self.logger.info("[DETECT] Starting exfiltration detection...")
         self.stats["start_time"] = time.time()
         
-        # Run all detection modules
-        self._detect_volume_based_exfiltration()
-        self._detect_timing_covert_channel()
-        self._detect_packet_size_covert_channel()
-        self._detect_unusual_protocols()
-        self._detect_dns_exfiltration()
-        self._detect_http_exfiltration()
-        self._detect_sensitive_data_leakage()
+        if not self.packets:
+            self.logger.warning("[WARN] No packets to analyze")
+            return {}
         
-        if self.steganography_check and PIL_AVAILABLE:
-            self._detect_steganography()
+        # Build flow statistics first
+        self._build_flow_statistics()
+        
+        # Run all detection modules
+        self._detect_large_transfers()
+        self._detect_unusual_destinations()
+        self._detect_data_rate_anomalies()
+        self._detect_dns_exfiltration()
+        self._detect_icmp_exfiltration()
+        self._detect_http_exfiltration()
+        self._detect_covert_channels()
+        self._detect_timing_channels()
+        self._detect_steganography()
+        self._detect_unusual_protocols()
+        self._detect_packet_size_anomalies()
         
         self.stats["end_time"] = time.time()
         duration = self.stats["end_time"] - self.stats["start_time"]
         
         self.logger.info(f"[COMPLETE] Exfiltration detection completed in {duration:.2f}s")
         self.logger.info(f"           Alerts generated: {len(self.alerts)}")
-        self.logger.info(f"           Exfiltration events: {len(self.exfiltration_events)}")
+        self.logger.info(f"           Suspicious flows: {len(self.suspicious_flows)}")
         
         return self.get_results()
     
-    def _detect_volume_based_exfiltration(self):
+    def _build_flow_statistics(self):
         """
-        Detect large data transfers to single destinations
+        Build flow-based statistics for analysis
         """
-        self.logger.info("[VOLUME] Checking for large data transfers...")
+        self.logger.info("[FLOWS] Building flow statistics...")
         
-        volume_threshold_mb = self.config.get("exfiltration", {}).get("volume_threshold_mb", 10)
-        volume_threshold_bytes = volume_threshold_mb * 1024 * 1024
-        
-        suspicious_destinations = []
-        
-        for dst, bytes_sent in self.stats["bytes_by_destination"].items():
-            if bytes_sent > volume_threshold_bytes:
-                # Skip local/private IPs (basic check)
-                if dst.startswith(('192.168.', '10.', '127.', '169.254.')):
-                    continue
-                
-                mb_sent = bytes_sent / (1024 * 1024)
-                suspicious_destinations.append({
-                    "destination": dst,
-                    "bytes_sent": bytes_sent,
-                    "mb_sent": round(mb_sent, 2),
-                    "packet_count": sum(1 for p in self.packets 
-                                       if isinstance(p, dict) and p.get('dst') == dst)
-                })
-        
-        if suspicious_destinations:
-            # Sort by volume
-            suspicious_destinations.sort(key=lambda x: x["bytes_sent"], reverse=True)
+        for i, packet in enumerate(self.packets):
+            if not isinstance(packet, dict):
+                continue
             
+            # Extract flow key
+            src = packet.get('src', '0.0.0.0')
+            dst = packet.get('dst', '0.0.0.0')
+            sport = packet.get('sport', 0)
+            dport = packet.get('dport', 0)
+            proto = packet.get('protocol', 'Unknown')
+            length = packet.get('length', 0)
+            time_val = packet.get('time', time.time())
+            
+            # Create flow key (outbound direction)
+            if src.startswith(('192.168.', '10.', '172.16.')):
+                flow_key = f"{proto}_{src}:{sport}->{dst}:{dport}"
+            else:
+                flow_key = f"{proto}_{dst}:{dport}->{src}:{sport}"  # Inbound
+            
+            # Update flow statistics
+            self.flow_bytes[flow_key] += length
+            self.flow_packets[flow_key].append({
+                "index": i,
+                "length": length,
+                "time": time_val
+            })
+            self.flow_timestamps[flow_key].append(time_val)
+            
+            # Update destination statistics
+            self.destination_stats[dst]["bytes"] += length
+            self.destination_stats[dst]["packets"] += 1
+            self.destination_stats[dst]["flows"].add(flow_key)
+        
+        self.stats["total_flows"] = len(self.flow_bytes)
+    
+    def _detect_large_transfers(self):
+        """
+        Detect unusually large data transfers
+        """
+        self.logger.info("[TRANSFER] Checking for large data transfers...")
+        
+        threshold_mb = self.config.get("exfiltration", {}).get("outbound_threshold_mb", 10)
+        threshold_bytes = threshold_mb * 1024 * 1024
+        
+        large_transfers = []
+        
+        for flow_key, bytes_sent in self.flow_bytes.items():
+            if bytes_sent > threshold_bytes:
+                # Extract destination info
+                parts = flow_key.split('->')
+                if len(parts) > 1:
+                    dest_info = parts[1]
+                    dest_ip = dest_info.split(':')[0]
+                else:
+                    dest_ip = "unknown"
+                
+                large_transfers.append({
+                    "flow": flow_key,
+                    "bytes": bytes_sent,
+                    "megabytes": round(bytes_sent / (1024 * 1024), 2),
+                    "destination": dest_ip,
+                    "packet_count": len(self.flow_packets[flow_key])
+                })
+                
+                # Mark flow as suspicious
+                self.suspicious_flows[flow_key] = {
+                    "reason": "large_transfer",
+                    "bytes": bytes_sent,
+                    "severity": "high"
+                }
+        
+        if large_transfers:
             alert = {
                 "type": "large_data_transfer",
                 "severity": "high",
                 "timestamp": time.time(),
                 "details": {
-                    "destinations": suspicious_destinations[:5],  # Top 5
-                    "total_destinations": len(suspicious_destinations),
-                    "threshold_mb": volume_threshold_mb
+                    "transfers": large_transfers[:5],  # Top 5
+                    "total_large_transfers": len(large_transfers),
+                    "threshold_mb": threshold_mb
                 },
-                "description": f"Detected {len(suspicious_destinations)} destinations with large data transfers (> {volume_threshold_mb}MB)"
+                "description": f"Detected {len(large_transfers)} large data transfers exceeding {threshold_mb}MB"
             }
-            
             self.alerts.append(alert)
-            
-            # Create exfiltration events
-            for dst in suspicious_destinations[:3]:  # Top 3
-                event = {
-                    "type": "volume_exfiltration",
-                    "destination": dst["destination"],
-                    "data_volume_mb": dst["mb_sent"],
-                    "confidence": self._calculate_confidence(dst["mb_sent"], volume_threshold_mb * 2),
-                    "packets_involved": dst["packet_count"],
-                    "detection_method": "volume_threshold"
-                }
-                self.exfiltration_events.append(event)
-            
             self.logger.warning(f"[ALERT] {alert['description']}")
     
-    def _detect_timing_covert_channel(self):
+    def _detect_unusual_destinations(self):
         """
-        Detect timing-based covert channels
+        Detect connections to unusual or suspicious destinations
         """
-        self.logger.info("[TIMING] Checking for timing-based covert channels...")
+        self.logger.info("[DEST] Checking for unusual destinations...")
         
-        # Group packets by destination
-        dest_packets = defaultdict(list)
+        # Known suspicious IP ranges (can be expanded)
+        suspicious_ranges = [
+            "45.", "46.",  # Eastern Europe
+            "5.",          # Middle East
+            "185.", "188.", "193.", "194.", "195."  # Various
+        ]
         
-        for packet in self.packets:
-            if isinstance(packet, dict):
-                dst = packet.get('dst', '0.0.0.0')
-                time_val = packet.get('time', 0)
-                if time_val > 0:
-                    dest_packets[dst].append({
-                        "time": time_val,
-                        "length": packet.get('length', 0),
-                        "protocol": packet.get('protocol', 'Unknown')
+        # Known bad ASNs/countries from config
+        suspicious_countries = self.config.get("exfiltration", {}).get("suspicious_countries", [])
+        
+        unusual_destinations = []
+        
+        for dst_ip, stats in self.destination_stats.items():
+            if dst_ip == '0.0.0.0' or dst_ip.startswith(('192.168.', '10.', '172.16.', '127.')):
+                continue  # Skip internal/local
+            
+            # Check against suspicious ranges
+            for suspicious in suspicious_ranges:
+                if dst_ip.startswith(suspicious):
+                    unusual_destinations.append({
+                        "destination": dst_ip,
+                        "bytes": stats["bytes"],
+                        "megabytes": round(stats["bytes"] / (1024 * 1024), 2),
+                        "packets": stats["packets"],
+                        "flows": len(stats["flows"]),
+                        "reason": "suspicious_ip_range"
                     })
+                    break
         
-        for dst, packets in dest_packets.items():
-            if len(packets) < 10:  # Need enough packets
-                continue
-            
-            # Sort by time
-            packets.sort(key=lambda x: x["time"])
-            
-            # Calculate inter-arrival times
-            intervals = []
-            for i in range(1, len(packets)):
-                interval = packets[i]["time"] - packets[i-1]["time"]
-                if interval > 0:  # Skip zero intervals
-                    intervals.append(interval)
-            
-            if len(intervals) < 5:
-                continue
-            
-            # Analyze intervals for patterns
-            if NUMPY_AVAILABLE:
-                intervals_array = np.array(intervals)
-                
-                # Look for binary patterns (two distinct intervals)
-                unique_intervals = np.unique(np.round(intervals_array, 3))
-                
-                if len(unique_intervals) == 2:
-                    # Possible binary timing channel (0 and 1 represented by different intervals)
-                    count1 = np.sum(np.isclose(intervals_array, unique_intervals[0], rtol=0.1))
-                    count2 = np.sum(np.isclose(intervals_array, unique_intervals[1], rtol=0.1))
-                    
-                    if count1 > 3 and count2 > 3:  # Both intervals used multiple times
-                        alert = {
-                            "type": "timing_covert_channel",
-                            "severity": "high",
-                            "timestamp": time.time(),
-                            "details": {
-                                "destination": dst,
-                                "interval1": round(unique_intervals[0], 3),
-                                "interval2": round(unique_intervals[1], 3),
-                                "count1": int(count1),
-                                "count2": int(count2),
-                                "packet_count": len(packets)
-                            },
-                            "description": f"Possible timing covert channel to {dst} using 2 distinct intervals"
-                        }
-                        self.alerts.append(alert)
-                        
-                        event = {
-                            "type": "timing_covert_channel",
-                            "destination": dst,
-                            "confidence": 0.8,
-                            "intervals": [round(float(unique_intervals[0]), 3), 
-                                         round(float(unique_intervals[1]), 3)],
-                            "detection_method": "binary_timing_pattern"
-                        }
-                        self.exfiltration_events.append(event)
-                        
-                        self.logger.warning(f"[ALERT] {alert['description']}")
+        if unusual_destinations:
+            alert = {
+                "type": "unusual_destination",
+                "severity": "medium",
+                "timestamp": time.time(),
+                "details": {
+                    "destinations": unusual_destinations[:5],
+                    "total_unusual": len(unusual_destinations)
+                },
+                "description": f"Detected connections to {len(unusual_destinations)} unusual IP addresses"
+            }
+            self.alerts.append(alert)
     
-    def _detect_packet_size_covert_channel(self):
+    def _detect_data_rate_anomalies(self):
         """
-        Detect size-based covert channels
+        Detect anomalies in data transfer rates
         """
-        self.logger.info("[SIZE] Checking for size-based covert channels...")
+        self.logger.info("[RATE] Analyzing data transfer rates...")
         
-        # Group packets by destination
-        dest_packets = defaultdict(list)
-        
-        for packet in self.packets:
-            if isinstance(packet, dict):
-                dst = packet.get('dst', '0.0.0.0')
-                length = packet.get('length', 0)
-                if length > 0:
-                    dest_packets[dst].append({
-                        "length": length,
-                        "protocol": packet.get('protocol', 'Unknown'),
-                        "time": packet.get('time', 0)
-                    })
-        
-        for dst, packets in dest_packets.items():
-            if len(packets) < 10:
-                continue
-            
-            # Extract sizes
-            sizes = [p["length"] for p in packets]
-            
-            if NUMPY_AVAILABLE:
-                sizes_array = np.array(sizes)
-                unique_sizes = np.unique(sizes_array)
-                
-                # Look for binary pattern (2 distinct sizes)
-                if len(unique_sizes) == 2:
-                    count1 = np.sum(sizes_array == unique_sizes[0])
-                    count2 = np.sum(sizes_array == unique_sizes[1])
-                    
-                    if count1 > 3 and count2 > 3:
-                        # Check if sizes are significantly different
-                        size_diff = abs(unique_sizes[0] - unique_sizes[1])
-                        if size_diff > 50:  # Significant difference
-                            alert = {
-                                "type": "size_covert_channel",
-                                "severity": "high",
-                                "timestamp": time.time(),
-                                "details": {
-                                    "destination": dst,
-                                    "size1": int(unique_sizes[0]),
-                                    "size2": int(unique_sizes[1]),
-                                    "count1": int(count1),
-                                    "count2": int(count2),
-                                    "size_diff": int(size_diff)
-                                },
-                                "description": f"Possible size-based covert channel to {dst} using 2 distinct packet sizes"
-                            }
-                            self.alerts.append(alert)
-                            
-                            event = {
-                                "type": "size_covert_channel",
-                                "destination": dst,
-                                "confidence": 0.75,
-                                "sizes": [int(unique_sizes[0]), int(unique_sizes[1])],
-                                "detection_method": "binary_size_pattern"
-                            }
-                            self.exfiltration_events.append(event)
-                            
-                            self.logger.warning(f"[ALERT] {alert['description']}")
-                
-                # Check for many unique sizes (potential data encoding)
-                elif len(unique_sizes) > len(packets) * 0.5 and len(packets) > 20:
-                    alert = {
-                        "type": "high_size_variance",
-                        "severity": "medium",
-                        "timestamp": time.time(),
-                        "details": {
-                            "destination": dst,
-                            "unique_sizes": len(unique_sizes),
-                            "total_packets": len(packets),
-                            "ratio": round(len(unique_sizes) / len(packets), 2)
-                        },
-                        "description": f"High packet size variance to {dst} (possible data encoding)"
-                    }
-                    self.alerts.append(alert)
-    
-    def _detect_unusual_protocols(self):
-        """
-        Detect data exfiltration over unusual protocols
-        """
-        self.logger.info("[PROTO] Checking for unusual protocol usage...")
-        
-        # Common exfiltration protocols
-        exfil_protocols = {
-            "ICMP": {"suspicious": True, "reason": "Can tunnel data in echo requests"},
-            "DNS": {"suspicious": True, "reason": "Common for tunneling"},
-            "NTP": {"suspicious": True, "reason": "Can hide data in timestamps"},
-            "DHCP": {"suspicious": True, "reason": "Options field can carry data"},
-            "ARP": {"suspicious": True, "reason": "No legitimate large data transfer"}
-        }
-        
-        # Group by destination and protocol
-        dest_proto_volume = defaultdict(lambda: defaultdict(int))
-        
-        for packet in self.packets:
-            if isinstance(packet, dict):
-                dst = packet.get('dst', '0.0.0.0')
-                proto = packet.get('protocol', 'Unknown')
-                length = packet.get('length', 0)
-                
-                dest_proto_volume[dst][proto] += length
-        
-        for dst, protocols in dest_proto_volume.items():
-            for proto, bytes_vol in protocols.items():
-                if proto in exfil_protocols and bytes_vol > 10000:  # >10KB over unusual protocol
-                    mb_vol = bytes_vol / (1024 * 1024)
-                    alert = {
-                        "type": "unusual_protocol_exfiltration",
-                        "severity": "high",
-                        "timestamp": time.time(),
-                        "details": {
-                            "destination": dst,
-                            "protocol": proto,
-                            "bytes": bytes_vol,
-                            "mb": round(mb_vol, 2),
-                            "reason": exfil_protocols[proto]["reason"]
-                        },
-                        "description": f"Large data transfer ({mb_vol:.2f}MB) over {proto} to {dst} - {exfil_protocols[proto]['reason']}"
-                    }
-                    self.alerts.append(alert)
-                    
-                    event = {
-                        "type": "protocol_exfiltration",
-                        "destination": dst,
-                        "protocol": proto,
-                        "data_volume_mb": round(mb_vol, 2),
-                        "confidence": 0.85,
-                        "detection_method": "unusual_protocol_volume"
-                    }
-                    self.exfiltration_events.append(event)
-                    
-                    self.logger.warning(f"[ALERT] {alert['description']}")
-    
-    def _detect_dns_exfiltration(self):
-        """
-        Detect DNS-based exfiltration
-        """
-        self.logger.info("[DNS] Checking for DNS exfiltration...")
-        
-        dns_queries = []
-        
-        for packet in self.packets:
-            if isinstance(packet, dict):
-                proto = packet.get('protocol', '')
-                info = packet.get('info', '')
-                
-                if proto == "DNS" or "DNS" in info:
-                    # Extract query
-                    query = ""
-                    if "Query:" in info:
-                        query = info.split("Query:")[-1].strip()
-                    elif "DNS" in info:
-                        query = info
-                    
-                    if query:
-                        dns_queries.append({
-                            "query": query,
-                            "length": len(query),
-                            "time": packet.get('time', 0),
-                            "dst": packet.get('dst', ''),
-                            "raw_data": packet.get('raw_data', b'')
-                        })
-        
-        if len(dns_queries) < 5:
+        if len(self.packets) < 10:
             return
         
-        # Analyze DNS query patterns
-        suspicious_queries = []
-        
-        for query in dns_queries:
-            query_str = query["query"]
-            
-            # Check for long queries
-            if query["length"] > 50:
-                # Calculate entropy
-                if isinstance(query["raw_data"], bytes) and len(query["raw_data"]) > 0:
-                    entropy = self._calculate_entropy(query["raw_data"])
-                else:
-                    entropy = self._calculate_entropy(query_str.encode())
-                
-                suspicious_queries.append({
-                    **query,
-                    "entropy": round(entropy, 3),
-                    "reason": "long_query"
-                })
-            
-            # Check for subdomain encoding
-            parts = query_str.split('.')
-            if len(parts) > 5:  # Many subdomains
-                suspicious_queries.append({
-                    **query,
-                    "subdomain_count": len(parts),
-                    "reason": "many_subdomains"
-                })
-            
-            # Check for base64-like patterns
-            base64_chars = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=')
-            domain_part = parts[0] if parts else ""
-            if domain_part and all(c in base64_chars for c in domain_part[:20]):
-                suspicious_queries.append({
-                    **query,
-                    "reason": "base64_pattern"
-                })
-        
-        if suspicious_queries:
-            # Group by destination
-            dest_queries = defaultdict(list)
-            for q in suspicious_queries:
-                dest_queries[q["dst"]].append(q)
-            
-            for dst, queries in dest_queries.items():
-                alert = {
-                    "type": "dns_exfiltration",
-                    "severity": "high",
-                    "timestamp": time.time(),
-                    "details": {
-                        "destination": dst,
-                        "suspicious_queries": len(queries),
-                        "total_dns_queries": len(dns_queries),
-                        "samples": queries[:3]  # First 3 samples
-                    },
-                    "description": f"Possible DNS exfiltration to {dst} - {len(queries)} suspicious queries detected"
-                }
-                self.alerts.append(alert)
-                
-                event = {
-                    "type": "dns_exfiltration",
-                    "destination": dst,
-                    "confidence": 0.9,
-                    "query_count": len(queries),
-                    "detection_method": "dns_tunneling_patterns"
-                }
-                self.exfiltration_events.append(event)
-                
-                self.logger.warning(f"[ALERT] {alert['description']}")
-    
-    def _detect_http_exfiltration(self):
-        """
-        Detect HTTP-based exfiltration
-        """
-        self.logger.info("[HTTP] Checking for HTTP exfiltration...")
-        
-        http_requests = []
+        # Group packets by time windows
+        window_seconds = 5
+        time_windows = defaultdict(lambda: {"bytes": 0, "packets": 0})
         
         for packet in self.packets:
-            if isinstance(packet, dict):
-                proto = packet.get('protocol', '')
-                info = packet.get('info', '')
-                dport = packet.get('dport', 0)
-                
-                # Check for HTTP traffic
-                if proto == "HTTP" or dport == 80 or dport == 8080 or info.startswith(('GET ', 'POST ')):
-                    # Extract request details
-                    method = ""
-                    uri = ""
-                    if info:
-                        parts = info.split(' ')
-                        if len(parts) > 1:
-                            method = parts[0]
-                            uri = parts[1] if len(parts) > 1 else ""
-                    
-                    http_requests.append({
-                        "method": method,
-                        "uri": uri,
-                        "length": len(uri),
-                        "time": packet.get('time', 0),
-                        "dst": packet.get('dst', ''),
-                        "raw_data": packet.get('raw_data', b'')
-                    })
+            if not isinstance(packet, dict):
+                continue
+            
+            time_val = packet.get('time', 0)
+            length = packet.get('length', 0)
+            src = packet.get('src', '0.0.0.0')
+            
+            # Only count outbound
+            if src.startswith(('192.168.', '10.', '172.16.')):
+                window_key = int(time_val / window_seconds)
+                time_windows[window_key]["bytes"] += length
+                time_windows[window_key]["packets"] += 1
         
-        if len(http_requests) < 3:
+        if not time_windows:
             return
         
-        # Check for suspicious patterns
-        suspicious_requests = []
+        # Calculate rates
+        rates = []
+        for window, data in sorted(time_windows.items()):
+            rate_kbps = (data["bytes"] * 8) / (window_seconds * 1000)  # kbps
+            rates.append(rate_kbps)
         
-        for req in http_requests:
-            # Long URIs (potential data encoding)
-            if req["length"] > 200:
-                suspicious_requests.append({
-                    **req,
-                    "reason": "long_uri"
-                })
+        # Find spikes
+        if NUMPY_AVAILABLE and len(rates) > 3:
+            rates_array = np.array(rates)
+            mean_rate = np.mean(rates_array)
+            std_rate = np.std(rates_array)
             
-            # POST with large body
-            if req["method"] == "POST" and req["raw_data"] and len(req["raw_data"]) > 1000:
-                suspicious_requests.append({
-                    **req,
-                    "reason": "large_post",
-                    "data_size": len(req["raw_data"])
-                })
+            spikes = []
+            for i, rate in enumerate(rates):
+                if rate > mean_rate + 3 * std_rate:  # Statistical outlier
+                    spikes.append({
+                        "window": i,
+                        "rate_kbps": round(rate, 2),
+                        "bytes": time_windows[i]["bytes"],
+                        "packets": time_windows[i]["packets"]
+                    })
             
-            # Unusual User-Agent would require header parsing (future enhancement)
-        
-        if suspicious_requests:
-            # Group by destination
-            dest_requests = defaultdict(list)
-            for req in suspicious_requests:
-                dest_requests[req["dst"]].append(req)
-            
-            for dst, requests in dest_requests.items():
+            if spikes:
                 alert = {
-                    "type": "http_exfiltration",
+                    "type": "data_rate_spike",
                     "severity": "medium",
                     "timestamp": time.time(),
                     "details": {
-                        "destination": dst,
-                        "suspicious_requests": len(requests),
-                        "total_http_requests": len(http_requests),
-                        "samples": requests[:3]
+                        "spikes": spikes,
+                        "mean_rate_kbps": round(mean_rate, 2),
+                        "threshold_kbps": round(mean_rate + 3 * std_rate, 2)
                     },
-                    "description": f"Possible HTTP exfiltration to {dst} - {len(requests)} suspicious requests"
+                    "description": f"Detected {len(spikes)} data rate spikes (possible exfiltration burst)"
                 }
                 self.alerts.append(alert)
-                
-                event = {
-                    "type": "http_exfiltration",
-                    "destination": dst,
-                    "confidence": 0.7,
-                    "request_count": len(requests),
-                    "detection_method": "long_uri_large_post"
-                }
-                self.exfiltration_events.append(event)
-                
-                self.logger.warning(f"[ALERT] {alert['description']}")
     
-    def _detect_sensitive_data_leakage(self):
+    def _detect_dns_exfiltration(self):
         """
-        Detect sensitive data patterns in outgoing traffic
+        Detect data exfiltration over DNS
         """
-        self.logger.info("[LEAK] Checking for sensitive data leakage...")
+        self.logger.info("[DNS] Checking for DNS exfiltration...")
         
-        leak_events = []
+        dns_flows = []
         
-        for i, packet in enumerate(self.packets):
-            if isinstance(packet, dict):
-                # Skip incoming packets? (simplified - check if dest is external)
-                dst = packet.get('dst', '')
-                if dst.startswith(('192.168.', '10.', '127.')):
-                    continue
-                
-                raw_data = packet.get('raw_data', b'')
-                if isinstance(raw_data, str):
-                    raw_data = raw_data.encode('utf-8', errors='ignore')
-                
-                if not raw_data or len(raw_data) < 10:
-                    continue
-                
-                # Check for sensitive patterns
-                for pattern in self.sensitive_patterns:
-                    if pattern.lower() in raw_data.lower():
-                        # Find context (surrounding bytes)
-                        pos = raw_data.lower().find(pattern.lower())
-                        start = max(0, pos - 20)
-                        end = min(len(raw_data), pos + len(pattern) + 20)
-                        context = raw_data[start:end]
-                        
-                        leak_events.append({
-                            "packet_index": i,
-                            "pattern": pattern.decode('utf-8', errors='ignore'),
-                            "context": context.decode('utf-8', errors='ignore').replace('\n', ' '),
-                            "destination": dst,
-                            "timestamp": packet.get('time', 0)
+        # Find DNS flows
+        for flow_key, packets in self.flow_packets.items():
+            if "DNS" in flow_key or ":53" in flow_key:
+                dns_flows.append((flow_key, packets))
+        
+        if not dns_flows:
+            return
+        
+        suspicious_dns = []
+        
+        for flow_key, packets in dns_flows:
+            # Check for high packet count (many DNS queries)
+            if len(packets) > 50:
+                suspicious_dns.append({
+                    "flow": flow_key,
+                    "packet_count": len(packets),
+                    "total_bytes": self.flow_bytes[flow_key],
+                    "reason": "high_query_volume"
+                })
+                continue
+            
+            # Check for large DNS packets
+            large_packets = [p for p in packets if p["length"] > 512]  # Max normal DNS size
+            if large_packets:
+                suspicious_dns.append({
+                    "flow": flow_key,
+                    "packet_count": len(packets),
+                    "large_packets": len(large_packets),
+                    "total_bytes": self.flow_bytes[flow_key],
+                    "reason": "large_dns_packets"
+                })
+                continue
+            
+            # Check for consistent packet sizes (potential encoding)
+            if len(packets) > 10:
+                sizes = [p["length"] for p in packets]
+                if NUMPY_AVAILABLE:
+                    std_size = np.std(sizes)
+                    if std_size < 10:  # Very consistent sizes
+                        suspicious_dns.append({
+                            "flow": flow_key,
+                            "packet_count": len(packets),
+                            "std_size": round(std_size, 2),
+                            "reason": "consistent_packet_sizes"
                         })
-                        break  # One pattern per packet
         
-        if leak_events:
+        if suspicious_dns:
             alert = {
-                "type": "sensitive_data_leakage",
-                "severity": "critical",
+                "type": "dns_exfiltration",
+                "severity": "high",
                 "timestamp": time.time(),
                 "details": {
-                    "leak_count": len(leak_events),
-                    "samples": leak_events[:5]  # First 5 samples
+                    "suspicious_flows": suspicious_dns[:5],
+                    "total_suspicious": len(suspicious_dns)
                 },
-                "description": f"Detected {len(leak_events)} instances of sensitive data leakage"
+                "description": f"Detected {len(suspicious_dns)} suspicious DNS flows (possible exfiltration)"
             }
             self.alerts.append(alert)
             
-            event = {
-                "type": "data_leakage",
-                "confidence": 0.95,
-                "instance_count": len(leak_events),
-                "patterns_found": list(set(e["pattern"] for e in leak_events)),
-                "detection_method": "pattern_matching"
-            }
-            self.exfiltration_events.append(event)
+            # Mark flows as suspicious
+            for sus in suspicious_dns:
+                self.suspicious_flows[sus["flow"]] = {
+                    "reason": f"dns_exfiltration_{sus['reason']}",
+                    "severity": "high"
+                }
+    
+    def _detect_icmp_exfiltration(self):
+        """
+        Detect data exfiltration over ICMP (ping tunneling)
+        """
+        self.logger.info("[ICMP] Checking for ICMP exfiltration...")
+        
+        icmp_flows = []
+        
+        # Find ICMP flows
+        for flow_key, packets in self.flow_packets.items():
+            if "ICMP" in flow_key:
+                icmp_flows.append((flow_key, packets))
+        
+        if not icmp_flows:
+            return
+        
+        suspicious_icmp = []
+        
+        for flow_key, packets in icmp_flows:
+            # ICMP should normally have small packets
+            large_packets = [p for p in packets if p["length"] > 100]
             
-            self.logger.warning(f"[ALERT] {alert['description']}")
+            if large_packets:
+                suspicious_icmp.append({
+                    "flow": flow_key,
+                    "packet_count": len(packets),
+                    "large_packets": len(large_packets),
+                    "total_bytes": self.flow_bytes[flow_key],
+                    "reason": "large_icmp_packets"
+                })
+                continue
+            
+            # Check for high volume
+            if len(packets) > 100:
+                suspicious_icmp.append({
+                    "flow": flow_key,
+                    "packet_count": len(packets),
+                    "total_bytes": self.flow_bytes[flow_key],
+                    "reason": "high_icmp_volume"
+                })
+        
+        if suspicious_icmp:
+            alert = {
+                "type": "icmp_exfiltration",
+                "severity": "high",
+                "timestamp": time.time(),
+                "details": {
+                    "suspicious_flows": suspicious_icmp[:5],
+                    "total_suspicious": len(suspicious_icmp)
+                },
+                "description": f"Detected {len(suspicious_icmp)} suspicious ICMP flows (possible ping tunneling)"
+            }
+            self.alerts.append(alert)
+    
+    def _detect_http_exfiltration(self):
+        """
+        Detect data exfiltration over HTTP
+        """
+        self.logger.info("[HTTP] Checking for HTTP exfiltration...")
+        
+        http_flows = []
+        
+        # Find HTTP flows (port 80 or protocol HTTP)
+        for flow_key, packets in self.flow_packets.items():
+            if "HTTP" in flow_key or ":80" in flow_key or ":8080" in flow_key:
+                http_flows.append((flow_key, packets))
+        
+        if not http_flows:
+            return
+        
+        suspicious_http = []
+        
+        for flow_key, packets in http_flows:
+            # Check for large outbound POST requests
+            total_bytes = self.flow_bytes[flow_key]
+            
+            if total_bytes > 1024 * 1024:  # > 1MB
+                suspicious_http.append({
+                    "flow": flow_key,
+                    "packet_count": len(packets),
+                    "total_mb": round(total_bytes / (1024 * 1024), 2),
+                    "reason": "large_http_upload"
+                })
+                continue
+            
+            # Check for many small requests (beaconing)
+            if len(packets) > 50 and total_bytes < 100 * 1024:  # Many small packets
+                suspicious_http.append({
+                    "flow": flow_key,
+                    "packet_count": len(packets),
+                    "total_bytes": total_bytes,
+                    "reason": "http_beaconing"
+                })
+        
+        if suspicious_http:
+            alert = {
+                "type": "http_exfiltration",
+                "severity": "medium",
+                "timestamp": time.time(),
+                "details": {
+                    "suspicious_flows": suspicious_http[:5],
+                    "total_suspicious": len(suspicious_http)
+                },
+                "description": f"Detected {len(suspicious_http)} suspicious HTTP flows"
+            }
+            self.alerts.append(alert)
+    
+    def _detect_covert_channels(self):
+        """
+        Detect various covert channel techniques
+        """
+        self.logger.info("[COVERT] Checking for covert channels...")
+        
+        for flow_key, packets in self.flow_packets.items():
+            if len(packets) < 10:
+                continue
+            
+            # Check 1: Fixed packet sizes (potential encoding)
+            sizes = [p["length"] for p in packets]
+            unique_sizes = set(sizes)
+            
+            if len(unique_sizes) == 1 and len(packets) > 20:
+                # All packets exactly the same size
+                alert = {
+                    "type": "covert_channel_fixed_size",
+                    "severity": "high",
+                    "timestamp": time.time(),
+                    "details": {
+                        "flow": flow_key,
+                        "packet_count": len(packets),
+                        "packet_size": sizes[0],
+                        "total_bytes": self.flow_bytes[flow_key]
+                    },
+                    "description": f"Covert channel detected: all {len(packets)} packets identical size ({sizes[0]} bytes)"
+                }
+                self.alerts.append(alert)
+                self.suspicious_flows[flow_key] = {"reason": "covert_fixed_size", "severity": "high"}
+                continue
+            
+            # Check 2: Alternating packet sizes (binary encoding)
+            if len(packets) > 20 and len(unique_sizes) == 2:
+                # Check if sizes alternate (0/1 encoding)
+                size_pattern = [sizes[i] for i in range(min(20, len(sizes)))]
+                # Simple check for alternating pattern
+                alternating = all(size_pattern[i] != size_pattern[i+1] for i in range(len(size_pattern)-1))
+                
+                if alternating:
+                    alert = {
+                        "type": "covert_channel_alternating",
+                        "severity": "high",
+                        "timestamp": time.time(),
+                        "details": {
+                            "flow": flow_key,
+                            "packet_count": len(packets),
+                            "size1": list(unique_sizes)[0],
+                            "size2": list(unique_sizes)[1],
+                            "pattern": size_pattern[:10]
+                        },
+                        "description": f"Covert channel detected: alternating packet sizes (possible binary encoding)"
+                    }
+                    self.alerts.append(alert)
+                    self.suspicious_flows[flow_key] = {"reason": "covert_alternating", "severity": "high"}
+    
+    def _detect_timing_channels(self):
+        """
+        Detect timing-based covert channels
+        """
+        self.logger.info("[TIMING] Checking for timing channels...")
+        
+        for flow_key, timestamps in self.flow_timestamps.items():
+            if len(timestamps) < 10:
+                continue
+            
+            # Calculate inter-arrival times
+            intervals = []
+            for i in range(1, len(timestamps)):
+                intervals.append(timestamps[i] - timestamps[i-1])
+            
+            if not intervals:
+                continue
+            
+            # Check for repeating interval patterns
+            if NUMPY_AVAILABLE:
+                intervals_array = np.array(intervals)
+                
+                # Look for very low variance (regular heartbeat)
+                if np.std(intervals_array) < 0.01 and np.mean(intervals_array) > 0:
+                    alert = {
+                        "type": "timing_channel_regular",
+                        "severity": "high",
+                        "timestamp": time.time(),
+                        "details": {
+                            "flow": flow_key,
+                            "mean_interval": round(np.mean(intervals_array), 4),
+                            "std_interval": round(np.std(intervals_array), 4),
+                            "packet_count": len(timestamps)
+                        },
+                        "description": f"Timing channel detected: extremely regular intervals ({np.mean(intervals_array):.4f}s ± {np.std(intervals_array):.4f}s)"
+                    }
+                    self.alerts.append(alert)
+                    self.suspicious_flows[flow_key] = {"reason": "timing_channel", "severity": "high"}
+                    continue
+            
+            # Simple check for identical intervals
+            if len(intervals) > 5:
+                rounded_intervals = [round(i, 3) for i in intervals]
+                if len(set(rounded_intervals)) == 1:
+                    alert = {
+                        "type": "timing_channel_identical",
+                        "severity": "high",
+                        "timestamp": time.time(),
+                        "details": {
+                            "flow": flow_key,
+                            "interval": intervals[0],
+                            "packet_count": len(timestamps)
+                        },
+                        "description": f"Timing channel detected: all packet intervals identical ({intervals[0]:.4f}s)"
+                    }
+                    self.alerts.append(alert)
     
     def _detect_steganography(self):
         """
-        Detect steganography in image files transferred over network
+        Detect possible steganography in transferred files
         """
-        self.logger.info("[STEGO] Checking for steganography in image transfers...")
+        if not self.steganography_check:
+            return
+        
+        self.logger.info("[STEGO] Checking for steganography...")
         
         if not PIL_AVAILABLE:
-            self.logger.info("[STEGO] PIL not available - skipping steganography detection")
+            self.logger.info("[STEGO] PIL not available, skipping image analysis")
             return
         
         # Look for image file transfers
         image_transfers = []
         
+        for flow_key, packets in self.flow_packets.items():
+            # Check if this flow might contain images
+            total_bytes = self.flow_bytes[flow_key]
+            
+            # Images are typically > 10KB
+            if total_bytes > 10 * 1024:
+                # Check packet patterns that might indicate image transfer
+                # This is a simplified detection - real stego detection would need file extraction
+                
+                # Look for consistent large packets (typical for file transfer)
+                large_packets = [p for p in packets if p["length"] > 1000]
+                if len(large_packets) > 5:
+                    image_transfers.append({
+                        "flow": flow_key,
+                        "total_kb": round(total_bytes / 1024, 2),
+                        "large_packets": len(large_packets),
+                        "total_packets": len(packets)
+                    })
+        
+        if image_transfers:
+            alert = {
+                "type": "possible_steganography",
+                "severity": "medium",
+                "timestamp": time.time(),
+                "details": {
+                    "suspicious_transfers": image_transfers[:5],
+                    "note": "Image files detected - further analysis recommended"
+                },
+                "description": f"Detected {len(image_transfers)} potential image transfers (possible steganography)"
+            }
+            self.alerts.append(alert)
+    
+    def _detect_unusual_protocols(self):
+        """
+        Detect data exfiltration over unusual protocols/ports
+        """
+        self.logger.info("[PROTO] Checking for unusual protocols...")
+        
+        unusual_ports = self.config.get("exfiltration", {}).get("unusual_ports", 
+                                                               [21, 22, 53, 123, 443, 8080])
+        
+        unusual_flows = []
+        
+        for flow_key, bytes_sent in self.flow_bytes.items():
+            # Extract port information
+            parts = flow_key.split('->')
+            if len(parts) < 2:
+                continue
+            
+            dest_part = parts[1]
+            if ':' in dest_part:
+                port = int(dest_part.split(':')[1])
+                
+                # Check if port is in unusual list
+                if port in unusual_ports and bytes_sent > 1024 * 1024:  # > 1MB on unusual port
+                    unusual_flows.append({
+                        "flow": flow_key,
+                        "port": port,
+                        "bytes": bytes_sent,
+                        "megabytes": round(bytes_sent / (1024 * 1024), 2)
+                    })
+        
+        if unusual_flows:
+            alert = {
+                "type": "unusual_protocol_exfiltration",
+                "severity": "medium",
+                "timestamp": time.time(),
+                "details": {
+                    "flows": unusual_flows[:5],
+                    "total_unusual": len(unusual_flows)
+                },
+                "description": f"Detected {len(unusual_flows)} large transfers over unusual ports"
+            }
+            self.alerts.append(alert)
+    
+    def _detect_packet_size_anomalies(self):
+        """
+        Detect anomalies in packet sizes that might indicate exfiltration
+        """
+        self.logger.info("[SIZE] Analyzing packet size patterns...")
+        
+        # Group packets by size
+        size_distribution = Counter()
         for packet in self.packets:
             if isinstance(packet, dict):
-                info = packet.get('info', '')
-                raw_data = packet.get('raw_data', b'')
-                
-                # Check for image file extensions in HTTP
-                for ext in self.suspicious_extensions:
-                    if ext in info.lower() and ('.jpg' in info.lower() or '.png' in info.lower()):
-                        image_transfers.append({
-                            "packet": packet,
-                            "extension": ext,
-                            "info": info,
-                            "raw_data": raw_data
-                        })
-                        break
+                size_distribution[packet.get('length', 0)] += 1
         
-        if not image_transfers:
+        if not size_distribution:
             return
         
-        # In a real implementation, you would:
-        # 1. Reconstruct the full image from multiple packets
-        # 2. Save it to a temporary file
-        # 3. Analyze for steganography (LSB analysis, etc.)
+        # Look for unusual size clusters
+        total_packets = sum(size_distribution.values())
         
-        # For now, we'll flag potential steganography carriers
-        alert = {
-            "type": "potential_steganography_carrier",
-            "severity": "medium",
-            "timestamp": time.time(),
-            "details": {
-                "image_transfers": len(image_transfers),
-                "extensions": list(set(t["extension"] for t in image_transfers)),
-                "samples": [{"info": t["info"][:50]} for t in image_transfers[:3]]
-            },
-            "description": f"Detected {len(image_transfers)} image transfers that could contain steganography"
-        }
-        self.alerts.append(alert)
+        # MTU-sized packets (maximum size) could be exfiltration
+        mtu_sizes = [size for size in size_distribution if 1400 <= size <= 1500]
+        mtu_packets = sum(size_distribution[size] for size in mtu_sizes)
         
-        self.logger.info(f"[STEGO] {alert['description']}")
-    
-    def _calculate_entropy(self, data):
-        """
-        Calculate Shannon entropy of data
-        """
-        if not data:
-            return 0
+        if mtu_packets > total_packets * 0.5 and mtu_packets > 100:
+            alert = {
+                "type": "mtu_sized_packets",
+                "severity": "medium",
+                "timestamp": time.time(),
+                "details": {
+                    "mtu_packets": mtu_packets,
+                    "percentage": round(mtu_packets / total_packets * 100, 2),
+                    "total_packets": total_packets
+                },
+                "description": f"High percentage ({mtu_packets/total_packets*100:.1f}%) of MTU-sized packets (possible data exfiltration)"
+            }
+            self.alerts.append(alert)
         
-        entropy = 0
-        data_len = len(data)
+        # Look for very small packets with high frequency (potential signaling)
+        small_packets = [size for size in size_distribution if size < 100]
+        small_count = sum(size_distribution[size] for size in small_packets)
         
-        # Count byte frequencies
-        freq = {}
-        for byte in data:
-            freq[byte] = freq.get(byte, 0) + 1
-        
-        # Calculate entropy
-        for count in freq.values():
-            probability = count / data_len
-            entropy -= probability * math.log2(probability)
-        
-        return entropy
-    
-    def _calculate_confidence(self, value, threshold):
-        """
-        Calculate confidence score based on value relative to threshold
-        """
-        if value >= threshold * 2:
-            return 0.95
-        elif value >= threshold * 1.5:
-            return 0.85
-        elif value >= threshold:
-            return 0.75
-        else:
-            return 0.5
+        if small_count > total_packets * 0.3 and small_count > 50:
+            alert = {
+                "type": "many_small_packets",
+                "severity": "low",
+                "timestamp": time.time(),
+                "details": {
+                    "small_packets": small_count,
+                    "percentage": round(small_count / total_packets * 100, 2)
+                },
+                "description": f"High percentage of very small packets (possible covert signaling)"
+            }
+            self.alerts.append(alert)
     
     def get_results(self):
         """
         Get complete detection results
         """
+        # Convert sets to lists for JSON serialization
+        stats_serializable = dict(self.stats)
+        stats_serializable["unique_destinations"] = list(self.stats["unique_destinations"])
+        
         return {
-            "detector_id": self.detector_id,
+            "detection_id": self.detection_id,
             "timestamp": datetime.now().isoformat(),
-            "statistics": {
-                "total_packets": self.stats["total_packets"],
-                "total_bytes": self.stats["total_bytes"],
-                "total_mb": round(self.stats["total_bytes"] / (1024 * 1024), 2),
-                "total_flows": self.stats["total_flows"],
-                "unique_destinations": len(self.stats["bytes_by_destination"]),
-                "top_destinations": sorted(
-                    [{"ip": k, "mb": round(v/(1024*1024), 2)} 
-                     for k, v in self.stats["bytes_by_destination"].items()],
-                    key=lambda x: x["mb"],
-                    reverse=True
-                )[:5]
-            },
+            "statistics": stats_serializable,
             "alerts": self.alerts,
-            "exfiltration_events": self.exfiltration_events,
+            "suspicious_flows": self.suspicious_flows,
+            "exfiltration_attempts": self.exfil_attempts,
             "summary": {
                 "total_alerts": len(self.alerts),
-                "total_events": len(self.exfiltration_events),
-                "by_severity": {
-                    "critical": sum(1 for a in self.alerts if a["severity"] == "critical"),
-                    "high": sum(1 for a in self.alerts if a["severity"] == "high"),
-                    "medium": sum(1 for a in self.alerts if a["severity"] == "medium"),
-                    "low": sum(1 for a in self.alerts if a["severity"] == "low")
-                }
+                "high_severity": sum(1 for a in self.alerts if a["severity"] == "high"),
+                "medium_severity": sum(1 for a in self.alerts if a["severity"] == "medium"),
+                "low_severity": sum(1 for a in self.alerts if a["severity"] == "low"),
+                "suspicious_flows": len(self.suspicious_flows)
             }
         }
     
@@ -869,7 +897,7 @@ class ExfiltrationDetector:
         results = self.get_results()
         
         if format == "json":
-            report_file = f"output/exfiltration/exfil_{self.detector_id}.json"
+            report_file = f"output/exfiltration/exfil_{self.detection_id}.json"
             with open(report_file, 'w') as f:
                 json.dump(results, f, indent=2, default=str)
             self.logger.info(f"[REPORT] JSON report saved to: {report_file}")
@@ -879,65 +907,72 @@ class ExfiltrationDetector:
             # Generate text summary
             lines = []
             lines.append("=" * 60)
-            lines.append(f"EXFILTRATION DETECTION REPORT - {self.detector_id}")
+            lines.append(f"EXFILTRATION DETECTION REPORT - {self.detection_id}")
             lines.append("=" * 60)
             lines.append("")
             
             # Statistics
             lines.append("📊 STATISTICS")
             lines.append("-" * 40)
-            lines.append(f"Total Packets: {results['statistics']['total_packets']}")
-            lines.append(f"Total Data: {results['statistics']['total_mb']} MB")
-            lines.append(f"Unique Destinations: {results['statistics']['unique_destinations']}")
+            lines.append(f"Total Packets: {self.stats['total_packets']}")
+            lines.append(f"Total Bytes: {self.stats['total_bytes']} ({self.stats['total_bytes']/1024/1024:.2f} MB)")
+            lines.append(f"Outbound: {self.stats['outbound_bytes']/1024/1024:.2f} MB")
+            lines.append(f"Inbound: {self.stats['inbound_bytes']/1024/1024:.2f} MB")
+            lines.append(f"Unique Destinations: {len(self.stats['unique_destinations'])}")
+            lines.append(f"Total Flows: {self.stats['total_flows']}")
             lines.append("")
             
-            # Top destinations
-            lines.append("🎯 TOP DESTINATIONS BY VOLUME")
+            # Alerts by severity
+            lines.append("🚨 ALERTS SUMMARY")
             lines.append("-" * 40)
-            for dest in results['statistics']['top_destinations']:
-                lines.append(f"  {dest['ip']}: {dest['mb']} MB")
+            high = sum(1 for a in self.alerts if a["severity"] == "high")
+            medium = sum(1 for a in self.alerts if a["severity"] == "medium")
+            low = sum(1 for a in self.alerts if a["severity"] == "low")
+            lines.append(f"🔴 High Severity: {high}")
+            lines.append(f"🟡 Medium Severity: {medium}")
+            lines.append(f"🟢 Low Severity: {low}")
+            lines.append(f"📊 Total Alerts: {len(self.alerts)}")
             lines.append("")
             
-            # Exfiltration events
-            lines.append("🚨 EXFILTRATION EVENTS")
-            lines.append("-" * 40)
-            if results['exfiltration_events']:
-                for event in results['exfiltration_events']:
-                    confidence_bar = "█" * int(event['confidence'] * 10) + "░" * (10 - int(event['confidence'] * 10))
-                    lines.append(f"  [{event['type']}] Confidence: {event['confidence']:.0%} {confidence_bar}")
-                    if 'destination' in event:
-                        lines.append(f"     Destination: {event['destination']}")
-                    if 'data_volume_mb' in event:
-                        lines.append(f"     Volume: {event['data_volume_mb']} MB")
-                    lines.append("")
-            else:
-                lines.append("  No exfiltration events detected")
-            lines.append("")
-            
-            # Alerts
-            lines.append("⚠️  ALERTS")
-            lines.append("-" * 40)
-            if results['alerts']:
-                for alert in results['alerts']:
+            # Detailed alerts
+            if self.alerts:
+                lines.append("📋 DETAILED ALERTS")
+                lines.append("-" * 40)
+                for i, alert in enumerate(self.alerts, 1):
                     severity_symbol = {
-                        "critical": "🔥",
                         "high": "🔴",
                         "medium": "🟡",
                         "low": "🟢"
                     }.get(alert["severity"], "⚪")
-                    lines.append(f"  {severity_symbol} [{alert['severity'].upper()}] {alert['type']}")
-                    lines.append(f"     {alert['description']}")
+                    
+                    lines.append(f"{severity_symbol} Alert {i}: {alert['type']}")
+                    lines.append(f"   {alert['description']}")
+                    
+                    # Add key details
+                    if "details" in alert:
+                        for key, value in alert["details"].items():
+                            if key not in ["samples", "flows", "transfers"]:
+                                lines.append(f"   {key}: {value}")
                     lines.append("")
-            else:
-                lines.append("  No alerts generated")
-            lines.append("")
+            
+            # Top suspicious flows
+            if self.suspicious_flows:
+                lines.append("🔍 TOP SUSPICIOUS FLOWS")
+                lines.append("-" * 40)
+                for flow_key, reason in list(self.suspicious_flows.items())[:5]:
+                    lines.append(f"  {flow_key}")
+                    lines.append(f"     Reason: {reason.get('reason', 'unknown')}")
+                    lines.append(f"     Severity: {reason.get('severity', 'unknown')}")
+                    if flow_key in self.flow_bytes:
+                        lines.append(f"     Bytes: {self.flow_bytes[flow_key]} ({self.flow_bytes[flow_key]/1024/1024:.2f} MB)")
+                    lines.append("")
             
             lines.append("=" * 60)
             
             report_text = "\n".join(lines)
             
             # Save to file
-            report_file = f"output/exfiltration/exfil_{self.detector_id}.txt"
+            report_file = f"output/exfiltration/exfil_{self.detection_id}.txt"
             with open(report_file, 'w') as f:
                 f.write(report_text)
             
@@ -946,10 +981,38 @@ class ExfiltrationDetector:
         
         return results
     
+    def get_alerts_summary(self):
+        """
+        Get summary of all alerts
+        """
+        return {
+            "total_alerts": len(self.alerts),
+            "by_severity": {
+                "high": sum(1 for a in self.alerts if a["severity"] == "high"),
+                "medium": sum(1 for a in self.alerts if a["severity"] == "medium"),
+                "low": sum(1 for a in self.alerts if a["severity"] == "low")
+            },
+            "by_type": dict(Counter(a["type"] for a in self.alerts)),
+            "alerts": self.alerts
+        }
+    
     def cleanup(self):
         """
         Clean up detector resources
         """
         self.packets = []
+        self.flow_bytes.clear()
+        self.flow_packets.clear()
+        self.flow_timestamps.clear()
+        self.destination_stats.clear()
         self.alerts = []
-        self.exfiltration
+        self.suspicious_flows = {}
+        self.logger.info("[CLEAN] Exfiltration detector cleaned up")
+    
+    def __enter__(self):
+        """Context manager entry"""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit"""
+        self.cleanup()
