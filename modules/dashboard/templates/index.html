@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+        </h2>
+        <p class="text-muted">System overview and recent activity</p>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <i class="fas fa-upload"></i> New Analysis
+        </button>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#captureModal">
+            <i class="fas fa-play"></i> Live Capture
+        </button>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Packets</h6>
+                        <h2 class="mb-0" id="stat-packets">0</h2>
+                    </div>
+                    <i class="fas fa-network-wired fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Alerts</h6>
+                        <h2 class="mb-0" id="stat-alerts">0</h2>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Signatures</h6>
+                        <h2 class="mb-0" id="stat-signatures">0</h2>
+                    </div>
+                    <i class="fas fa-shield-alt fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Storage Used</h6>
+                        <h2 class="mb-0" id="stat-storage">0 MB</h2>
+                    </div>
+                    <i class="fas fa-database fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Traffic Timeline</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="trafficChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Protocol Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="protocolChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Analyses -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Analyses</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="analysesTable">
+                        <thead>
+                            <tr>
+                                <th>Analysis ID</th>
+                                <th>Timestamp</th>
+                                <th>Packets</th>
+                                <th>Alerts</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for analysis in recent_analyses %}
+                            <tr>
+                                <td>{{ analysis.id }}</td>
+                                <td>{{ analysis.timestamp }}</td>
+                                <td>{{ analysis.packets }}</td>
+                                <td>
+                                    <span class="badge bg-danger">{{ analysis.alerts }}</span>
+                                </td>
+                                <td>
+                                    <a href="/analysis/{{ analysis.id }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Alerts -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Alerts</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group" id="alertsList">
+                    <!-- Alerts will be loaded via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Sandbox Manager:</span>
+                        {% if system_status.modules.sandbox %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unavailable</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Packet Capture:</span>
+                        {% if system_status.modules.packet_capture %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unavailable</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Protocol Analyzer:</span>
+                        {% if system_status.modules.protocol_analyzer %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unavailable</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Exfiltration Detector:</span>
+                        {% if system_status.modules.exfiltration_detector %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unavailable</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Signature Generator:</span>
+                        {% if system_status.modules.signature_generator %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unavailable</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
+                <div>
+                    <div class="d-flex justify-content-between">
+                        <span>Active Analyses:</span>
+                        <span class="badge bg-info">{{ system_status.active_analyses }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload File for Analysis</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm">
+                    <div class="mb-3">
+                        <label for="fileInput" class="form-label">Select file</label>
+                        <input class="form-control" type="file" id="fileInput" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeoutInput" class="form-label">Analysis Timeout (seconds)</label>
+                        <input type="number" class="form-control" id="timeoutInput" value="60" min="10" max="300">
+                    </div>
+                </form>
+                <div class="progress d-none" id="uploadProgress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         style="width: 100%">Uploading...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="uploadBtn">Upload & Analyze</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Capture Modal -->
+<div class="modal fade" id="captureModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Live Packet Capture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="captureForm">
+                    <div class="mb-3">
+                        <label for="interfaceSelect" class="form-label">Network Interface</label>
+                        <select class="form-select" id="interfaceSelect">
+                            <option value="">Default Interface</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="durationInput" class="form-label">Capture Duration (seconds)</label>
+                        <input type="number" class="form-control" id="durationInput" value="30" min="5" max="300">
+                    </div>
+                    <div class="mb-3">
+                        <label for="filterInput" class="form-label">BPF Filter (optional)</label>
+                        <input type="text" class="form-control" id="filterInput" 
+                               placeholder="e.g., port 80 or host 1.2.3.4">
+                    </div>
+                </form>
+                <div id="captureProgress" class="d-none">
+                    <div class="mb-2">
+                        <span id="capturePackets">0</span> packets captured
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" id="captureProgressBar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="startCaptureBtn">Start Capture</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load initial data
+    $(document).ready(function() {
+        loadDashboardData();
+        initializeCharts();
+        loadInterfaces();
+    });
+</script>
+{% endblock %}

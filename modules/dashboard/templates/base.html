@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDR Dashboard - {% block title %}Protocol Decoder Ring{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- DataTables -->
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-ring"></i>
+                Protocol Decoder Ring
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" 
+                           href="{{ url_for('index') }}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'packets_view' %}active{% endif %}" 
+                           href="{{ url_for('packets_view') }}">
+                            <i class="fas fa-network-wired"></i> Packets
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'alerts_view' %}active{% endif %}" 
+                           href="{{ url_for('alerts_view') }}">
+                            <i class="fas fa-exclamation-triangle"></i> Alerts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'signatures_view' %}active{% endif %}" 
+                           href="{{ url_for('signatures_view') }}">
+                            <i class="fas fa-shield-alt"></i> Signatures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'reports_view' %}active{% endif %}" 
+                           href="{{ url_for('reports_view') }}">
+                            <i class="fas fa-file-alt"></i> Reports
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- System Status -->
+                <span class="navbar-text me-3" id="system-status">
+                    <i class="fas fa-circle text-success"></i> Online
+                </span>
+                
+                <!-- Theme Toggle -->
+                <button class="btn btn-outline-light btn-sm" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-3">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-5 py-3 bg-light">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6 text-muted">
+                    <i class="fas fa-ring"></i> Protocol Decoder Ring v1.0
+                </div>
+                <div class="col-md-6 text-end text-muted">
+                    <span id="live-timestamp"></span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/websocket.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
