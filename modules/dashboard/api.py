@@ -3,7 +3,7 @@ Extended REST API for PDR Dashboard
 Additional API endpoints beyond the basic ones in app.py
 """
 
-from flask import Blueprint, jsonify, request, send_file
+from flask import Blueprint, jsonify, request, send_file, Response
 from datetime import datetime, timedelta
 from pathlib import Path
 import json
