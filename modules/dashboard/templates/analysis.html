@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Details{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>
+            <i class="fas fa-chart-line"></i>
+            Analysis Details
+        </h2>
+        <p class="text-muted">Analysis ID: {{ analysis_id }}</p>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" onclick="exportAnalysis()">
+            <i class="fas fa-download"></i> Export
+        </button>
+        <button class="btn btn-success" onclick="generateSignatures()">
+            <i class="fas fa-shield-alt"></i> Generate Signatures
+        </button>
+    </div>
+</div>
+
+<!-- Analysis Info -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 id="packet-count">0</h3>
+                <span class="text-muted">Total Packets</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 id="byte-count">0 MB</h3>
+                <span class="text-muted">Data Volume</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 id="alert-count">0</h3>
+                <span class="text-muted">Alerts</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 id="flow-count">0</h3>
+                <span class="text-muted">Flows</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4" id="analysisTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview">
+            <i class="fas fa-home"></i> Overview
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="protocols-tab" data-bs-toggle="tab" data-bs-target="#protocols">
+            <i class="fas fa-sitemap"></i> Protocols
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts">
+            <i class="fas fa-exclamation-triangle"></i> Alerts
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="flows-tab" data-bs-toggle="tab" data-bs-target="#flows">
+            <i class="fas fa-project-diagram"></i> Flows
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="packets-tab" data-bs-toggle="tab" data-bs-target="#packets">
+            <i class="fas fa-network-wired"></i> Packets
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="analysisTabsContent">
+    <!-- Overview Tab -->
+    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Traffic Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="timelineChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Protocol Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="protocolChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Top Talkers</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm" id="topTalkers">
+                            <thead>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>Packets</th>
+                                    <th>Bytes</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Alert Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="alertsPieChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Protocols Tab -->
+    <div class="tab-pane fade" id="protocols" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5>Detected Protocols</h5>
+            </div>
+            <div class="card-body">
+                <table class="table" id="protocolsTable">
+                    <thead>
+                        <tr>
+                            <th>Protocol</th>
+                            <th>Packet Count</th>
+                            <th>Percentage</th>
+                            <th>Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alerts Tab -->
+    <div class="tab-pane fade" id="alerts" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5>Generated Alerts</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <select class="form-select" id="alertFilter" style="width: auto;">
+                        <option value="all">All Alerts</option>
+                        <option value="high">High Severity</option>
+                        <option value="medium">Medium Severity</option>
+                        <option value="low">Low Severity</option>
+                    </select>
+                </div>
+                <div id="alertsList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Flows Tab -->
+    <div class="tab-pane fade" id="flows" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5>Network Flows</h5>
+            </div>
+            <div class="card-body">
+                <table class="table" id="flowsTable">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Destination</th>
+                            <th>Protocol</th>
+                            <th>Packets</th>
+                            <th>Bytes</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Packets Tab -->
+    <div class="tab-pane fade" id="packets" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5>Packet List</h5>
+            </div>
+            <div class="card-body">
+                <table class="table" id="packetsTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Protocol</th>
+                            <th>Source</th>
+                            <th>Destination</th>
+                            <th>Length</th>
+                            <th>Info</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Signature Generation Modal -->
+<div class="modal fade" id="signatureModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Signatures</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Generate detection signatures from this analysis?</p>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="sigSnort" checked>
+                    <label class="form-check-label">Snort Rules</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="sigSuricata" checked>
+                    <label class="form-check-label">Suricata Rules</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="sigYara" checked>
+                    <label class="form-check-label">YARA Rules</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="sigSigma" checked>
+                    <label class="form-check-label">Sigma Rules</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="doGenerateSignatures()">Generate</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const analysisId = '{{ analysis_id }}';
+    
+    $(document).ready(function() {
+        loadAnalysisData();
+    });
+    
+    function loadAnalysisData() {
+        $.get(`/api/v1/analysis/${analysisId}`, function(data) {
+            updateOverview(data);
+            updateProtocols(data);
+            updateAlerts(data);
+            updateFlows(data);
+            updatePackets(data);
+            updateCharts(data);
+        }).fail(function() {
+            showNotification('error', 'Could not load analysis data');
+        });
+    }
+    
+    function updateOverview(data) {
+        $('#packet-count').text(data.statistics?.total_packets || 0);
+        $('#byte-count').text(formatBytes(data.statistics?.total_bytes || 0));
+        $('#alert-count').text(data.alerts?.length || 0);
+        $('#flow-count').text(data.flow_count || 0);
+        
+        // Top talkers
+        const talkers = Object.entries(data.statistics?.ips || {})
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);
+        
+        const tbody = $('#topTalkers tbody');
+        tbody.empty();
+        talkers.forEach(([ip, count]) => {
+            tbody.append(`<tr><td>${ip}</td><td>${count}</td><td>-</td></tr>`);
+        });
+    }
+    
+    function updateProtocols(data) {
+        const tbody = $('#protocolsTable tbody');
+        tbody.empty();
+        
+        const protocols = data.protocols || {};
+        const total = data.statistics?.total_packets || 1;
+        
+        Object.entries(protocols).forEach(([proto, info]) => {
+            const percentage = (info.count / total * 100).toFixed(1);
+            tbody.append(`
+                <tr>
+                    <td>${proto}</td>
+                    <td>${info.count}</td>
+                    <td>${percentage}%</td>
+                    <td>${info.confidence || 'N/A'}</td>
+                </tr>
+            `);
+        });
+    }
+    
+    function updateAlerts(data) {
+        const alerts = data.alerts || [];
+        const container = $('#alertsList');
+        
+        $('#alertFilter').change(function() {
+            const severity = $(this).val();
+            filterAlerts(alerts, severity);
+        });
+        
+        filterAlerts(alerts, 'all');
+    }
+    
+    function filterAlerts(alerts, severity) {
+        const container = $('#alertsList');
+        container.empty();
+        
+        const filtered = severity === 'all' ? alerts : alerts.filter(a => a.severity === severity);
+        
+        if (filtered.length === 0) {
+            container.append('<div class="text-muted text-center py-3">No alerts</div>');
+            return;
+        }
+        
+        filtered.forEach(alert => {
+            const time = new Date(alert.timestamp * 1000).toLocaleString();
+            container.append(`
+                <div class="alert-item ${alert.severity}">
+                    <div class="d-flex justify-content-between">
+                        <span class="alert-type">${alert.type}</span>
+                        <span class="alert-time">${time}</span>
+                    </div>
+                    <div class="alert-description">${alert.description || ''}</div>
+                </div>
+            `);
+        });
+    }
+    
+    function updateFlows(data) {
+        // This would need actual flow data from the API
+    }
+    
+    function updatePackets(data) {
+        // This would need actual packet data from the API
+    }
+    
+    function updateCharts(data) {
+        // Update timeline chart
+        if (charts.timeline) {
+            charts.timeline.destroy();
+        }
+        charts.timeline = charts.createTimelineChart('timelineChart', {
+            labels: ['0s', '10s', '20s', '30s', '40s', '50s', '60s'],
+            packets: [10, 25, 15, 30, 45, 35, 20],
+            bytes: [1000, 2500, 1500, 3000, 4500, 3500, 2000]
+        });
+        
+        // Update protocol chart
+        if (charts.protocol) {
+            charts.protocol.destroy();
+        }
+        const protocols = data.protocols || {};
+        charts.protocol = charts.createProtocolChart('protocolChart', {
+            labels: Object.keys(protocols).slice(0, 5),
+            values: Object.values(protocols).map(p => p.count).slice(0, 5)
+        });
+    }
+    
+    function exportAnalysis() {
+        window.location.href = `/api/v2/export/analysis/${analysisId}?format=json`;
+    }
+    
+    function generateSignatures() {
+        $('#signatureModal').modal('show');
+    }
+    
+    function doGenerateSignatures() {
+        const formats = [];
+        if ($('#sigSnort').is(':checked')) formats.push('snort');
+        if ($('#sigSuricata').is(':checked')) formats.push('suricata');
+        if ($('#sigYara').is(':checked')) formats.push('yara');
+        if ($('#sigSigma').is(':checked')) formats.push('sigma');
+        
+        $.ajax({
+            url: '/api/v1/signatures/generate',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                analysis_id: analysisId,
+                formats: formats
+            }),
+            success: function(response) {
+                showNotification('success', 'Signatures generated');
+                $('#signatureModal').modal('hide');
+            },
+            error: function() {
+                showNotification('error', 'Failed to generate signatures');
+            }
+        });
+    }
+</script>
+{% endblock %}
