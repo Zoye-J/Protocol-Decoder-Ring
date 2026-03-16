@@ -1,0 +1,878 @@
+{% extends "base.html" %}
+
+{% block title %}Packet Explorer{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>
+            <i class="fas fa-network-wired"></i>
+            Packet Explorer
+        </h2>
+        <p class="text-muted">Capture, analyze, and explore network packets</p>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#captureModal">
+            <i class="fas fa-play"></i> Live Capture
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadPcapModal">
+            <i class="fas fa-upload"></i> Upload PCAP
+        </button>
+    </div>
+</div>
+
+<!-- Capture Controls Card -->
+<div class="card mb-4">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="packetTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="live-tab" data-bs-toggle="tab" href="#live">
+                    <i class="fas fa-broadcast-tower"></i> Live Capture
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="saved-tab" data-bs-toggle="tab" href="#saved">
+                    <i class="fas fa-folder-open"></i> Saved PCAPs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="analyze-tab" data-bs-toggle="tab" href="#analyze">
+                    <i class="fas fa-chart-line"></i> Analyze
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="packetTabsContent">
+            <!-- Live Capture Tab -->
+            <div class="tab-pane fade show active" id="live" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>Capture Statistics</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Packets Captured</label>
+                                    <h3 id="livePacketCount">0</h3>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Data Volume</label>
+                                    <h3 id="liveByteCount">0 B</h3>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Duration</label>
+                                    <h3 id="liveDuration">0s</h3>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" id="liveProgress" style="width: 0%"></div>
+                                </div>
+                                <button class="btn btn-danger w-100" id="stopCaptureBtn" style="display: none;">
+                                    <i class="fas fa-stop"></i> Stop Capture
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Protocol Distribution</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="liveProtocolChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Saved PCAPs Tab -->
+            <div class="tab-pane fade" id="saved" role="tabpanel">
+                <table class="table" id="pcapTable">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Size</th>
+                            <th>Packets</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Analyze Tab -->
+            <div class="tab-pane fade" id="analyze" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Packet Statistics</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <th>Total Packets:</th>
+                                        <td id="statTotalPackets">0</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Total Bytes:</th>
+                                        <td id="statTotalBytes">0 B</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Average Size:</th>
+                                        <td id="statAvgSize">0 B</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Unique IPs:</th>
+                                        <td id="statUniqueIPs">0</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Duration:</th>
+                                        <td id="statDuration">0s</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Top Talkers</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm" id="topTalkers">
+                                    <thead>
+                                        <tr>
+                                            <th>IP Address</th>
+                                            <th>Packets</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Packet List Card -->
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">Packet List</h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Filter</span>
+                    <input type="text" class="form-control" id="packetFilter" placeholder="protocol, IP, port...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearFilter">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-sm btn-primary" id="exportPackets">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="packetsTable">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Time</th>
+                        <th>Protocol</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>Length</th>
+                        <th>Info</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="packetListBody">
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            No packets loaded. Start a capture or upload a PCAP file.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <nav aria-label="Packet navigation" class="mt-3">
+            <ul class="pagination justify-content-center" id="packetPagination">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Packet Detail Modal -->
+<div class="modal fade" id="packetDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Packet Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="packetDetailTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="summary-tab" data-bs-toggle="tab" href="#summary">
+                            Summary
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="hex-tab" data-bs-toggle="tab" href="#hex">
+                            Hex Dump
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="headers-tab" data-bs-toggle="tab" href="#headers">
+                            Headers
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="tab-content">
+                    <!-- Summary Tab -->
+                    <div class="tab-pane fade show active" id="summary">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th style="width: 150px;">Timestamp</th>
+                                <td id="detailTime"></td>
+                            </tr>
+                            <tr>
+                                <th>Protocol</th>
+                                <td id="detailProtocol"></td>
+                            </tr>
+                            <tr>
+                                <th>Source</th>
+                                <td id="detailSrc"></td>
+                            </tr>
+                            <tr>
+                                <th>Destination</th>
+                                <td id="detailDst"></td>
+                            </tr>
+                            <tr>
+                                <th>Length</th>
+                                <td id="detailLength"></td>
+                            </tr>
+                            <tr>
+                                <th>Info</th>
+                                <td id="detailInfo"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Hex Dump Tab -->
+                    <div class="tab-pane fade" id="hex">
+                        <pre class="hex-view" id="hexDump">No data available</pre>
+                    </div>
+                    
+                    <!-- Headers Tab -->
+                    <div class="tab-pane fade" id="headers">
+                        <pre class="bg-light p-3" id="headerView">No header data available</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload PCAP Modal -->
+<div class="modal fade" id="uploadPcapModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload PCAP File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="pcapUploadForm">
+                    <div class="mb-3">
+                        <label for="pcapFile" class="form-label">Select PCAP/PCAPNG file</label>
+                        <input class="form-control" type="file" id="pcapFile" accept=".pcap,.pcapng,.cap">
+                    </div>
+                    <div class="mb-3">
+                        <label for="pcapName" class="form-label">Display Name (optional)</label>
+                        <input type="text" class="form-control" id="pcapName" placeholder="My Capture">
+                    </div>
+                </form>
+                <div class="progress d-none" id="pcapProgress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%">
+                        Uploading...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="uploadPcapBtn">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Capture Modal (reused from index.html but included here for completeness) -->
+<div class="modal fade" id="captureModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Live Packet Capture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="captureForm">
+                    <div class="mb-3">
+                        <label for="interfaceSelect" class="form-label">Network Interface</label>
+                        <select class="form-select" id="interfaceSelect">
+                            <option value="">Default Interface</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="durationInput" class="form-label">Capture Duration (seconds)</label>
+                        <input type="number" class="form-control" id="durationInput" value="30" min="5" max="300">
+                    </div>
+                    <div class="mb-3">
+                        <label for="filterInput" class="form-label">BPF Filter (optional)</label>
+                        <input type="text" class="form-control" id="filterInput" 
+                               placeholder="e.g., port 80 or host 1.2.3.4">
+                    </div>
+                    <div class="mb-3">
+                        <label for="packetLimit" class="form-label">Max Packets</label>
+                        <input type="number" class="form-control" id="packetLimit" value="1000" min="10" max="10000">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="startCaptureBtn">Start Capture</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPackets = [];
+    let filteredPackets = [];
+    let currentPage = 1;
+    const pageSize = 50;
+    let liveCaptureActive = false;
+    let captureSocket = null;
+    
+    $(document).ready(function() {
+        loadInterfaces();
+        loadSavedPCAPs();
+        initializePacketEvents();
+    });
+    
+    function loadInterfaces() {
+        $.get('/api/v1/interfaces', function(interfaces) {
+            const select = $('#interfaceSelect');
+            select.empty().append('<option value="">Default Interface</option>');
+            interfaces.forEach(iface => {
+                select.append(`<option value="${iface.name}">${iface.name}</option>`);
+            });
+        });
+    }
+    
+    function loadSavedPCAPs() {
+        $.get('/api/v1/pcaps', function(pcaps) {
+            const tbody = $('#pcapTable tbody');
+            tbody.empty();
+            
+            pcaps.forEach(pcap => {
+                tbody.append(`
+                    <tr>
+                        <td>${pcap.name}</td>
+                        <td>${formatBytes(pcap.size)}</td>
+                        <td>${pcap.packets || 'N/A'}</td>
+                        <td>${new Date(pcap.created).toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="loadPCAP('${pcap.path}')">
+                                <i class="fas fa-folder-open"></i> Load
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deletePCAP('${pcap.path}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+        });
+    }
+    
+    function initializePacketEvents() {
+        // Start capture button
+        $('#startCaptureBtn').click(function() {
+            const interface = $('#interfaceSelect').val();
+            const duration = $('#durationInput').val();
+            const filter = $('#filterInput').val();
+            const limit = $('#packetLimit').val();
+            
+            startLiveCapture(interface, duration, filter, limit);
+            $('#captureModal').modal('hide');
+        });
+        
+        // Stop capture button
+        $('#stopCaptureBtn').click(function() {
+            stopLiveCapture();
+        });
+        
+        // Packet filter
+        $('#packetFilter').on('input', debounce(function() {
+            filterPackets($(this).val());
+        }, 300));
+        
+        // Clear filter
+        $('#clearFilter').click(function() {
+            $('#packetFilter').val('');
+            filterPackets('');
+        });
+        
+        // Export packets
+        $('#exportPackets').click(function() {
+            exportPackets();
+        });
+        
+        // Upload PCAP
+        $('#uploadPcapBtn').click(function() {
+            uploadPCAP();
+        });
+    }
+    
+    function startLiveCapture(interface, duration, filter, limit) {
+        liveCaptureActive = true;
+        currentPackets = [];
+        
+        // Show capture UI
+        $('#stopCaptureBtn').show();
+        $('#livePacketCount').text('0');
+        $('#liveByteCount').text('0 B');
+        $('#liveDuration').text('0s');
+        
+        // Connect to capture stream
+        captureSocket = io();
+        captureSocket.emit('start_capture', {
+            interface: interface,
+            duration: duration,
+            filter: filter,
+            limit: limit
+        });
+        
+        captureSocket.on('capture_update', function(data) {
+            $('#livePacketCount').text(data.packet_count);
+            $('#liveByteCount').text(formatBytes(data.bytes));
+            $('#liveDuration').text(data.duration.toFixed(1) + 's');
+            
+            const percent = (data.duration / duration) * 100;
+            $('#liveProgress').css('width', percent + '%');
+        });
+        
+        captureSocket.on('packet_captured', function(packet) {
+            currentPackets.push(packet);
+            updatePacketList();
+            updateLiveChart();
+        });
+        
+        captureSocket.on('capture_complete', function(data) {
+            liveCaptureActive = false;
+            $('#stopCaptureBtn').hide();
+            showNotification('success', `Capture complete: ${data.packet_count} packets`);
+            
+            if (data.pcap_file) {
+                loadPCAP(data.pcap_file);
+            }
+        });
+    }
+    
+    function stopLiveCapture() {
+        if (captureSocket) {
+            captureSocket.emit('stop_capture');
+            captureSocket.disconnect();
+        }
+        liveCaptureActive = false;
+        $('#stopCaptureBtn').hide();
+    }
+    
+    function updatePacketList() {
+        const tbody = $('#packetListBody');
+        tbody.empty();
+        
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const pagePackets = filteredPackets.length ? filteredPackets.slice(start, end) : currentPackets.slice(start, end);
+        
+        if (pagePackets.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        No packets to display
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        pagePackets.forEach((packet, index) => {
+            const packetNumber = start + index + 1;
+            const time = new Date(packet.time * 1000).toLocaleTimeString();
+            const protocol = packet.protocol || 'Unknown';
+            const src = packet.src || '0.0.0.0';
+            const dst = packet.dst || '0.0.0.0';
+            const sport = packet.sport ? `:${packet.sport}` : '';
+            const dport = packet.dport ? `:${packet.dport}` : '';
+            const length = packet.length || 0;
+            const info = packet.info || '';
+            
+            tbody.append(`
+                <tr onclick="showPacketDetail(${index})" style="cursor: pointer;">
+                    <td>${packetNumber}</td>
+                    <td>${time}</td>
+                    <td><span class="badge bg-secondary">${protocol}</span></td>
+                    <td>${src}${sport}</td>
+                    <td>${dst}${dport}</td>
+                    <td>${length} B</td>
+                    <td><small>${info.substring(0, 50)}${info.length > 50 ? '...' : ''}</small></td>
+                    <td><i class="fas fa-search text-primary"></i></td>
+                </tr>
+            `);
+        });
+        
+        updatePagination();
+    }
+    
+    function filterPackets(filterText) {
+        if (!filterText) {
+            filteredPackets = [];
+        } else {
+            const lowerFilter = filterText.toLowerCase();
+            filteredPackets = currentPackets.filter(packet => {
+                return (
+                    (packet.protocol && packet.protocol.toLowerCase().includes(lowerFilter)) ||
+                    (packet.src && packet.src.includes(lowerFilter)) ||
+                    (packet.dst && packet.dst.includes(lowerFilter)) ||
+                    (packet.info && packet.info.toLowerCase().includes(lowerFilter))
+                );
+            });
+        }
+        
+        currentPage = 1;
+        updatePacketList();
+    }
+    
+    function updatePagination() {
+        const totalPackets = filteredPackets.length || currentPackets.length;
+        const totalPages = Math.ceil(totalPackets / pageSize);
+        
+        let pagination = $('#packetPagination');
+        pagination.empty();
+        
+        // Previous button
+        pagination.append(`
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Previous</a>
+            </li>
+        `);
+        
+        // Page numbers
+        for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+            pagination.append(`
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                </li>
+            `);
+        }
+        
+        if (totalPages > 5) {
+            pagination.append(`<li class="page-item disabled"><a class="page-link">...</a></li>`);
+        }
+        
+        // Next button
+        pagination.append(`
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Next</a>
+            </li>
+        `);
+    }
+    
+    function changePage(page) {
+        const totalPackets = filteredPackets.length || currentPackets.length;
+        const totalPages = Math.ceil(totalPackets / pageSize);
+        
+        if (page < 1 || page > totalPages) return;
+        
+        currentPage = page;
+        updatePacketList();
+    }
+    
+    function showPacketDetail(index) {
+        const packet = (filteredPackets.length ? filteredPackets : currentPackets)[index];
+        
+        $('#detailTime').text(new Date(packet.time * 1000).toLocaleString());
+        $('#detailProtocol').text(packet.protocol || 'Unknown');
+        $('#detailSrc').text(packet.src ? `${packet.src}:${packet.sport}` : 'N/A');
+        $('#detailDst').text(packet.dst ? `${packet.dst}:${packet.dport}` : 'N/A');
+        $('#detailLength').text(packet.length + ' bytes');
+        $('#detailInfo').text(packet.info || 'N/A');
+        
+        // Hex dump
+        if (packet.raw_data) {
+            $('#hexDump').text(hexDump(packet.raw_data));
+        } else {
+            $('#hexDump').text('No raw data available');
+        }
+        
+        // Headers
+        $('#headerView').text(JSON.stringify(packet, null, 2));
+        
+        $('#packetDetailModal').modal('show');
+    }
+    
+    function hexDump(data) {
+        if (!data) return '';
+        
+        // Convert to hex string if needed
+        let bytes;
+        if (typeof data === 'string') {
+            bytes = data.split('').map(c => c.charCodeAt(0));
+        } else if (data instanceof ArrayBuffer) {
+            bytes = new Uint8Array(data);
+        } else if (Array.isArray(data)) {
+            bytes = data;
+        } else {
+            return 'Unsupported data format';
+        }
+        
+        let result = '';
+        for (let i = 0; i < bytes.length; i += 16) {
+            // Offset
+            result += i.toString(16).padStart(8, '0') + '  ';
+            
+            // Hex bytes
+            for (let j = 0; j < 16; j++) {
+                if (i + j < bytes.length) {
+                    result += bytes[i + j].toString(16).padStart(2, '0') + ' ';
+                } else {
+                    result += '   ';
+                }
+                if (j === 7) result += ' ';
+            }
+            
+            result += ' ';
+            
+            // ASCII representation
+            for (let j = 0; j < 16; j++) {
+                if (i + j < bytes.length) {
+                    const b = bytes[i + j];
+                    result += (b >= 32 && b <= 126) ? String.fromCharCode(b) : '.';
+                } else {
+                    result += ' ';
+                }
+            }
+            
+            result += '\n';
+        }
+        
+        return result;
+    }
+    
+    function loadPCAP(path) {
+        $.get(`/api/v1/pcap/load?path=${encodeURIComponent(path)}`, function(data) {
+            currentPackets = data.packets || [];
+            filteredPackets = [];
+            currentPage = 1;
+            
+            updatePacketList();
+            updateStatistics();
+            showNotification('success', `Loaded ${currentPackets.length} packets`);
+        }).fail(function() {
+            showNotification('error', 'Failed to load PCAP file');
+        });
+    }
+    
+    function updateStatistics() {
+        if (currentPackets.length === 0) return;
+        
+        const totalBytes = currentPackets.reduce((sum, p) => sum + (p.length || 0), 0);
+        const avgSize = totalBytes / currentPackets.length;
+        
+        $('#statTotalPackets').text(currentPackets.length);
+        $('#statTotalBytes').text(formatBytes(totalBytes));
+        $('#statAvgSize').text(Math.round(avgSize) + ' B');
+        
+        // Unique IPs
+        const ips = new Set();
+        currentPackets.forEach(p => {
+            if (p.src) ips.add(p.src);
+            if (p.dst) ips.add(p.dst);
+        });
+        $('#statUniqueIPs').text(ips.size);
+        
+        // Duration
+        if (currentPackets.length > 1) {
+            const times = currentPackets.map(p => p.time).filter(t => t > 0);
+            if (times.length > 1) {
+                const duration = Math.max(...times) - Math.min(...times);
+                $('#statDuration').text(duration.toFixed(2) + 's');
+            }
+        }
+        
+        // Top talkers
+        const ipCount = {};
+        currentPackets.forEach(p => {
+            if (p.src) ipCount[p.src] = (ipCount[p.src] || 0) + 1;
+            if (p.dst) ipCount[p.dst] = (ipCount[p.dst] || 0) + 1;
+        });
+        
+        const topTalkers = Object.entries(ipCount)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);
+        
+        const tbody = $('#topTalkers tbody');
+        tbody.empty();
+        topTalkers.forEach(([ip, count]) => {
+            tbody.append(`<tr><td>${ip}</td><td>${count}</td></tr>`);
+        });
+    }
+    
+    function updateLiveChart() {
+        if (!charts.liveProtocol) {
+            const ctx = document.getElementById('liveProtocolChart').getContext('2d');
+            charts.liveProtocol = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#0dcaf0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+        
+        // Count protocols
+        const protoCount = {};
+        currentPackets.forEach(p => {
+            const proto = p.protocol || 'Other';
+            protoCount[proto] = (protoCount[proto] || 0) + 1;
+        });
+        
+        charts.liveProtocol.data.labels = Object.keys(protoCount).slice(0, 5);
+        charts.liveProtocol.data.datasets[0].data = Object.values(protoCount).slice(0, 5);
+        charts.liveProtocol.update();
+    }
+    
+    function exportPackets() {
+        const dataStr = JSON.stringify(currentPackets, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        const exportFileDefaultName = `packets_${new Date().toISOString()}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
+    
+    function uploadPCAP() {
+        const fileInput = $('#pcapFile')[0];
+        if (!fileInput.files.length) {
+            showNotification('warning', 'Please select a file');
+            return;
+        }
+        
+        const file = fileInput.files[0];
+        const name = $('#pcapName').val() || file.name;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('name', name);
+        
+        $('#pcapProgress').removeClass('d-none');
+        $('#uploadPcapBtn').prop('disabled', true);
+        
+        $.ajax({
+            url: '/api/v1/pcap/upload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                showNotification('success', 'PCAP uploaded successfully');
+                $('#uploadPcapModal').modal('hide');
+                loadSavedPCAPs();
+                
+                if (response.path) {
+                    loadPCAP(response.path);
+                }
+            },
+            error: function() {
+                showNotification('error', 'Failed to upload PCAP');
+            },
+            complete: function() {
+                $('#pcapProgress').addClass('d-none');
+                $('#uploadPcapBtn').prop('disabled', false);
+                $('#pcapFile').val('');
+                $('#pcapName').val('');
+            }
+        });
+    }
+    
+    function deletePCAP(path) {
+        if (confirm('Are you sure you want to delete this PCAP file?')) {
+            $.ajax({
+                url: '/api/v1/pcap/delete',
+                type: 'POST',
+                data: JSON.stringify({ path: path }),
+                contentType: 'application/json',
+                success: function() {
+                    showNotification('success', 'PCAP deleted');
+                    loadSavedPCAPs();
+                },
+                error: function() {
+                    showNotification('error', 'Failed to delete PCAP');
+                }
+            });
+        }
+    }
+    
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+</script>
+{% endblock %}
