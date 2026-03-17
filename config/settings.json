@@ -24,7 +24,17 @@
         "packet_size_variance_threshold": 50,
         "timing_analysis_window": 10,
         "steganography_check": true,
-        "suspicious_extensions": [".jpg", ".png", ".zip", ".rar", ".docx", ".pdf"]
+        "suspicious_extensions": [".jpg", ".png", ".zip", ".rar", ".docx", ".pdf"],
+        "suspicious_ip_ranges": ["45.", "46.", "5.", "185.", "188.", "193.", "194.", "195."],
+        "exfiltration": {
+            "outbound_threshold_mb": 10,
+            "suspicious_countries": [],
+            "unusual_ports": [21, 22, 53, 123, 443, 8080],
+            "covert_channel_detection": true,
+            "dns_exfiltration_detection": true,
+            "icmp_exfiltration_detection": true,
+            "http_exfiltration_detection": true
+        }
     },
     "signature_generation": {
         "output_dir": "output/signatures",

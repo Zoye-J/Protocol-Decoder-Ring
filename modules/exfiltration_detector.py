@@ -78,6 +78,8 @@ class ExfiltrationDetector:
         self.steganography_check = self.config.get("steganography_check", True)
         self.suspicious_extensions = self.config.get("suspicious_extensions", 
                                                     [".jpg", ".png", ".zip", ".rar", ".docx", ".pdf"])
+        self.suspicious_ip_ranges = self.config.get("suspicious_ip_ranges", 
+                                               ["45.", "46.", "5.", "185.", "188.", "193.", "194.", "195."])
         
         # Internal tracking
         self.flow_bytes = defaultdict(int)
