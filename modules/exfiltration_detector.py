@@ -939,7 +939,7 @@ class ExfiltrationDetector:
         
         if format == "json":
             report_file = f"output/exfiltration/exfil_{self.detection_id}.json"
-            with open(report_file, 'w') as f:
+            with open(report_file, 'w', encoding='utf-8') as f:
                 json.dump(results, f, indent=2, default=str)
             self.logger.info(f"[REPORT] JSON report saved to: {report_file}")
             return report_file
@@ -1023,7 +1023,7 @@ class ExfiltrationDetector:
             
             # Save to file
             report_file = f"output/exfiltration/exfil_{self.detection_id}.txt"
-            with open(report_file, 'w') as f:
+            with open(report_file, 'w', encoding='utf-8') as f:
                 f.write(report_text)
             
             self.logger.info(f"[REPORT] Text report saved to: {report_file}")

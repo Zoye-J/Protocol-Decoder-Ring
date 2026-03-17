@@ -1,0 +1,91 @@
+============================================================
+EXFILTRATION DETECTION REPORT - exfil_20260318_020522
+============================================================
+
+📊 STATISTICS
+----------------------------------------
+Total Packets: 105
+Total Bytes: 16400 (0.02 MB)
+Outbound: 0.02 MB
+Inbound: 0.00 MB
+Unique Destinations: 2
+Total Flows: 3
+
+🚨 ALERTS SUMMARY
+----------------------------------------
+🔴 High Severity: 6
+🟡 Medium Severity: 1
+🟢 Low Severity: 1
+📊 Total Alerts: 8
+
+📋 DETAILED ALERTS
+----------------------------------------
+🟡 Alert 1: unusual_destination
+   Detected connections to 1 unusual IP addresses
+   destinations: [{'destination': '45.33.22.11', 'bytes': 1600, 'megabytes': 0.0, 'packets': 25, 'flows': 1, 'reason': 'suspicious_ip_range'}]
+   total_unusual: 1
+
+🔴 Alert 2: dns_exfiltration
+   Detected 1 suspicious DNS flows (possible exfiltration)
+   suspicious_flows: [{'flow': 'UDP_192.168.1.100:12345->8.8.8.8:53', 'packet_count': 60, 'total_bytes': 4800, 'reason': 'high_query_volume'}]
+   total_suspicious: 1
+   total_dns_flows: 1
+
+🔴 Alert 3: covert_channel_fixed_size
+   Covert channel detected: all 25 packets identical size (64 bytes)
+   flow: ICMP_192.168.1.100:0->45.33.22.11:0
+   packet_count: 25
+   packet_size: 64
+   total_bytes: 1600
+
+🔴 Alert 4: covert_channel_fixed_size
+   Covert channel detected: all 60 packets identical size (80 bytes)
+   flow: UDP_192.168.1.100:12345->8.8.8.8:53
+   packet_count: 60
+   packet_size: 80
+   total_bytes: 4800
+
+🔴 Alert 5: timing_channel_regular
+   Timing channel detected: extremely regular intervals (1.0000s ± 0.0000s)
+   flow: TCP_192.168.1.100:54321->8.8.8.8:80
+   mean_interval: 1.0
+   std_interval: 0.0
+   packet_count: 20
+
+🔴 Alert 6: timing_channel_regular
+   Timing channel detected: extremely regular intervals (1.0000s ± 0.0000s)
+   flow: ICMP_192.168.1.100:0->45.33.22.11:0
+   mean_interval: 1.0
+   std_interval: 0.0
+   packet_count: 25
+
+🔴 Alert 7: timing_channel_regular
+   Timing channel detected: extremely regular intervals (0.5000s ± 0.0000s)
+   flow: UDP_192.168.1.100:12345->8.8.8.8:53
+   mean_interval: 0.5
+   std_interval: 0.0
+   packet_count: 60
+
+🟢 Alert 8: many_small_packets
+   High percentage of very small packets (possible covert signaling)
+   small_packets: 85
+   percentage: 80.95
+
+🔍 TOP SUSPICIOUS FLOWS
+----------------------------------------
+  UDP_192.168.1.100:12345->8.8.8.8:53
+     Reason: timing_channel
+     Severity: high
+     Bytes: 4800 (0.00 MB)
+
+  ICMP_192.168.1.100:0->45.33.22.11:0
+     Reason: timing_channel
+     Severity: high
+     Bytes: 1600 (0.00 MB)
+
+  TCP_192.168.1.100:54321->8.8.8.8:80
+     Reason: timing_channel
+     Severity: high
+     Bytes: 10000 (0.01 MB)
+
+============================================================
