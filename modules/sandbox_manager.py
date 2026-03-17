@@ -11,7 +11,6 @@ import subprocess
 import tempfile
 import time
 import threading
-import signal
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -240,8 +239,9 @@ class SandboxManager:
                         'create_time': proc.create_time()
                     }
                     self.logger.info(f"[PROC] Process: {self.process_info['name']} (PID: {self.process.pid})")
-                except:
+                except Exception as e:
                     self.process_info = {'pid': self.process.pid}
+                    self.logger.debug(f"Could not get full process info: {e}")
             else:
                 self.process_info = {'pid': self.process.pid}
                 self.logger.info(f"[PROC] Process PID: {self.process.pid}")
@@ -278,7 +278,8 @@ class SandboxManager:
                             self.logger.debug(f"STDOUT: {stdout[:200]}...")
                         if stderr:
                             self.logger.warning(f"STDERR: {stderr[:200]}...")
-                    except:
+                    except Exception as e:
+                        self.logger.debug(f"Error in monitoring: {e}")  # Log it
                         pass
                     
                     self.is_running = False
@@ -352,12 +353,10 @@ class SandboxManager:
     
     def get_process_output(self) -> Tuple[str, str]:
         """Get stdout and stderr from the process"""
-        if self.process and self.process.poll() is not None:
-            try:
-                return self.process.stdout.read(), self.process.stderr.read()
-            except:
-                pass
-        return "", ""
+        return (
+            getattr(self, '_stdout', b""), 
+            getattr(self, '_stderr', b"")
+        )
     
     def cleanup(self):
         """Clean up the sandbox environment"""
