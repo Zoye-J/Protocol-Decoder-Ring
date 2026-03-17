@@ -13,12 +13,29 @@ from pathlib import Path
 import logging
 
 # Flask imports
-from flask import Flask, render_template, jsonify, request, send_file, Response
+from flask import Flask, render_template, jsonify, request, send_file, Response, current_app
 from flask_socketio import SocketIO, emit
 from functools import wraps
 
 # Add parent directory to path for module imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Initialize Flask app FIRST
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'pdr-dashboard-secret-key'
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max upload
+
+# Initialize SocketIO
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Register blueprints - AFTER app is created, BEFORE routes
+try:
+    from modules.dashboard.api import api_bp
+    app.register_blueprint(api_bp)
+    print("[OK] API v2 blueprint registered")
+except ImportError as e:
+    print(f"⚠️  Could not load API v2 blueprint: {e}")
 
 # Import other modules
 try:
@@ -32,19 +49,7 @@ except ImportError as e:
     MODULES_AVAILABLE = False
     print(f"⚠️  Some modules not available: {e}")
 
-# Check if running on Windows
-IS_WINDOWS = sys.platform == 'win32'
-
-# Initialize Flask app
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'pdr-dashboard-secret-key'
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max upload
-
-# Initialize SocketIO for real-time updates
-socketio = SocketIO(app, cors_allowed_origins="*")
-
-# Global variables for background tasks
+# Global variables
 active_analyses = {}
 capture_threads = {}
 analysis_results = {}
@@ -514,16 +519,6 @@ def api_analyze_file():
         "message": "Analysis started in background"
     })
     
-    # Start background thread
-    thread = threading.Thread(target=run_analysis)
-    thread.daemon = True
-    thread.start()
-    
-    return jsonify({
-        "analysis_id": analysis_id,
-        "status": "started",
-        "message": "Analysis started in background"
-    })
 
 
 @app.route('/api/v1/signatures/generate', methods=['POST'])
@@ -654,9 +649,6 @@ if __name__ == '__main__':
     print("=" * 60)
     print(" PDR WEB DASHBOARD ")
     print("=" * 60)
-
-    from modules.dashboard.api import api_bp
-    app.register_blueprint(api_bp)
 
     print(f"\n[OK] Dashboard starting...")
     print(f"[OK] URL: http://localhost:5000")
