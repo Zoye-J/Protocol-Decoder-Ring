@@ -21,7 +21,9 @@ from functools import wraps
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Initialize Flask app FIRST
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder='modules/dashboard/templates',
+            static_folder='modules/dashboard/static')
 app.config['SECRET_KEY'] = 'pdr-dashboard-secret-key'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max upload
@@ -656,5 +658,6 @@ if __name__ == '__main__':
     print(f"\nPress Ctrl+C to stop")
     print("=" * 60)
     
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, 
+             use_reloader=True, reloader_options={'exclude_patterns': ['venv/*']})
 

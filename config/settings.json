@@ -40,10 +40,16 @@
         }
     },
     "signature_generation": {
-        "output_dir": "output/signatures",
         "snort_version": "2.9",
         "suricata_compatible": true,
-        "yara_rules": true
+        "yara_rules": true,
+        "sigma_rules": true,
+        "min_confidence": 0.7,
+        "max_signatures_per_pattern": 5,
+        "include_payload": true,
+        "include_metadata": true,
+        "default_priority": 2,
+        "signature_author": "PDR"
     },
     "reporting": {
         "output_dir": "reports",

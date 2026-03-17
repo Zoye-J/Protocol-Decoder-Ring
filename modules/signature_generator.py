@@ -662,6 +662,86 @@ level: {level}
         
         return rule
     
+
+    def _create_suricata_dns_rule(self, pattern, sid):
+        """Create Suricata rule for DNS patterns"""
+        domain_pattern = pattern.get('pattern', '')
+        confidence = pattern.get('confidence', 0.5)
+        priority = 1 if confidence > 0.9 else (2 if confidence > 0.7 else 3)
+        
+        content_rules = 'dns.query; '
+        if domain_pattern:
+            content_rules += f'content:"{domain_pattern}"; nocase; '
+        
+        rule = (
+            f'alert dns $HOME_NET any -> any 53 '
+            f'(msg:"PDR - DNS_Tunneling_{sid}"; '
+            f'{content_rules}'
+            f'metadata: confidence {confidence}; '
+            f'classtype:policy-violation; sid:{sid}; rev:1; priority:{priority};)'
+        )
+        return rule
+
+    def _create_suricata_ip_rule(self, pattern, sid):
+        """Create Suricata rule for IP/C2 patterns"""
+        ip = pattern.get('ip', '')
+        port = pattern.get('port', 0)
+        confidence = pattern.get('confidence', 0.5)
+        
+        if not ip:
+            return None
+        
+        priority = 1 if confidence > 0.9 else (2 if confidence > 0.7 else 3)
+        dst_port = str(port) if port else 'any'
+        
+        rule = (
+            f'alert tcp $HOME_NET any -> {ip} {dst_port} '
+            f'(msg:"PDR - C2_Server_{sid}"; '
+            f'flags:S; '
+            f'metadata: confidence {confidence}; '
+            f'classtype:trojan-activity; sid:{sid}; rev:1; priority:{priority};)'
+        )
+        return rule
+
+    def _create_suricata_byte_rule(self, pattern, sid):
+        """Create Suricata rule for byte sequence patterns"""
+        byte_pattern = pattern.get('pattern', '')
+        pattern_type = pattern.get('type', 'unknown')
+        confidence = pattern.get('confidence', 0.5)
+        
+        if not byte_pattern:
+            return None
+        
+        priority = 1 if confidence > 0.9 else (2 if confidence > 0.7 else 3)
+        
+        rule = (
+            f'alert tcp $HOME_NET any -> $EXTERNAL_NET any '
+            f'(msg:"PDR - Malicious_Pattern_{sid}"; '
+            f'content:"{byte_pattern}"; '
+            f'metadata: confidence {confidence}, pattern_type {pattern_type}; '
+            f'classtype:malware-cnc; sid:{sid}; rev:1; priority:{priority};)'
+        )
+        return rule
+
+    def _create_suricata_size_rule(self, pattern, sid):
+        """Create Suricata rule for packet size patterns"""
+        size = pattern.get('size', 0)
+        confidence = pattern.get('confidence', 0.5)
+        
+        if not size:
+            return None
+        
+        priority = 1 if confidence > 0.9 else (2 if confidence > 0.7 else 3)
+        
+        rule = (
+            f'alert tcp $HOME_NET any -> $EXTERNAL_NET any '
+            f'(msg:"PDR - Covert_Channel_Size_{sid}"; '
+            f'dsize:{size}; '
+            f'metadata: confidence {confidence}, pattern_type covert_channel; '
+            f'classtype:policy-violation; sid:{sid}; rev:1; priority:{priority};)'
+        )
+        return rule
+    
     def _generate_suricata_signatures(self):
         """
         Generate Suricata-compatible signatures directly from extracted patterns
