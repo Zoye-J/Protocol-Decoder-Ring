@@ -423,65 +423,96 @@ def api_analyze_file():
     
     # Start analysis in background
     analysis_id = f"analysis_{timestamp}"
+    custom_args = request.form.getlist('args') if request.form else []
     
-    def run_analysis():
+    def run_analysis(args_list):
         """Background analysis task"""
         try:
-            # Get custom arguments if provided
-            custom_args = request.form.getlist('args') if request.form else []
-            # Module 1: Sandbox
+            packets = []  # Will be filled by capture
+            
+            # Modules 1 & 2: Run app while capturing
             with SandboxManager() as sandbox:
-                sandbox.run_application(filepath, custom_args)
-                
-                # Module 2: Capture
                 with PacketCapture() as capture:
+                    # Start capture FIRST
                     capture.start_capture(timeout=30)
+                    
+                    # THEN run the application
+                    sandbox.run_application(filepath, args_list)
+                    
+                    # Let it run for 30 seconds
                     time.sleep(30)
+                    
+                    # Stop capture and get packets
+                    capture.stop_capture_now()
                     packets = capture.get_packets()
-                    
-                    # Module 3: Protocol Analysis
-                    with ProtocolAnalyzer() as analyzer:
-                        analyzer.load_packets(packets)
-                        protocol_results = analyzer.analyze()
-                        analyzer.generate_report()
-                    
-                    # Module 4: Exfiltration Detection
-                    with ExfiltrationDetector() as detector:
-                        detector.load_packets(packets)
-                        exfil_results = detector.detect_exfiltration()
-                        detector.generate_report()
-                    
-                    # Module 5: Signature Generation
-                    with SignatureGenerator() as generator:
-                        generator.load_analysis_results(protocol_results, exfil_results, packets)
-                        generator.generate_signatures()
-                        generator.generate_report()
-                    
-                    # Save combined results
-                    combined = {
-                        "analysis_id": analysis_id,
-                        "timestamp": datetime.now().isoformat(),
-                        "file": file.filename,
-                        "protocol_analysis": protocol_results,
-                        "exfiltration_detection": exfil_results,
-                        "packet_count": len(packets)
-                    }
-                    
-                    with open(f"output/analysis/{analysis_id}.json", 'w') as f:
-                        json.dump(combined, f, indent=2, default=str)
-                    
-                    # Notify via WebSocket
-                    socketio.emit('analysis_complete', {
-                        'analysis_id': analysis_id,
-                        'status': 'success'
-                    })
-                    
+            
+            # Modules 3, 4, 5: Analyze captured traffic
+            if packets:
+                # Module 3: Protocol Analysis
+                with ProtocolAnalyzer() as analyzer:
+                    analyzer.load_packets(packets)
+                    protocol_results = analyzer.analyze()
+                    analyzer.generate_report()
+                
+                # Module 4: Exfiltration Detection
+                with ExfiltrationDetector() as detector:
+                    detector.load_packets(packets)
+                    exfil_results = detector.detect_exfiltration()
+                    detector.generate_report()
+                
+                # Module 5: Signature Generation
+                with SignatureGenerator() as generator:
+                    generator.load_analysis_results(protocol_results, exfil_results, packets)
+                    generator.generate_signatures()
+                    generator.generate_report()
+                
+                # Save combined results
+                combined = {
+                    "analysis_id": analysis_id,
+                    "timestamp": datetime.now().isoformat(),
+                    "file": file.filename,
+                    "protocol_analysis": protocol_results,
+                    "exfiltration_detection": exfil_results,
+                    "packet_count": len(packets)
+                }
+            else:
+                # No packets captured
+                combined = {
+                    "analysis_id": analysis_id,
+                    "timestamp": datetime.now().isoformat(),
+                    "file": file.filename,
+                    "error": "No packets captured",
+                    "packet_count": 0
+                }
+            
+            # Save results
+            with open(f"output/analysis/{analysis_id}.json", 'w') as f:
+                json.dump(combined, f, indent=2, default=str)
+            
+            # Notify via WebSocket
+            socketio.emit('analysis_complete', {
+                'analysis_id': analysis_id,
+                'status': 'success',
+                'packet_count': len(packets)
+            })
+            
         except Exception as e:
             socketio.emit('analysis_complete', {
                 'analysis_id': analysis_id,
                 'status': 'error',
                 'error': str(e)
             })
+    
+    # Start background thread
+    thread = threading.Thread(target=run_analysis, args=(custom_args,))
+    thread.daemon = True
+    thread.start()
+    
+    return jsonify({
+        "analysis_id": analysis_id,
+        "status": "started",
+        "message": "Analysis started in background"
+    })
     
     # Start background thread
     thread = threading.Thread(target=run_analysis)
@@ -496,6 +527,7 @@ def api_analyze_file():
 
 
 @app.route('/api/v1/signatures/generate', methods=['POST'])
+@require_api_key
 def api_generate_signatures():
     """Generate signatures from existing analysis"""
     data = request.get_json()
@@ -536,6 +568,7 @@ def api_generate_signatures():
 
 
 @app.route('/api/v1/download/<path:filepath>', methods=['GET'])
+@require_api_key
 def api_download_file(filepath):
     """Download a file with path traversal protection"""
     # Define base directory (project root)
