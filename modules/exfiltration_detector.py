@@ -926,7 +926,8 @@ class ExfiltrationDetector:
                 "high_severity": sum(1 for a in self.alerts if a["severity"] == "high"),
                 "medium_severity": sum(1 for a in self.alerts if a["severity"] == "medium"),
                 "low_severity": sum(1 for a in self.alerts if a["severity"] == "low"),
-                "suspicious_flows": len(self.suspicious_flows)
+                "suspicious_flows": len(self.suspicious_flows),
+                "warnings": len(self.warnings) 
             }
         }
     
@@ -961,6 +962,15 @@ class ExfiltrationDetector:
             lines.append(f"Unique Destinations: {len(self.stats['unique_destinations'])}")
             lines.append(f"Total Flows: {self.stats['total_flows']}")
             lines.append("")
+
+            # Warnings (if any)
+            if self.warnings:
+                lines.append("")
+                lines.append("⚠️ WARNINGS")
+                lines.append("-" * 40)
+                for warning in self.warnings:
+                    lines.append(f"  ⚠️ {warning}")
+                lines.append("")
             
             # Alerts by severity
             lines.append("🚨 ALERTS SUMMARY")
