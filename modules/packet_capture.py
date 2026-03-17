@@ -84,6 +84,9 @@ class PacketCapture:
         
         self.logger.info(f"[TOOL] PacketCapture initialized with ID: {self.capture_id}")
         self.logger.info(f"[TOOL] Capture method: {self.capture_method}")
+
+        #Default
+        self.max_packets = self.config.get("max_packets", 10000)
     
     def _generate_capture_id(self) -> str:
         """Generate unique capture ID"""
@@ -296,6 +299,7 @@ class PacketCapture:
                 "prn": self._packet_handler,
                 "store": False,  # We store manually to track stats
                 "timeout": self.capture_timeout,
+                "stop_filter": lambda p: self.stop_capture.is_set()
             }
             
             # Add optional parameters
@@ -323,9 +327,6 @@ class PacketCapture:
         """
         Handle each captured packet
         """
-        if self.stop_capture.is_set():
-            # Force stop
-            raise StopIteration
         
         # Add to packet list
         self.packets.append(packet)
@@ -631,15 +632,19 @@ def generate_test_traffic(duration_seconds: int = 10):
     
     def udp_sender():
         """Send UDP packets to generate traffic"""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        for i in range(20):
-            try:
-                message = f"Test packet {i}".encode()
-                sock.sendto(message, ("8.8.8.8", 53))  # DNS query simulation
-                time.sleep(0.5)
-            except:
-                pass
-        sock.close()
+        sock = None
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            for i in range(20):
+                try:
+                    message = f"Test packet {i}".encode()
+                    sock.sendto(message, ("8.8.8.8", 53))
+                    time.sleep(0.5)
+                except Exception as e:
+                    print(f"Socket error: {e}")
+        finally:
+            if sock:
+                sock.close()
     
     def dns_simulator():
         """Simulate DNS queries"""
