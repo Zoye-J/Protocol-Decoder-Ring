@@ -29,13 +29,46 @@ except ImportError:
     SCAPY_AVAILABLE = False
     print("⚠️  Scapy not installed. Run: pip install scapy")
 
-# Try to import pyshark for advanced PCAP parsing
+# Try to import pyshark for advanced PCAP parsing - with better error handling
+PYSHARK_AVAILABLE = False
 try:
-    import pyshark
-    PYSHARK_AVAILABLE = True
-except ImportError:
+    # Use a timeout mechanism to prevent hanging imports
+    import threading
+    import time
+    
+    pyshark_imported = [False]
+    import_error = [None]
+    
+    def import_pyshark():
+        try:
+            global pyshark
+            import pyshark
+            pyshark_imported[0] = True
+        except Exception as e:
+            import_error[0] = e
+    
+    # Run import in a thread with timeout
+    import_thread = threading.Thread(target=import_pyshark)
+    import_thread.daemon = True
+    import_thread.start()
+    import_thread.join(timeout=3)  # Wait max 3 seconds
+    
+    if import_thread.is_alive():
+        print("⚠️  PyShark import timed out (may have compatibility issues)")
+        PYSHARK_AVAILABLE = False
+    elif pyshark_imported[0]:
+        PYSHARK_AVAILABLE = True
+        print("✅ PyShark loaded successfully")
+    else:
+        PYSHARK_AVAILABLE = False
+        if import_error[0]:
+            print(f"⚠️  PyShark import error: {import_error[0]}")
+        else:
+            print("⚠️  PyShark not installed. Run: pip install pyshark")
+            
+except Exception as e:
     PYSHARK_AVAILABLE = False
-    print("⚠️  PyShark not installed. Run: pip install pyshark")
+    print(f"⚠️  PyShark not available: {e}")
 
 # Optional imports for better performance
 try:
@@ -95,7 +128,11 @@ class PacketCapture:
     def _setup_logging(self) -> logging.Logger:
         """Setup logging for packet capture"""
         logger = logging.getLogger(f"PacketCapture.{self.capture_id}")
+        if logger.handlers:
+            return logger
+        
         logger.setLevel(logging.DEBUG)
+    
         
         # Console handler
         ch = logging.StreamHandler()
