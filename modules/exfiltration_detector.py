@@ -58,6 +58,7 @@ class ExfiltrationDetector:
         self.alerts = []
         self.suspicious_flows = {}
         self.exfil_attempts = []
+        self.warnings = []
         
         # Statistics
         self.stats = {
@@ -86,6 +87,8 @@ class ExfiltrationDetector:
         self.flow_packets = defaultdict(list)
         self.flow_timestamps = defaultdict(list)
         self.destination_stats = defaultdict(lambda: {"bytes": 0, "packets": 0, "flows": set()})
+
+
         
         # Create output directory
         os.makedirs("output/exfiltration", exist_ok=True)
@@ -321,16 +324,7 @@ class ExfiltrationDetector:
         Detect connections to unusual or suspicious destinations
         """
         self.logger.info("[DEST] Checking for unusual destinations...")
-        
-        # Known suspicious IP ranges (can be expanded)
-        suspicious_ranges = [
-            "45.", "46.",  # Eastern Europe
-            "5.",          # Middle East
-            "185.", "188.", "193.", "194.", "195."  # Various
-        ]
-        
-        # Known bad ASNs/countries from config
-        suspicious_countries = self.config.get("exfiltration", {}).get("suspicious_countries", [])
+
         
         unusual_destinations = []
         
@@ -339,7 +333,7 @@ class ExfiltrationDetector:
                 continue  # Skip internal/local
             
             # Check against suspicious ranges
-            for suspicious in suspicious_ranges:
+            for suspicious in self.suspicious_ip_ranges:
                 if dst_ip.startswith(suspicious):
                     unusual_destinations.append({
                         "destination": dst_ip,
@@ -438,60 +432,98 @@ class ExfiltrationDetector:
         
         dns_flows = []
         
-        # Find DNS flows
+        # Find DNS flows - improved detection
         for flow_key, packets in self.flow_packets.items():
-            if "DNS" in flow_key or ":53" in flow_key:
+            # Method 1: Check for port 53 (most reliable)
+            if ":53" in flow_key or ":5353" in flow_key:  # Standard DNS port
                 dns_flows.append((flow_key, packets))
+                continue
+                
+            # Method 2: Check protocol field if we have packet samples
+            if packets and len(packets) > 0:
+                # Look at first packet's info field
+                first_packet = packets[0]
+                if isinstance(first_packet, dict):
+                    # Check info field for DNS indicators
+                    info = first_packet.get('info', '').lower()
+                    if 'dns' in info or 'domain' in info or 'query' in info:
+                        dns_flows.append((flow_key, packets))
+                        continue
+                    
+                    # Check protocol field (though this is usually UDP/TCP)
+                    proto = first_packet.get('protocol', '').lower()
+                    if proto == 'dns':  # Rare but possible
+                        dns_flows.append((flow_key, packets))
         
         if not dns_flows:
+            self.logger.debug("[DNS] No DNS flows detected")
             return
         
+        self.logger.info(f"[DNS] Found {len(dns_flows)} potential DNS flows")
         suspicious_dns = []
         
         for flow_key, packets in dns_flows:
+            # Ensure packets list has dictionaries with required fields
+            valid_packets = [p for p in packets if isinstance(p, dict) and 'length' in p]
+            
+            if len(valid_packets) < 3:  # Need minimum packets for analysis
+                continue
+                
             # Check for high packet count (many DNS queries)
-            if len(packets) > 50:
+            if len(valid_packets) > 50:
                 suspicious_dns.append({
                     "flow": flow_key,
-                    "packet_count": len(packets),
-                    "total_bytes": self.flow_bytes[flow_key],
+                    "packet_count": len(valid_packets),
+                    "total_bytes": self.flow_bytes.get(flow_key, 0),
                     "reason": "high_query_volume"
                 })
                 continue
             
             # Check for large DNS packets
-            large_packets = [p for p in packets if p["length"] > 512]  # Max normal DNS size
-            if large_packets:
+            large_packets = [p for p in valid_packets if p.get("length", 0) > 512]  # Max normal DNS size
+            if large_packets and len(large_packets) > 5:  # At least 5 large packets
                 suspicious_dns.append({
                     "flow": flow_key,
-                    "packet_count": len(packets),
+                    "packet_count": len(valid_packets),
                     "large_packets": len(large_packets),
-                    "total_bytes": self.flow_bytes[flow_key],
+                    "total_bytes": self.flow_bytes.get(flow_key, 0),
                     "reason": "large_dns_packets"
                 })
                 continue
             
             # Check for consistent packet sizes (potential encoding)
-            if len(packets) > 10:
-                sizes = [p["length"] for p in packets]
-                if NUMPY_AVAILABLE:
-                    std_size = np.std(sizes)
-                    if std_size < 10:  # Very consistent sizes
-                        suspicious_dns.append({
-                            "flow": flow_key,
-                            "packet_count": len(packets),
-                            "std_size": round(std_size, 2),
-                            "reason": "consistent_packet_sizes"
-                        })
+            if len(valid_packets) > 10:
+                sizes = [p.get("length", 0) for p in valid_packets]
+                if NUMPY_AVAILABLE and len(sizes) > 1:
+                    try:
+                        std_size = np.std(sizes)
+                        if std_size < 10 and std_size > 0:  # Very consistent sizes (but not all identical)
+                            # Also check if sizes are unusual for DNS
+                            avg_size = np.mean(sizes)
+                            if avg_size > 100:  # Larger than typical DNS query
+                                suspicious_dns.append({
+                                    "flow": flow_key,
+                                    "packet_count": len(valid_packets),
+                                    "std_size": round(std_size, 2),
+                                    "avg_size": round(avg_size, 2),
+                                    "reason": "consistent_packet_sizes"
+                                })
+                    except:
+                        pass
         
         if suspicious_dns:
+            # Log the findings
+            for sus in suspicious_dns[:3]:  # Log first 3 for debugging
+                self.logger.info(f"[DNS] Suspicious flow: {sus['flow']} - {sus['reason']}")
+            
             alert = {
                 "type": "dns_exfiltration",
                 "severity": "high",
                 "timestamp": time.time(),
                 "details": {
                     "suspicious_flows": suspicious_dns[:5],
-                    "total_suspicious": len(suspicious_dns)
+                    "total_suspicious": len(suspicious_dns),
+                    "total_dns_flows": len(dns_flows)
                 },
                 "description": f"Detected {len(suspicious_dns)} suspicious DNS flows (possible exfiltration)"
             }
@@ -501,9 +533,14 @@ class ExfiltrationDetector:
             for sus in suspicious_dns:
                 self.suspicious_flows[sus["flow"]] = {
                     "reason": f"dns_exfiltration_{sus['reason']}",
-                    "severity": "high"
+                    "severity": "high",
+                    "details": {
+                        "packet_count": sus.get("packet_count", 0),
+                        "total_bytes": sus.get("total_bytes", 0)
+                    }
                 }
-    
+        else:
+            self.logger.debug("[DNS] No suspicious DNS flows detected")
     def _detect_icmp_exfiltration(self):
         """
         Detect data exfiltration over ICMP (ping tunneling)
@@ -734,7 +771,8 @@ class ExfiltrationDetector:
         self.logger.info("[STEGO] Checking for steganography...")
         
         if not PIL_AVAILABLE:
-            self.logger.info("[STEGO] PIL not available, skipping image analysis")
+            self.logger.warning("[STEGO] PIL not installed - steganography detection disabled")
+            self.warnings.append("Steganography detection requires PIL/Pillow (pip install pillow)")
             return
         
         # Look for image file transfers
