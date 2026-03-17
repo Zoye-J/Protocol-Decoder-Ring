@@ -664,27 +664,39 @@ level: {level}
     
     def _generate_suricata_signatures(self):
         """
-        Generate Suricata-compatible signatures
+        Generate Suricata-compatible signatures directly from extracted patterns
         """
         self.logger.info("[SURICATA] Generating Suricata signatures...")
         
-        # Suricata uses similar syntax to Snort
+        if not self.extracted_patterns:
+            self.logger.warning("[SURICATA] No patterns to generate signatures")
+            return
         
+        sid_base = 2000000  # Different base SID to avoid conflicts with Snort
         signatures = []
         
-        for snort_rule in self.signatures['snort']:
-            # Add Suricata-specific classtype
-            if 'classtype:' not in snort_rule:
-                # Insert classtype before sid
-                if 'sid:' in snort_rule:
-                    parts = snort_rule.split('sid:')
-                    suricata_rule = parts[0] + 'classtype:policy-violation; sid:' + parts[1]
+        # Generate signatures for each pattern type
+        for pattern_type, patterns in self.extracted_patterns.items():
+            for i, pattern in enumerate(patterns[:self.config.get('max_signatures_per_pattern', 5)]):
+                confidence = pattern.get('confidence', 0.5)
+                
+                if confidence < self.config.get('min_confidence', 0.7):
+                    continue
+                
+                # Determine rule parameters based on pattern type
+                if pattern_type == 'domain_patterns':
+                    rule = self._create_suricata_dns_rule(pattern, sid_base + len(signatures))
+                elif pattern_type == 'ip_patterns':
+                    rule = self._create_suricata_ip_rule(pattern, sid_base + len(signatures))
+                elif pattern_type == 'byte_sequences':
+                    rule = self._create_suricata_byte_rule(pattern, sid_base + len(signatures))
+                elif pattern_type == 'size_patterns':
+                    rule = self._create_suricata_size_rule(pattern, sid_base + len(signatures))
                 else:
-                    suricata_rule = snort_rule
-            else:
-                suricata_rule = snort_rule
-            
-            signatures.append(suricata_rule)
+                    continue
+                
+                if rule:
+                    signatures.append(rule)
         
         if signatures:
             # Save to file
@@ -702,6 +714,8 @@ level: {level}
             self.stats['signatures_generated'] += len(signatures)
             self.stats['formats_generated'].append('suricata')
             self.logger.info(f"[SURICATA] Generated {len(signatures)} signatures")
+        else:
+            self.logger.info("[SURICATA] No signatures generated")
     
     def _generate_yara_signatures(self):
         """
