@@ -15,6 +15,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 import logging
 
+from pyshark import packet
+
 # Try to import numpy for statistical analysis
 try:
     import numpy as np
@@ -268,6 +270,22 @@ class ProtocolAnalyzer:
                 self.protocols_detected[detected]["count"] += 1
                 if len(self.protocols_detected[detected]["packets"]) < 10:  # Store sample packets
                     self.protocols_detected[detected]["packets"].append(i)
+            
+            # TRACK UNIQUE IPS AND DOMAINS - Fixed indentation (now at same level as other packet processing)
+            if isinstance(packet, dict):
+                src = packet.get('src', '')
+                dst = packet.get('dst', '')
+                if src and src != '0.0.0.0':
+                    self.stats["unique_ips"].add(src)
+                if dst and dst != '0.0.0.0':
+                    self.stats["unique_ips"].add(dst)
+                
+                # For domains (if DNS packet)
+                if packet.get('protocol') == 'DNS':
+                    info = packet.get('info', '')
+                    if 'Query:' in info:
+                        domain = info.split('Query:')[-1].strip()
+                        self.stats["unique_domains"].add(domain)
         
         # Calculate confidence for each protocol
         for protocol, data in self.protocols_detected.items():
@@ -299,8 +317,8 @@ class ProtocolAnalyzer:
         
         flows = {}
         
-        for packet in self.packets:
-            if isinstance(packet, dict):
+        for i, packet in enumerate(self.packets):
+            if not isinstance(packet, dict):
                 # Dictionary format
                 src = packet.get('src', '0.0.0.0')
                 dst = packet.get('dst', '0.0.0.0')
@@ -326,7 +344,7 @@ class ProtocolAnalyzer:
                     "src_port": sport,
                     "dst_ip": dst,
                     "dst_port": dport,
-                    "packets": [],
+                    "packet_indices": [],
                     "bytes": 0,
                     "start_time": time_val,
                     "end_time": time_val,
@@ -338,7 +356,7 @@ class ProtocolAnalyzer:
             
             # Update flow
             flow = flows[flow_key]
-            flow["packets"].append(len(self.flows.get(flow_key, {}).get("packets", [])))
+            flows[flow_key]["packet_indices"].append(i)
             flow["packet_count"] += 1
             flow["byte_count"] += length
             flow["packet_sizes"].append(length)
@@ -827,9 +845,16 @@ class ProtocolAnalyzer:
         stats_serializable["protocol_counts"] = dict(self.stats["protocol_counts"])
         stats_serializable["port_counts"] = dict(self.stats["port_counts"])
         
-        # Convert packet sizes to list if numpy array
-        if NUMPY_AVAILABLE and isinstance(stats_serializable["packet_sizes"], np.ndarray):
-            stats_serializable["packet_sizes"] = stats_serializable["packet_sizes"].tolist()
+        
+        # Convert NumPy arrays if present
+        if NUMPY_AVAILABLE:
+            if isinstance(self.stats["packet_sizes"], np.ndarray):
+                stats_serializable["packet_sizes"] = self.stats["packet_sizes"].tolist()
+            if isinstance(self.stats["inter_arrival_times"], np.ndarray):
+                stats_serializable["inter_arrival_times"] = self.stats["inter_arrival_times"].tolist()
+        else:
+            stats_serializable["packet_sizes"] = list(self.stats["packet_sizes"])
+            stats_serializable["inter_arrival_times"] = list(self.stats["inter_arrival_times"])
         
         return {
             "analysis_id": self.analysis_id,
