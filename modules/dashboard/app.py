@@ -15,7 +15,7 @@ import logging
 # Flask imports
 from flask import Flask, render_template, jsonify, request, send_file, Response
 from flask_socketio import SocketIO, emit
-from sklearn.conftest import wraps
+from functools import wraps
 
 # Add parent directory to path for module imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -427,11 +427,11 @@ def api_analyze_file():
     def run_analysis():
         """Background analysis task"""
         try:
-                # Get custom arguments if provided
-                custom_args = request.form.getlist('args') if request.form else []
-                # Module 1: Sandbox
-                with SandboxManager() as sandbox:
-                    sandbox.run_application(filepath, custom_args)
+            # Get custom arguments if provided
+            custom_args = request.form.getlist('args') if request.form else []
+            # Module 1: Sandbox
+            with SandboxManager() as sandbox:
+                sandbox.run_application(filepath, custom_args)
                 
                 # Module 2: Capture
                 with PacketCapture() as capture:
@@ -546,7 +546,8 @@ def api_download_file(filepath):
     
     # Ensure the path is within BASE_DIR
     if not full_path.startswith(BASE_DIR):
-        self.logger.warning(f"Path traversal attempt: {filepath}")
+        from flask import current_app
+        current_app.logger.warning(f"Path traversal attempt: {filepath}")
         return jsonify({"error": "Invalid path"}), 400
     
     if not os.path.exists(full_path):
