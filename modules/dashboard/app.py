@@ -15,6 +15,7 @@ import logging
 # Flask imports
 from flask import Flask, render_template, jsonify, request, send_file, Response
 from flask_socketio import SocketIO, emit
+from sklearn.conftest import wraps
 
 # Add parent directory to path for module imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -47,7 +48,16 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 active_analyses = {}
 capture_threads = {}
 analysis_results = {}
+API_KEY = os.environ.get('PDR_API_KEY', 'change-this-in-production')
 
+def require_api_key(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        key = request.headers.get('X-API-Key')
+        if key and key == API_KEY:
+            return f(*args, **kwargs)
+        return jsonify({"error": "Unauthorized"}), 401
+    return decorated
 
 class DashboardManager:
     """
@@ -395,6 +405,7 @@ def api_get_reports():
 
 
 @app.route('/api/v1/analyze/file', methods=['POST'])
+@require_api_key
 def api_analyze_file():
     """Submit new file for analysis"""
     if 'file' not in request.files:
@@ -416,9 +427,11 @@ def api_analyze_file():
     def run_analysis():
         """Background analysis task"""
         try:
-            # Module 1: Sandbox
-            with SandboxManager() as sandbox:
-                sandbox.run_application(filepath, ["--analyze"])
+                # Get custom arguments if provided
+                custom_args = request.form.getlist('args') if request.form else []
+                # Module 1: Sandbox
+                with SandboxManager() as sandbox:
+                    sandbox.run_application(filepath, custom_args)
                 
                 # Module 2: Capture
                 with PacketCapture() as capture:
@@ -524,18 +537,22 @@ def api_generate_signatures():
 
 @app.route('/api/v1/download/<path:filepath>', methods=['GET'])
 def api_download_file(filepath):
-    """Download a file"""
-    # Security: prevent directory traversal
-    safe_path = os.path.normpath(filepath)
-    if safe_path.startswith('..'):
+    """Download a file with path traversal protection"""
+    # Define base directory (project root)
+    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    
+    # Construct full path
+    full_path = os.path.abspath(os.path.join(BASE_DIR, filepath))
+    
+    # Ensure the path is within BASE_DIR
+    if not full_path.startswith(BASE_DIR):
+        self.logger.warning(f"Path traversal attempt: {filepath}")
         return jsonify({"error": "Invalid path"}), 400
     
-    full_path = Path(safe_path)
-    if not full_path.exists():
+    if not os.path.exists(full_path):
         return jsonify({"error": "File not found"}), 404
     
     return send_file(full_path, as_attachment=True)
-
 
 # ============================================================================
 # WebSocket Events
@@ -603,6 +620,10 @@ if __name__ == '__main__':
     print("=" * 60)
     print(" PDR WEB DASHBOARD ")
     print("=" * 60)
+
+    from modules.dashboard.api import api_bp
+    app.register_blueprint(api_bp)
+
     print(f"\n[OK] Dashboard starting...")
     print(f"[OK] URL: http://localhost:5000")
     print(f"[OK] API: http://localhost:5000/api/v1")
@@ -610,3 +631,4 @@ if __name__ == '__main__':
     print("=" * 60)
     
     socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+
