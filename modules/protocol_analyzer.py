@@ -24,13 +24,6 @@ except ImportError:
     NUMPY_AVAILABLE = False
     print("⚠️  NumPy not installed. Run: pip install numpy")
 
-# Try to import scipy for advanced statistics
-try:
-    from scipy import stats
-    SCIPY_AVAILABLE = True
-except ImportError:
-    SCIPY_AVAILABLE = False
-    print("⚠️  SciPy not installed. Run: pip install scipy")
 
 # Import packet capture if available
 try:
@@ -886,8 +879,8 @@ class ProtocolAnalyzer:
         results = self.get_results()
         
         if format == "json":
-            report_file = f"output/analysis/analysis_{self.analysis_id}.json"
-            with open(report_file, 'w') as f:
+            report_file = f"output/analysis/{self.analysis_id}.json"
+            with open(report_file, 'w', encoding='utf-8') as f:
                 json.dump(results, f, indent=2, default=str)
             self.logger.info(f"[REPORT] JSON report saved to: {report_file}")
             return report_file
@@ -949,7 +942,7 @@ class ProtocolAnalyzer:
             
             # Save to file
             report_file = f"output/analysis/analysis_{self.analysis_id}.txt"
-            with open(report_file, 'w') as f:
+            with open(report_file, 'w', encoding='utf-8') as f:
                 f.write(report_text)
             
             self.logger.info(f"[REPORT] Text report saved to: {report_file}")
