@@ -15,7 +15,6 @@ from collections import Counter, defaultdict
 from pathlib import Path
 import logging
 
-from pyshark import packet
 
 # Try to import numpy for statistical analysis
 try:
@@ -308,7 +307,6 @@ class ProtocolAnalyzer:
             else:
                 return "Other"
         return "Unknown"
-    
     def _reconstruct_flows(self):
         """
         Reconstruct TCP/UDP flows from packets
@@ -318,25 +316,27 @@ class ProtocolAnalyzer:
         flows = {}
         
         for i, packet in enumerate(self.packets):
+            # Skip non-dictionary packets (like raw Scapy packets)
             if not isinstance(packet, dict):
-                # Dictionary format
-                src = packet.get('src', '0.0.0.0')
-                dst = packet.get('dst', '0.0.0.0')
-                sport = packet.get('sport', 0)
-                dport = packet.get('dport', 0)
-                proto = packet.get('protocol', 'Unknown')
-                time_val = packet.get('time', 0)
-                length = packet.get('length', 0)
-            else:
-                # Scapy format - simplified
                 continue
             
-            # Create flow key (bidirectional)
+            # Extract packet data (dictionary format)
+            src = packet.get('src', '0.0.0.0')
+            dst = packet.get('dst', '0.0.0.0')
+            sport = packet.get('sport', 0)
+            dport = packet.get('dport', 0)
+            proto = packet.get('protocol', 'Unknown')
+            time_val = packet.get('time', 0)
+            length = packet.get('length', 0)
+            
+            # Create flow key (bidirectional - consistent regardless of direction)
+            # Sort IPs to ensure same flow key for both directions
             if src < dst:
                 flow_key = f"{proto}_{src}:{sport}-{dst}:{dport}"
             else:
                 flow_key = f"{proto}_{dst}:{dport}-{src}:{sport}"
             
+            # Initialize flow if new
             if flow_key not in flows:
                 flows[flow_key] = {
                     "protocol": proto,
@@ -356,15 +356,28 @@ class ProtocolAnalyzer:
             
             # Update flow
             flow = flows[flow_key]
-            flows[flow_key]["packet_indices"].append(i)
+            flow["packet_indices"].append(i)
             flow["packet_count"] += 1
             flow["byte_count"] += length
             flow["packet_sizes"].append(length)
-            flow["end_time"] = max(flow["end_time"], time_val)
             
-            if len(flow["packets"]) > 1:
-                interval = time_val - flow["start_time"]
-                flow["intervals"].append(interval)
+            # Update timestamps
+            if time_val < flow["start_time"]:
+                flow["start_time"] = time_val
+            if time_val > flow["end_time"]:
+                flow["end_time"] = time_val
+            
+            # Calculate interval if this isn't the first packet
+            if len(flow["packet_indices"]) > 1:
+                # Use previous packet's time for interval
+                prev_packet_index = flow["packet_indices"][-2]
+                prev_packet = self.packets[prev_packet_index]
+                prev_time = prev_packet.get('time', 0) if isinstance(prev_packet, dict) else 0
+                
+                if prev_time > 0:
+                    interval = time_val - prev_time
+                    if interval > 0:  # Only add positive intervals
+                        flow["intervals"].append(interval)
         
         self.flows = flows
         self.logger.info(f"[FLOWS] Reconstructed {len(flows)} unique flows")
