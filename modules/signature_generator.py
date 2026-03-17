@@ -31,13 +31,10 @@ class SignatureGenerator:
     """
     
     # Template for Snort rules
-    SNORT_TEMPLATE = """
-alert {protocol} {src_net} {src_port} -> {dst_net} {dst_port} 
-(msg:"PDR - {rule_name}"; 
- {content_rules}
- {metadata}
- sid:{sid}; rev:1; priority:{priority};)
-"""
+    # Replace multiline template with single line:
+    SNORT_TEMPLATE = ('alert {protocol} {src_net} {src_port} -> {dst_net} {dst_port} '
+                    '(msg:"PDR - {rule_name}"; {content_rules} {metadata} '
+                    'sid:{sid}; rev:1; priority:{priority};)')
     
     # Template for Suricata rules (compatible with Snort)
     SURICATA_TEMPLATE = """
@@ -651,7 +648,7 @@ level: {level}
         rule_name = f"Covert_Channel_Size_{sid}"
         
         rule = self.SNORT_TEMPLATE.format(
-            protocol="ip",
+            protocol="tcp",
             src_net="$HOME_NET",
             src_port="any",
             dst_net="$EXTERNAL_NET",
@@ -672,10 +669,6 @@ level: {level}
         self.logger.info("[SURICATA] Generating Suricata signatures...")
         
         # Suricata uses similar syntax to Snort
-        # We can reuse Snort rules with minor modifications
-        if not self.signatures['snort']:
-            self.logger.warning("[SURICATA] No Snort rules to convert")
-            return
         
         signatures = []
         
