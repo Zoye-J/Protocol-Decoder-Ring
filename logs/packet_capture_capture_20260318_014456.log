@@ -1,0 +1,19 @@
+2026-03-18 01:44:56,044 - PacketCapture.capture_20260318_014456 - INFO - [OK] Npcap found - packet capture available
+2026-03-18 01:44:56,046 - PacketCapture.capture_20260318_014456 - INFO - [TOOL] PacketCapture initialized with ID: capture_20260318_014456
+2026-03-18 01:44:56,048 - PacketCapture.capture_20260318_014456 - INFO - [TOOL] Capture method: scapy_npcap
+2026-03-18 01:44:56,106 - PacketCapture.capture_20260318_014456 - INFO - [NET] Found 56 network interfaces
+2026-03-18 01:44:56,110 - PacketCapture.capture_20260318_014456 - INFO - [CLEAN] Packet capture cleaned up
+2026-03-18 01:44:56,114 - PacketCapture.capture_20260318_014456 - INFO - [OK] Npcap found - packet capture available
+2026-03-18 01:44:56,115 - PacketCapture.capture_20260318_014456 - INFO - [TOOL] PacketCapture initialized with ID: capture_20260318_014456
+2026-03-18 01:44:56,115 - PacketCapture.capture_20260318_014456 - INFO - [TOOL] Capture method: scapy_npcap
+2026-03-18 01:44:56,119 - PacketCapture.capture_20260318_014456 - INFO - [START] Packet capture started
+2026-03-18 01:44:56,120 - PacketCapture.capture_20260318_014456 - INFO -          Interface: Default
+2026-03-18 01:44:56,121 - PacketCapture.capture_20260318_014456 - INFO -          Filter: None
+2026-03-18 01:44:56,122 - PacketCapture.capture_20260318_014456 - INFO -          Max packets: 10000
+2026-03-18 01:44:56,123 - PacketCapture.capture_20260318_014456 - INFO -          Timeout: 15s
+2026-03-18 01:45:00,276 - PacketCapture.capture_20260318_014456 - INFO - [PROGRESS] Captured 100 packets (24.1 pkt/s)
+2026-03-18 01:45:04,238 - PacketCapture.capture_20260318_014456 - INFO - [PROGRESS] Captured 200 packets (24.6 pkt/s)
+2026-03-18 01:45:08,126 - PacketCapture.capture_20260318_014456 - INFO - [STOP] Stopping capture...
+2026-03-18 01:45:08,362 - PacketCapture.capture_20260318_014456 - INFO - [STOP] Capture stopped - 225 packets captured
+2026-03-18 01:45:09,461 - PacketCapture.capture_20260318_014456 - INFO - [SAVE] Saved 225 packets to: output/captures\capture_20260318_014456.pcap
+2026-03-18 01:45:09,462 - PacketCapture.capture_20260318_014456 - INFO - [CLEAN] Packet capture cleaned up

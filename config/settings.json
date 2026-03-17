@@ -7,11 +7,14 @@
         "temp_dir_prefix": "pdr_sandbox_"
     },
     "packet_capture": {
-        "interface": "\\Device\\NPF_{DEFAULT}",
-        "capture_filter": "not tcp port 443",
+        "interface": null,
+        "capture_filter": "",
         "max_packets": 10000,
         "capture_timeout": 60,
-        "pcap_output_dir": "output/captures"
+        "pcap_output_dir": "output/captures",
+        "buffer_size": 65536,
+        "promiscuous_mode": false,
+        "monitor_mode": false
     },
     "protocol_analysis": {
         "entropy_threshold": 0.8,

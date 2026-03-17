@@ -756,7 +756,11 @@ if __name__ == "__main__":
             traffic_thread.start()
             
             # Wait for capture to complete
-            time.sleep(12)
+            try:
+                time.sleep(12)
+            except KeyboardInterrupt:
+                print("\n[INFO] Capture interrupted by user")
+                capture.stop_capture_now()
             
             # Stop capture
             capture.stop_capture_now()

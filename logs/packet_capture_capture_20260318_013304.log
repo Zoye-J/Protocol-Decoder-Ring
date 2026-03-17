@@ -1,0 +1,15 @@
+2026-03-18 01:33:04,431 - PacketCapture.capture_20260318_013304 - INFO - [OK] Npcap found - packet capture available
+2026-03-18 01:33:04,434 - PacketCapture.capture_20260318_013304 - INFO - [TOOL] PacketCapture initialized with ID: capture_20260318_013304
+2026-03-18 01:33:04,434 - PacketCapture.capture_20260318_013304 - INFO - [TOOL] Capture method: scapy_npcap
+2026-03-18 01:33:04,487 - PacketCapture.capture_20260318_013304 - INFO - [NET] Found 56 network interfaces
+2026-03-18 01:33:04,489 - PacketCapture.capture_20260318_013304 - INFO - [CLEAN] Packet capture cleaned up
+2026-03-18 01:33:04,492 - PacketCapture.capture_20260318_013304 - INFO - [OK] Npcap found - packet capture available
+2026-03-18 01:33:04,493 - PacketCapture.capture_20260318_013304 - INFO - [TOOL] PacketCapture initialized with ID: capture_20260318_013304
+2026-03-18 01:33:04,494 - PacketCapture.capture_20260318_013304 - INFO - [TOOL] Capture method: scapy_npcap
+2026-03-18 01:33:04,496 - PacketCapture.capture_20260318_013304 - INFO - [START] Packet capture started
+2026-03-18 01:33:04,498 - PacketCapture.capture_20260318_013304 - INFO -          Interface: Default
+2026-03-18 01:33:04,498 - PacketCapture.capture_20260318_013304 - INFO -          Filter: not tcp port 443
+2026-03-18 01:33:04,499 - PacketCapture.capture_20260318_013304 - INFO -          Max packets: 10000
+2026-03-18 01:33:04,501 - PacketCapture.capture_20260318_013304 - INFO -          Timeout: 15s
+2026-03-18 01:33:05,700 - PacketCapture.capture_20260318_013304 - INFO - [STOP] Stopping capture...
+2026-03-18 01:33:05,702 - PacketCapture.capture_20260318_013304 - INFO - [CLEAN] Packet capture cleaned up
