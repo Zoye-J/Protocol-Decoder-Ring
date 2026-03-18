@@ -25,6 +25,11 @@
   <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
 </p>
 
+<p align="center">
+  <br>
+  <sub>Built by <strong>Zoye-J</strong> · © 2026</sub>
+</p>
+
 ---
 
 ## What is this?
@@ -42,23 +47,23 @@ Suspicious File
       │
       ▼
 ┌─────────────────────────────────────────────────────┐
-│                  Module 1: Sandbox                   │
-│   Isolated temp dir · Process monitoring · Timeout   │
+│                  Module 1: Sandbox                  │
+│   Isolated temp dir · Process monitoring · Timeout  │
 └──────────────────────┬──────────────────────────────┘
                        │ runs alongside
 ┌──────────────────────▼──────────────────────────────┐
-│              Module 2: Packet Capture                │
+│              Module 2: Packet Capture               │
 │     Scapy/Npcap · BPF filters · PCAP export         │
 └──────────────────────┬──────────────────────────────┘
                        │ captured packets
           ┌────────────┴────────────┐
           ▼                         ▼
-┌─────────────────┐       ┌──────────────────────┐
+┌─────────────────┐       ┌───────────────────────┐
 │   Module 3:     │       │      Module 4:        │
 │   Protocol      │       │  Exfiltration         │
 │   Analyzer      │       │  Detector             │
 │                 │       │                       │
-│ · C2 beacons   │       │ · Large transfers     │
+│ · C2 beacons    │       │ · Large transfers     │
 │ · DNS tunneling │       │ · Covert channels     │
 │ · Entropy check │       │ · Timing channels     │
 │ · HTTP anomaly  │       │ · DNS/ICMP/HTTP exfil │
@@ -513,7 +518,7 @@ This tool is intended for **educational purposes, authorized security research, 
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) — see [LICENSE](LICENSE) for details.
 
 ---
 
