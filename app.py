@@ -353,7 +353,6 @@ def api_get_alerts():
 
 @app.route('/api/v1/signatures', methods=['GET'])
 def api_get_signatures():
-    """Get generated signatures"""
     format_type = request.args.get('format', None)
     limit = request.args.get('limit', 50, type=int)
     
@@ -369,13 +368,12 @@ def api_get_signatures():
     for fmt, path in sig_dirs.items():
         if format_type and fmt != format_type:
             continue
-            
         if path.exists():
             for file in sorted(path.glob('*'), key=os.path.getmtime, reverse=True)[:limit]:
                 signatures.append({
                     "format": fmt,
                     "name": file.name,
-                    "path": str(file),
+                    "path": file.as_posix(),  # ← always forward slashes
                     "size": round(file.stat().st_size / 1024, 2),
                     "modified": datetime.fromtimestamp(file.stat().st_mtime).isoformat()
                 })
@@ -402,7 +400,7 @@ def api_get_reports():
             reports.append({
                 "format": fmt,
                 "name": file.name,
-                "path": str(file),
+                "path": file.as_posix(),
                 "size": round(file.stat().st_size / 1024, 2),
                 "modified": datetime.fromtimestamp(file.stat().st_mtime).isoformat()
             })
@@ -562,26 +560,39 @@ def api_generate_signatures():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-@app.route('/api/v1/download/<path:filepath>', methods=['GET'])
-@require_api_key
-def api_download_file(filepath):
-    """Download a file with path traversal protection"""
-    # Define base directory (project root)
-    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+@app.route('/api/v1/file/<path:filepath>', methods=['GET'])
+def api_read_file(filepath):
+    # Normalize separators — browser may send forward slashes, OS uses backslashes
+    filepath = filepath.replace('/', os.sep).replace('\\', os.sep)
     
-    # Construct full path
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     full_path = os.path.abspath(os.path.join(BASE_DIR, filepath))
-    
-    # Ensure the path is within BASE_DIR
+
     if not full_path.startswith(BASE_DIR):
-        from flask import current_app
-        current_app.logger.warning(f"Path traversal attempt: {filepath}")
         return jsonify({"error": "Invalid path"}), 400
-    
     if not os.path.exists(full_path):
         return jsonify({"error": "File not found"}), 404
+
+    try:
+        with open(full_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return Response(content, mimetype='text/plain')
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/v1/download/<path:filepath>', methods=['GET'])
+def api_download_file(filepath):
+    filepath = filepath.replace('/', os.sep).replace('\\', os.sep)
     
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    full_path = os.path.abspath(os.path.join(BASE_DIR, filepath))
+
+    if not full_path.startswith(BASE_DIR):
+        return jsonify({"error": "Invalid path"}), 400
+    if not os.path.exists(full_path):
+        return jsonify({"error": "File not found"}), 404
+
     return send_file(full_path, as_attachment=True)
 
 # ============================================================================

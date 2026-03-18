@@ -1,5 +1,5 @@
 /**
- * WebSocket Real-time Updates
+ * WebSocket Real-time Updates, websocket.js
  */
 
 // WebSocket event handlers

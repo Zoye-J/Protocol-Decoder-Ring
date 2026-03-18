@@ -1,5 +1,5 @@
 /**
- * Chart Visualizations
+ * Chart Visualizations, charts.js
  */
 
 // Chart color schemes

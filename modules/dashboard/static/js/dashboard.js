@@ -1,5 +1,5 @@
 /**
- * PDR Dashboard Main JavaScript
+ * PDR Dashboard Main JavaScript, dashboard.js
  */
 
 // Global variables

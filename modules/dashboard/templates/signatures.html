@@ -7,7 +7,7 @@
 <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
     <div>
         <div class="page-title">Detection Signatures</div>
-        <div class="page-subtitle">Auto-generated IDS/IPS, YARA & SIEM rules</div>
+        <div class="page-subtitle">// Auto-generated IDS/IPS, YARA & SIEM rules</div>
     </div>
     <button class="btn-pdr btn-pdr-primary" data-bs-toggle="modal" data-bs-target="#generateModal">
         <i class="fas fa-magic"></i> Generate New
@@ -183,23 +183,24 @@ $(document).on('mouseover','.file-item',function(){
  
 function loadFile(path, name) {
     currentFilePath = path;
-    $.get(`/api/v1/signatures?format=${currentFormat}`, function() {});
- 
-    // Try to fetch file content via download endpoint
-    fetch(`/api/v1/download/${path}`, {headers:{'X-API-Key':'change-this-in-production'}})
-        .then(r=>r.text())
+
+    // Use the /file/ endpoint to read content for display
+    fetch(`/api/v1/file/${path}`)
+        .then(r => {
+            if (!r.ok) throw new Error('File not found');
+            return r.text();
+        })
         .then(content => {
             $('#viewer-placeholder').hide();
             $('#rule-viewer').show().text(content);
             $('#viewer-title').html(`<i class="fas fa-file-code icon"></i> ${name}`);
-            $('#copy-btn,#download-btn').show();
-            $('#download-btn').attr('onclick',`window.location.href='/api/v1/download/${path}'`);
-        }).catch(()=>{
-            // Fallback: just show the file path
-            $('#viewer-placeholder').hide();
-            $('#rule-viewer').show().text(`File: ${path}\n\nContent preview requires authentication.\nUse the Download button to access the file.`);
-            $('#viewer-title').html(`<i class="fas fa-file-code icon"></i> ${name}`);
-            $('#copy-btn,#download-btn').show();
+            $('#copy-btn').show();
+            $('#download-btn').show().off('click').on('click', function() {
+                window.location.href = `/api/v1/download/${path}`;
+            });
+        })
+        .catch(err => {
+            showNotification('error', 'Could not load file: ' + err.message);
         });
 }
  
