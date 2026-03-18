@@ -142,36 +142,99 @@ function renderAlerts() {
  
 function renderTypeChart() {
     const typeCounts = {};
-    allAlerts.forEach(a => { typeCounts[a.type] = (typeCounts[a.type]||0)+1; });
-    const sorted = Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    allAlerts.forEach(a => { 
+        typeCounts[a.type] = (typeCounts[a.type]||0) + 1; 
+    });
+    
+    const sorted = Object.entries(typeCounts).sort((a,b) => b[1] - a[1]).slice(0,6);
     const COLORS = ['#ff4757','#ffa502','#00d4ff','#2ed573','#a29bfe','#fd9644'];
- 
+    
+    // FIXED: Destroy existing chart before creating new one
     const ctx = document.getElementById('typeChart').getContext('2d');
-    new Chart(ctx, {
+    if (window.alertTypeChart instanceof Chart) {
+        window.alertTypeChart.destroy();
+    }
+    
+    if (sorted.length === 0) {
+        // Show empty state
+        window.alertTypeChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['No Data'],
+                datasets: [{ 
+                    data: [1], 
+                    backgroundColor: ['#4a6080'], 
+                    borderColor:'#0f1a28', 
+                    borderWidth:2 
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: { legend:{ display:false } }
+            }
+        });
+        
+        document.getElementById('type-breakdown').innerHTML = 
+            '<div style="text-align:center;padding:16px;color:var(--text-muted);">No alerts to display</div>';
+        return;
+    }
+    
+    window.alertTypeChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: sorted.map(([k])=>k.replace(/_/g,' ')),
-            datasets: [{ data: sorted.map(([,v])=>v), backgroundColor: COLORS, borderColor:'#0f1a28', borderWidth:2 }]
+            labels: sorted.map(([k]) => k.replace(/_/g, ' ')),
+            datasets: [{ 
+                data: sorted.map(([,v]) => v), 
+                backgroundColor: COLORS.slice(0, sorted.length), 
+                borderColor:'#0f1a28', 
+                borderWidth:2 
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             cutout: '65%',
-            plugins: { legend:{ display:false } }
+            plugins: { 
+                legend:{ display:false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
         }
     });
- 
+
+    // Clear and rebuild breakdown
     const bd = document.getElementById('type-breakdown');
-    sorted.forEach(([type,count],i) => {
-        bd.innerHTML += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-            <div style="display:flex;align-items:center;gap:8px;">
-                <span style="width:8px;height:8px;background:${COLORS[i]};border-radius:2px;flex-shrink:0;"></span>
-                <span style="font-size:11px;color:var(--text-secondary);font-family:var(--font-mono);">${type.replace(/_/g,' ')}</span>
+    bd.innerHTML = '';
+    sorted.forEach(([type, count], i) => {
+        const total = sorted.reduce((sum, [,c]) => sum + c, 0);
+        const percentage = ((count / total) * 100).toFixed(1);
+        bd.innerHTML += `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="width:8px;height:8px;background:${COLORS[i]};border-radius:2px;flex-shrink:0;"></span>
+                    <span style="font-size:11px;color:var(--text-secondary);font-family:var(--font-mono);">${type.replace(/_/g,' ')}</span>
+                </div>
+                <div style="text-align:right;">
+                    <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-primary);font-weight:600;">${count}</span>
+                    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-left:6px;">(${percentage}%)</span>
+                </div>
             </div>
-            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-primary);">${count}</span>
-        </div>`;
+        `;
     });
 }
+
+
 </script>
 {% endblock %}
  
