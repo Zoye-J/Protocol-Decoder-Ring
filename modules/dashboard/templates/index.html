@@ -1,181 +1,197 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block breadcrumb %}Dashboard{% endblock %}
- 
+
 {% block content %}
- 
-<!-- ── Header ── -->
-<div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between;">
+<div class="page-header flex items-center justify-between">
     <div>
-        <div class="page-title">Overview</div>
-        <div class="page-subtitle">Real-time network analysis & threat detection</div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-description">Real-time network analysis and threat detection overview</p>
     </div>
-    <div style="display:flex; gap:8px;">
-        <button class="btn-pdr btn-pdr-ghost" data-bs-toggle="modal" data-bs-target="#captureModal">
-            <i class="fas fa-circle" style="color:var(--accent-red); font-size:8px;"></i>
+    <div class="flex gap-2">
+        <button class="btn" data-bs-toggle="modal" data-bs-target="#captureModal">
+            <i class="fas fa-circle" style="color: var(--accent-danger); font-size: 8px;"></i>
             Live Capture
         </button>
-        <button class="btn-pdr btn-pdr-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
             <i class="fas fa-upload"></i>
             New Analysis
         </button>
     </div>
 </div>
- 
-<!-- ── Stat row ── -->
-<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
-    <div class="stat-card" style="--accent-color:var(--accent);">
+
+<!-- Stats Grid -->
+<div class="stat-grid">
+    <div class="stat-card">
         <div class="stat-label">Total Packets</div>
         <div class="stat-value" id="stat-packets">—</div>
-        <div class="stat-meta">across all captures</div>
+        <div class="stat-trend">across all captures</div>
         <i class="fas fa-network-wired stat-icon"></i>
     </div>
-    <div class="stat-card" style="--accent-color:var(--accent-red);">
+    <div class="stat-card">
         <div class="stat-label">Active Alerts</div>
         <div class="stat-value" id="stat-alerts">—</div>
-        <div class="stat-meta">requiring attention</div>
+        <div class="stat-trend">requiring attention</div>
         <i class="fas fa-bell stat-icon"></i>
     </div>
-    <div class="stat-card" style="--accent-color:var(--accent-green);">
+    <div class="stat-card">
         <div class="stat-label">Signatures</div>
         <div class="stat-value" id="stat-signatures">—</div>
-        <div class="stat-meta">rules generated</div>
+        <div class="stat-trend">rules generated</div>
         <i class="fas fa-shield-alt stat-icon"></i>
     </div>
-    <div class="stat-card" style="--accent-color:var(--accent-purple);">
+    <div class="stat-card">
         <div class="stat-label">Storage Used</div>
         <div class="stat-value" id="stat-storage">—</div>
-        <div class="stat-meta">output & captures</div>
+        <div class="stat-trend">output & captures</div>
         <i class="fas fa-database stat-icon"></i>
     </div>
 </div>
- 
-<!-- ── Charts row ── -->
-<div style="display:grid; grid-template-columns:1fr 380px; gap:16px; margin-bottom:24px;">
-    <div class="pdr-card">
-        <div class="card-head">
-            <div class="card-head-title"><i class="fas fa-chart-line icon"></i> Traffic Timeline</div>
-            <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted);">LIVE FEED</div>
+
+<!-- Charts Row -->
+<div style="display: grid; grid-template-columns: 1fr 380px; gap: 16px; margin-bottom: 24px;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fas fa-chart-line"></i>
+                Traffic Timeline
+            </div>
+            <span class="badge badge-info" id="live-indicator">LIVE</span>
         </div>
-        <div class="card-body-pad">
+        <div class="card-body">
             <canvas id="trafficChart" height="180"></canvas>
         </div>
     </div>
-    <div class="pdr-card">
-        <div class="card-head">
-            <div class="card-head-title"><i class="fas fa-circle-notch icon"></i> Protocol Mix</div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fas fa-circle-notch"></i>
+                Protocol Distribution
+            </div>
         </div>
-        <div class="card-body-pad">
+        <div class="card-body">
             <canvas id="protocolChart" height="180"></canvas>
-            <div id="proto-legend" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+            <div id="protocolLegend" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
         </div>
     </div>
 </div>
- 
-<!-- ── Tables row ── -->
-<div style="display:grid; grid-template-columns:1fr 340px; gap:16px; margin-bottom:24px;">
- 
-    <!-- Analyses table -->
-    <div class="pdr-card">
-        <div class="card-head">
-            <div class="card-head-title"><i class="fas fa-list icon"></i> Recent Analyses</div>
-            <a href="/api/v1/analyses" class="btn-pdr btn-pdr-ghost" style="font-size:11px; padding:5px 10px;">View all</a>
+
+<!-- Recent Analyses & System Status -->
+<div style="display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-bottom: 24px;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fas fa-list"></i>
+                Recent Analyses
+            </div>
+            <a href="/api/v1/analyses" class="btn btn-sm" target="_blank">View API</a>
         </div>
-        <table class="pdr-table">
-            <thead>
-                <tr>
-                    <th>Analysis ID</th>
-                    <th>Timestamp</th>
-                    <th>Packets</th>
-                    <th>Alerts</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody id="analyses-tbody">
-                {% for a in recent_analyses %}
-                <tr>
-                    <td style="font-family:var(--font-mono); font-size:11px; color:var(--accent);">{{ a.id }}</td>
-                    <td style="font-family:var(--font-mono); font-size:11px;">{{ a.timestamp[:19] if a.timestamp else '—' }}</td>
-                    <td>{{ a.packets }}</td>
-                    <td>
-                        {% if a.alerts > 0 %}
-                        <span class="badge-pdr badge-high">{{ a.alerts }}</span>
-                        {% else %}
-                        <span style="color:var(--text-muted); font-size:12px;">0</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="/analysis/{{ a.id }}" class="btn-pdr btn-pdr-ghost" style="font-size:11px; padding:4px 10px;">
-                            View <i class="fas fa-arrow-right" style="font-size:10px;"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:32px; font-family:var(--font-mono); font-size:12px;">
-                        No analyses yet — run a capture to get started
-                    </td>
-                </tr>
+        <div class="table-container">
+            <table class="table" id="analyses-table">
+                <thead>
+                    <tr>
+                        <th>Analysis ID</th>
+                        <th>Time</th>
+                        <th>Packets</th>
+                        <th>Alerts</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="analyses-tbody">
+                    {% for a in recent_analyses %}
+                    <tr>
+                        <td><span class="text-mono text-accent">{{ a.id }}</span></td>
+                        <td><span class="text-mono">{{ a.timestamp[:16] if a.timestamp else '—' }}</span></td>
+                        <td>{{ a.packets }}</td>
+                        <td>
+                            {% if a.alerts > 0 %}
+                            <span class="badge badge-high">{{ a.alerts }}</span>
+                            {% else %}
+                            <span style="color: var(--text-muted);">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/analysis/{{ a.id }}" class="btn btn-sm">
+                                View <i class="fas fa-arrow-right" style="font-size: 10px;"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                            No analyses yet — start a capture to begin
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fas fa-server"></i>
+                System Status
+            </div>
+        </div>
+        <div class="card-body">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                {% set modules = [
+                    ('Sandbox Manager', 'sandbox', 'fa-box'),
+                    ('Packet Capture', 'packet_capture', 'fa-network-wired'),
+                    ('Protocol Analyzer', 'protocol_analyzer', 'fa-sitemap'),
+                    ('Exfiltration Detector', 'exfiltration_detector', 'fa-eye'),
+                    ('Signature Generator', 'signature_generator', 'fa-shield-alt'),
+                ] %}
+                
+                {% for label, key, icon in modules %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas {{ icon }}" style="color: var(--text-muted); width: 16px;"></i>
+                        <span style="font-size: 12px;">{{ label }}</span>
+                    </div>
+                    {% if system_status.modules.get(key, False) %}
+                    <span class="badge badge-low">● Online</span>
+                    {% else %}
+                    <span class="badge badge-high">● Offline</span>
+                    {% endif %}
+                </div>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
- 
-    <!-- System status -->
-    <div class="pdr-card">
-        <div class="card-head">
-            <div class="card-head-title"><i class="fas fa-server icon"></i> System Status</div>
-        </div>
-        <div class="card-body-pad" style="display:flex; flex-direction:column; gap:10px;">
-            {% set modules = [
-                ('Sandbox Manager',     'sandbox',              'fas fa-box'),
-                ('Packet Capture',      'packet_capture',       'fas fa-network-wired'),
-                ('Protocol Analyzer',   'protocol_analyzer',    'fas fa-sitemap'),
-                ('Exfil Detector',      'exfiltration_detector','fas fa-eye'),
-                ('Signature Generator', 'signature_generator',  'fas fa-shield-alt'),
-            ] %}
-            {% for label, key, icon in modules %}
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--bg-elevated); border-radius:var(--radius-md); border:1px solid var(--border);">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="{{ icon }}" style="color:var(--text-muted); font-size:12px; width:14px;"></i>
-                    <span style="font-size:12px; color:var(--text-secondary);">{{ label }}</span>
-                </div>
-                {% if system_status.modules.get(key, False) %}
-                <span class="badge-pdr badge-low">● Online</span>
-                {% else %}
-                <span class="badge-pdr badge-high">● Offline</span>
-                {% endif %}
             </div>
-            {% endfor %}
- 
-            <div style="margin-top:8px; padding:10px 14px; background:var(--bg-base); border-radius:var(--radius-md); border:1px solid var(--border);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                    <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em;">Active Analyses</span>
-                    <span class="badge-pdr badge-info">{{ system_status.active_analyses }}</span>
+            
+            <div style="margin-top: 16px; padding: 16px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span class="text-mono" style="color: var(--text-muted);">Active Analyses</span>
+                    <span class="badge badge-info">{{ system_status.active_analyses }}</span>
                 </div>
-                <div style="display:flex; justify-content:space-between;">
-                    <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em;">Output Storage</span>
-                    <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">{{ system_status.storage.output }} MB</span>
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="text-mono" style="color: var(--text-muted);">Output Storage</span>
+                    <span class="text-mono">{{ system_status.storage.output }} MB</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
- 
-<!-- ── Recent alerts ── -->
-<div class="pdr-card">
-    <div class="card-head">
-        <div class="card-head-title"><i class="fas fa-bell icon"></i> Recent Alerts</div>
-        <a href="{{ url_for('alerts_view') }}" class="btn-pdr btn-pdr-ghost" style="font-size:11px; padding:5px 10px;">All alerts</a>
+
+<!-- Recent Alerts -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fas fa-bell"></i>
+            Recent Alerts
+        </div>
+        <a href="{{ url_for('alerts_view') }}" class="btn btn-sm">View All</a>
     </div>
-    <div class="card-body-pad">
+    <div class="card-body">
         <div id="recent-alerts-list">
-            <div style="text-align:center; padding:24px; font-family:var(--font-mono); font-size:12px; color:var(--text-muted);">Loading alerts…</div>
+            <div style="text-align: center; padding: 32px; color: var(--text-muted);">Loading alerts…</div>
         </div>
     </div>
 </div>
- 
-<!-- ── Upload Modal ── -->
+
+<!-- Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -183,193 +199,302 @@
                 <h5 class="modal-title">New Analysis</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
-                <div>
-                    <label class="form-label-pdr">Target File</label>
-                    <input class="pdr-input" type="file" id="fileInput">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Target File</label>
+                    <input class="form-control" type="file" id="fileInput" accept=".exe,.dll,.bin">
                 </div>
-                <div>
-                    <label class="form-label-pdr">Timeout (seconds)</label>
-                    <input class="pdr-input" type="number" id="timeoutInput" value="60" min="10" max="300">
+                <div class="form-group">
+                    <label class="form-label">Timeout (seconds)</label>
+                    <input class="form-control" type="number" id="timeoutInput" value="60" min="10" max="300">
                 </div>
-                <div id="uploadProgress" style="display:none;">
-                    <div style="height:2px; background:var(--border); border-radius:1px; overflow:hidden;">
-                        <div style="height:100%; background:var(--accent); animation:progress 1.5s ease-in-out infinite; width:40%;"></div>
+                <div class="form-group">
+                    <label class="form-label">Arguments (optional)</label>
+                    <input class="form-control" type="text" id="argsInput" placeholder="e.g., --verbose">
+                </div>
+                <div id="uploadProgress" style="display: none;">
+                    <div class="progress" style="margin-bottom: 8px;">
+                        <div class="progress-bar" id="uploadProgressBar" style="width: 0%;"></div>
                     </div>
-                    <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted); margin-top:6px;">Uploading and analyzing…</div>
+                    <div class="text-mono" style="font-size: 11px; color: var(--text-muted);" id="uploadStatus">Preparing…</div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-pdr btn-pdr-primary" id="uploadBtn">Start Analysis</button>
+                <button class="btn" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" id="uploadBtn">Start Analysis</button>
             </div>
         </div>
     </div>
 </div>
- 
-<!-- ── Capture Modal ── -->
+
+<!-- Capture Modal -->
 <div class="modal fade" id="captureModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Live Packet Capture</h5>
+                <h5 class="modal-title">Live Capture</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
-                <div>
-                    <label class="form-label-pdr">Network Interface</label>
-                    <select class="pdr-select" id="interfaceSelect" style="width:100%;">
-                        <option value="">Default Interface (auto)</option>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Network Interface</label>
+                    <select class="form-select" id="interfaceSelect">
+                        <option value="">Default Interface</option>
                     </select>
                 </div>
-                <div>
-                    <label class="form-label-pdr">Duration (seconds)</label>
-                    <input class="pdr-input" type="number" id="durationInput" value="30" min="5" max="300">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label class="form-label">Duration (s)</label>
+                        <input class="form-control" type="number" id="durationInput" value="30" min="5" max="300">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max Packets</label>
+                        <input class="form-control" type="number" id="maxPacketsInput" value="10000" min="100">
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label-pdr">BPF Filter (optional)</label>
-                    <input class="pdr-input" type="text" id="filterInput" placeholder="e.g. port 80 or host 1.2.3.4">
+                <div class="form-group">
+                    <label class="form-label">BPF Filter (optional)</label>
+                    <input class="form-control" type="text" id="filterInput" placeholder="e.g., port 80 or host 1.2.3.4">
+                </div>
+                <div id="captureProgress" style="display: none;">
+                    <div class="progress" style="margin-bottom: 8px;">
+                        <div class="progress-bar" id="captureProgressBar" style="width: 0%;"></div>
+                    </div>
+                    <div class="text-mono" style="font-size: 11px; color: var(--text-muted);" id="captureStatus">Starting…</div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-pdr btn-pdr-success" id="startCaptureBtn">
-                    <i class="fas fa-circle" style="font-size:8px;"></i> Start Capture
+                <button class="btn" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-success" id="startCaptureBtn">
+                    <i class="fas fa-play"></i> Start Capture
                 </button>
             </div>
         </div>
     </div>
 </div>
- 
-<style>
-@keyframes progress { 0%{margin-left:-40%} 100%{margin-left:100%} }
-</style>
- 
 {% endblock %}
- 
+
 {% block extra_js %}
 <script>
+let trafficChart, protocolChart;
+let captureSocket = null;
+
 $(document).ready(function() {
     loadStats();
     loadRecentAlerts();
     initCharts();
-});
- 
-function loadStats() {
-    $.get('/api/v1/status', function(d) {
-        $('#stat-storage').text(d.storage.output + ' MB');
-        $('#stat-alerts').text('—');
+    loadInterfaces();
+    
+    // File upload handler
+    $('#uploadBtn').on('click', function() {
+        const file = $('#fileInput')[0].files[0];
+        if (!file) {
+            showToast('warning', 'Please select a file');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('timeout', $('#timeoutInput').val());
+        
+        $('#uploadProgress').show();
+        $('#uploadBtn').prop('disabled', true).text('Uploading…');
+        
+        $.ajax({
+            url: '/api/v1/analyze/file',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-API-Key': 'change-this-in-production' },
+            xhr: function() {
+                const xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total) * 100;
+                        $('#uploadProgressBar').css('width', percent + '%');
+                        $('#uploadStatus').text(`Uploading: ${Math.round(percent)}%`);
+                    }
+                });
+                return xhr;
+            },
+            success: function(response) {
+                $('#uploadStatus').text('Analysis started in background');
+                showToast('success', 'Analysis started - ID: ' + response.analysis_id);
+                setTimeout(() => {
+                    $('#uploadModal').modal('hide');
+                    $('#uploadProgress').hide();
+                    $('#uploadProgressBar').css('width', '0%');
+                    $('#uploadBtn').prop('disabled', false).text('Start Analysis');
+                    $('#fileInput').val('');
+                }, 1500);
+            },
+            error: function(xhr) {
+                showToast('error', xhr.responseJSON?.error || 'Upload failed');
+                $('#uploadProgress').hide();
+                $('#uploadBtn').prop('disabled', false).text('Start Analysis');
+            }
+        });
     });
-    $.get('/api/v1/analyses', function(d) {
-        const totalPackets = d.reduce((s,a) => s+(a.packets||0), 0);
-        const totalAlerts  = d.reduce((s,a) => s+(a.alerts||0), 0);
+    
+    // Live capture handler
+    $('#startCaptureBtn').on('click', function() {
+        const duration = $('#durationInput').val();
+        const interface = $('#interfaceSelect').val();
+        const filter = $('#filterInput').val();
+        
+        $('#captureProgress').show();
+        $('#startCaptureBtn').prop('disabled', true).text('Capturing…');
+        
+        captureSocket = io();
+        captureSocket.emit('start_capture', {
+            interface: interface,
+            duration: parseInt(duration),
+            filter: filter,
+            max_packets: parseInt($('#maxPacketsInput').val())
+        });
+        
+        captureSocket.on('capture_update', function(data) {
+            const percent = (data.duration / parseInt(duration)) * 100;
+            $('#captureProgressBar').css('width', percent + '%');
+            $('#captureStatus').text(`${data.packet_count} packets · ${formatBytes(data.bytes)} · ${data.duration.toFixed(1)}s`);
+        });
+        
+        captureSocket.on('capture_complete', function(data) {
+            showToast('success', `Capture complete: ${data.packet_count} packets`);
+            $('#captureModal').modal('hide');
+            $('#captureProgress').hide();
+            $('#captureProgressBar').css('width', '0%');
+            $('#startCaptureBtn').prop('disabled', false).html('<i class="fas fa-play"></i> Start Capture');
+            captureSocket.disconnect();
+            loadStats(); // Refresh stats
+        });
+    });
+});
+
+function loadStats() {
+    $.get('/api/v1/status', function(data) {
+        $('#stat-storage').text(data.storage.output + ' MB');
+    });
+    
+    $.get('/api/v1/analyses?limit=100', function(data) {
+        const totalPackets = data.reduce((sum, a) => sum + (a.packets || 0), 0);
+        const totalAlerts = data.reduce((sum, a) => sum + (a.alerts || 0), 0);
         $('#stat-packets').text(formatNumber(totalPackets));
         $('#stat-alerts').text(formatNumber(totalAlerts));
     });
-    $.get('/api/v1/signatures', function(d) {
-        $('#stat-signatures').text(d.length);
+    
+    $.get('/api/v1/signatures', function(data) {
+        $('#stat-signatures').text(data.length);
     });
 }
- 
+
 function loadRecentAlerts() {
     $.get('/api/v1/alerts?limit=5', function(alerts) {
         const container = $('#recent-alerts-list');
+        container.empty();
+        
         if (!alerts.length) {
-            container.html('<div style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">No alerts found</div>');
+            container.html('<div style="text-align: center; padding: 32px; color: var(--text-muted);">No alerts found</div>');
             return;
         }
-        container.empty();
-        alerts.forEach(a => {
-            const time = a.timestamp ? new Date(a.timestamp*1000).toLocaleString() : '';
+        
+        alerts.forEach(alert => {
+            const time = alert.timestamp ? new Date(alert.timestamp * 1000).toLocaleString() : '';
             container.append(`
-                <div class="alert-item ${a.severity}">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                        <span class="alert-type">${a.type}</span>
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span class="badge-pdr badge-${a.severity}">${a.severity.toUpperCase()}</span>
+                <div class="alert-item ${alert.severity}">
+                    <div class="alert-header">
+                        <span class="alert-type">${alert.type}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="badge badge-${alert.severity}">${alert.severity.toUpperCase()}</span>
                             <span class="alert-time">${time}</span>
                         </div>
                     </div>
-                    <div class="alert-description">${a.description||''}</div>
+                    <div class="alert-description">${alert.description || ''}</div>
                 </div>
             `);
         });
     });
 }
- 
+
+function loadInterfaces() {
+    // This would fetch interfaces from the backend
+    const select = $('#interfaceSelect');
+    select.append('<option value="eth0">eth0</option>');
+    select.append('<option value="wlan0">wlan0</option>');
+}
+
 function initCharts() {
-    const COLORS = ['#00d4ff','#2ed573','#ffa502','#a29bfe','#ff4757','#fd9644'];
-    const monoFont = 'JetBrains Mono';
-    Chart.defaults.color = '#8899bb';
-    Chart.defaults.font.family = monoFont;
-    Chart.defaults.font.size = 11;
- 
-    /* Traffic chart */
-    const tCtx = document.getElementById('trafficChart').getContext('2d');
-    new Chart(tCtx, {
+    const ctx1 = document.getElementById('trafficChart').getContext('2d');
+    trafficChart = new Chart(ctx1, {
         type: 'line',
         data: {
-            labels: Array.from({length:12},(_,i)=>i*5+'s'),
+            labels: Array.from({length: 20}, (_, i) => i + 's'),
             datasets: [{
-                label: 'Packets',
-                data: Array.from({length:12},()=>Math.floor(Math.random()*80+10)),
-                borderColor: '#00d4ff',
-                backgroundColor: 'rgba(0,212,255,.06)',
-                borderWidth: 1.5,
+                label: 'Packets/s',
+                data: Array.from({length: 20}, () => Math.floor(Math.random() * 100 + 10)),
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59,130,246,0.1)',
+                borderWidth: 2,
                 fill: true,
-                tension: .4,
-                pointRadius: 2,
-                pointBackgroundColor: '#00d4ff'
+                tension: 0.4,
+                pointRadius: 2
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display:false } },
+            plugins: {
+                legend: { display: false }
+            },
             scales: {
-                x: { grid: { color:'rgba(0,212,255,.05)' }, ticks:{font:{family:monoFont,size:10}} },
-                y: { grid: { color:'rgba(0,212,255,.05)' }, ticks:{font:{family:monoFont,size:10}} }
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#9CA3AF' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9CA3AF' }
+                }
             }
         }
     });
- 
-    /* Protocol donut */
-    $.get('/api/v1/analyses', function(analyses) {
-        const proto_agg = {};
-        if (!analyses.length) {
-            const pCtx = document.getElementById('protocolChart').getContext('2d');
-            renderProtoChart(pCtx, ['TCP','UDP','DNS','ICMP','Other'],[56,22,14,5,3], COLORS, monoFont);
-            return;
-        }
-        // Use first analysis for demo
-        const pCtx = document.getElementById('protocolChart').getContext('2d');
-        renderProtoChart(pCtx, ['TCP','UDP','DNS','ICMP','Other'],[56,22,14,5,3], COLORS, monoFont);
-    }).fail(function() {
-        const pCtx = document.getElementById('protocolChart').getContext('2d');
-        renderProtoChart(pCtx, ['TCP','UDP','DNS','ICMP','Other'],[56,22,14,5,3], COLORS, monoFont);
-    });
-}
- 
-function renderProtoChart(ctx, labels, values, colors, font) {
-    new Chart(ctx, {
+    
+    const ctx2 = document.getElementById('protocolChart').getContext('2d');
+    const protocolData = [45, 30, 15, 10];
+    protocolChart = new Chart(ctx2, {
         type: 'doughnut',
         data: {
-            labels,
-            datasets: [{ data: values, backgroundColor: colors, borderColor: '#0f1a28', borderWidth: 2 }]
+            labels: ['TCP', 'UDP', 'DNS', 'ICMP'],
+            datasets: [{
+                data: protocolData,
+                backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'],
+                borderColor: '#1E2024',
+                borderWidth: 2
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '68%',
-            plugins: { legend: { display:false } }
+            cutout: '70%',
+            plugins: {
+                legend: { display: false }
+            }
         }
     });
-    const legend = document.getElementById('proto-legend');
-    labels.forEach((l,i) => {
-        const el = document.createElement('div');
-        el.style.cssText='display:flex;align-items:center;gap:5px;font-size:10px;color:#8899bb;font-family:JetBrains Mono';
-        el.innerHTML=`<span style="width:8px;height:8px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></span>${l}`;
-        legend.appendChild(el);
+    
+    // Generate legend
+    const legend = $('#protocolLegend');
+    ['TCP', 'UDP', 'DNS', 'ICMP'].forEach((label, i) => {
+        const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
+        legend.append(`
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 8px; height: 8px; background: ${colors[i]}; border-radius: 2px;"></span>
+                <span style="font-size: 11px; color: var(--text-secondary);">${label}</span>
+                <span style="font-size: 11px; color: var(--text-primary); font-family: var(--font-mono);">${protocolData[i]}</span>
+            </div>
+        `);
     });
 }
 </script>
