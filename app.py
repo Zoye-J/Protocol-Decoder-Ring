@@ -39,7 +39,6 @@ try:
 except ImportError as e:
     print(f"⚠️  Could not load API v2 blueprint: {e}")
 
-# Import other modules
 try:
     from modules.sandbox_manager import SandboxManager
     from modules.packet_capture import PacketCapture
@@ -47,7 +46,7 @@ try:
     from modules.exfiltration_detector import ExfiltrationDetector
     from modules.signature_generator import SignatureGenerator
     MODULES_AVAILABLE = True
-except ImportError as e:
+except (ImportError, KeyboardInterrupt, Exception) as e:
     MODULES_AVAILABLE = False
     print(f"⚠️  Some modules not available: {e}")
 

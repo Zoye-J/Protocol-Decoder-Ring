@@ -1,0 +1,5 @@
+2026-03-18 05:44:56,948 - PacketCapture.capture_20260318_054456 - INFO - [OK] Npcap found - packet capture available
+2026-03-18 05:44:56,950 - PacketCapture.capture_20260318_054456 - INFO - [TOOL] PacketCapture initialized with ID: capture_20260318_054456
+2026-03-18 05:44:56,953 - PacketCapture.capture_20260318_054456 - INFO - [TOOL] Capture method: scapy_npcap
+2026-03-18 05:44:57,011 - PacketCapture.capture_20260318_054456 - INFO - [NET] Found 56 network interfaces
+2026-03-18 05:44:57,014 - PacketCapture.capture_20260318_054456 - INFO - [CLEAN] Packet capture cleaned up

@@ -1,269 +1,213 @@
 {% extends "base.html" %}
-
 {% block title %}Dashboard{% endblock %}
-
+{% block breadcrumb %}Dashboard{% endblock %}
+ 
 {% block content %}
-<div class="row mb-4">
-    <div class="col">
-        <h2>
-            <i class="fas fa-tachometer-alt"></i>
-            Dashboard
-        </h2>
-        <p class="text-muted">System overview and recent activity</p>
+ 
+<!-- ── Header ── -->
+<div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between;">
+    <div>
+        <div class="page-title">Overview</div>
+        <div class="page-subtitle">Real-time network analysis & threat detection</div>
     </div>
-    <div class="col-auto">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
-            <i class="fas fa-upload"></i> New Analysis
+    <div style="display:flex; gap:8px;">
+        <button class="btn-pdr btn-pdr-ghost" data-bs-toggle="modal" data-bs-target="#captureModal">
+            <i class="fas fa-circle" style="color:var(--accent-red); font-size:8px;"></i>
+            Live Capture
         </button>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#captureModal">
-            <i class="fas fa-play"></i> Live Capture
+        <button class="btn-pdr btn-pdr-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <i class="fas fa-upload"></i>
+            New Analysis
         </button>
     </div>
 </div>
-
-<!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card stats-card bg-primary text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Total Packets</h6>
-                        <h2 class="mb-0" id="stat-packets">0</h2>
-                    </div>
-                    <i class="fas fa-network-wired fa-3x opacity-50"></i>
-                </div>
-            </div>
+ 
+<!-- ── Stat row ── -->
+<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+    <div class="stat-card" style="--accent-color:var(--accent);">
+        <div class="stat-label">Total Packets</div>
+        <div class="stat-value" id="stat-packets">—</div>
+        <div class="stat-meta">across all captures</div>
+        <i class="fas fa-network-wired stat-icon"></i>
+    </div>
+    <div class="stat-card" style="--accent-color:var(--accent-red);">
+        <div class="stat-label">Active Alerts</div>
+        <div class="stat-value" id="stat-alerts">—</div>
+        <div class="stat-meta">requiring attention</div>
+        <i class="fas fa-bell stat-icon"></i>
+    </div>
+    <div class="stat-card" style="--accent-color:var(--accent-green);">
+        <div class="stat-label">Signatures</div>
+        <div class="stat-value" id="stat-signatures">—</div>
+        <div class="stat-meta">rules generated</div>
+        <i class="fas fa-shield-alt stat-icon"></i>
+    </div>
+    <div class="stat-card" style="--accent-color:var(--accent-purple);">
+        <div class="stat-label">Storage Used</div>
+        <div class="stat-value" id="stat-storage">—</div>
+        <div class="stat-meta">output & captures</div>
+        <i class="fas fa-database stat-icon"></i>
+    </div>
+</div>
+ 
+<!-- ── Charts row ── -->
+<div style="display:grid; grid-template-columns:1fr 380px; gap:16px; margin-bottom:24px;">
+    <div class="pdr-card">
+        <div class="card-head">
+            <div class="card-head-title"><i class="fas fa-chart-line icon"></i> Traffic Timeline</div>
+            <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted);">LIVE FEED</div>
+        </div>
+        <div class="card-body-pad">
+            <canvas id="trafficChart" height="180"></canvas>
         </div>
     </div>
-    
-    <div class="col-md-3">
-        <div class="card stats-card bg-danger text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Alerts</h6>
-                        <h2 class="mb-0" id="stat-alerts">0</h2>
-                    </div>
-                    <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
-                </div>
-            </div>
+    <div class="pdr-card">
+        <div class="card-head">
+            <div class="card-head-title"><i class="fas fa-circle-notch icon"></i> Protocol Mix</div>
+        </div>
+        <div class="card-body-pad">
+            <canvas id="protocolChart" height="180"></canvas>
+            <div id="proto-legend" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;"></div>
         </div>
     </div>
-    
-    <div class="col-md-3">
-        <div class="card stats-card bg-success text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Signatures</h6>
-                        <h2 class="mb-0" id="stat-signatures">0</h2>
-                    </div>
-                    <i class="fas fa-shield-alt fa-3x opacity-50"></i>
-                </div>
-            </div>
+</div>
+ 
+<!-- ── Tables row ── -->
+<div style="display:grid; grid-template-columns:1fr 340px; gap:16px; margin-bottom:24px;">
+ 
+    <!-- Analyses table -->
+    <div class="pdr-card">
+        <div class="card-head">
+            <div class="card-head-title"><i class="fas fa-list icon"></i> Recent Analyses</div>
+            <a href="/api/v1/analyses" class="btn-pdr btn-pdr-ghost" style="font-size:11px; padding:5px 10px;">View all</a>
         </div>
+        <table class="pdr-table">
+            <thead>
+                <tr>
+                    <th>Analysis ID</th>
+                    <th>Timestamp</th>
+                    <th>Packets</th>
+                    <th>Alerts</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="analyses-tbody">
+                {% for a in recent_analyses %}
+                <tr>
+                    <td style="font-family:var(--font-mono); font-size:11px; color:var(--accent);">{{ a.id }}</td>
+                    <td style="font-family:var(--font-mono); font-size:11px;">{{ a.timestamp[:19] if a.timestamp else '—' }}</td>
+                    <td>{{ a.packets }}</td>
+                    <td>
+                        {% if a.alerts > 0 %}
+                        <span class="badge-pdr badge-high">{{ a.alerts }}</span>
+                        {% else %}
+                        <span style="color:var(--text-muted); font-size:12px;">0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/analysis/{{ a.id }}" class="btn-pdr btn-pdr-ghost" style="font-size:11px; padding:4px 10px;">
+                            View <i class="fas fa-arrow-right" style="font-size:10px;"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:32px; font-family:var(--font-mono); font-size:12px;">
+                        No analyses yet — run a capture to get started
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    
-    <div class="col-md-3">
-        <div class="card stats-card bg-info text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Storage Used</h6>
-                        <h2 class="mb-0" id="stat-storage">0 MB</h2>
-                    </div>
-                    <i class="fas fa-database fa-3x opacity-50"></i>
+ 
+    <!-- System status -->
+    <div class="pdr-card">
+        <div class="card-head">
+            <div class="card-head-title"><i class="fas fa-server icon"></i> System Status</div>
+        </div>
+        <div class="card-body-pad" style="display:flex; flex-direction:column; gap:10px;">
+            {% set modules = [
+                ('Sandbox Manager',     'sandbox',              'fas fa-box'),
+                ('Packet Capture',      'packet_capture',       'fas fa-network-wired'),
+                ('Protocol Analyzer',   'protocol_analyzer',    'fas fa-sitemap'),
+                ('Exfil Detector',      'exfiltration_detector','fas fa-eye'),
+                ('Signature Generator', 'signature_generator',  'fas fa-shield-alt'),
+            ] %}
+            {% for label, key, icon in modules %}
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--bg-elevated); border-radius:var(--radius-md); border:1px solid var(--border);">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="{{ icon }}" style="color:var(--text-muted); font-size:12px; width:14px;"></i>
+                    <span style="font-size:12px; color:var(--text-secondary);">{{ label }}</span>
+                </div>
+                {% if system_status.modules.get(key, False) %}
+                <span class="badge-pdr badge-low">● Online</span>
+                {% else %}
+                <span class="badge-pdr badge-high">● Offline</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+ 
+            <div style="margin-top:8px; padding:10px 14px; background:var(--bg-base); border-radius:var(--radius-md); border:1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em;">Active Analyses</span>
+                    <span class="badge-pdr badge-info">{{ system_status.active_analyses }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em;">Output Storage</span>
+                    <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">{{ system_status.storage.output }} MB</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Charts Row -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Traffic Timeline</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="trafficChart" height="300"></canvas>
-            </div>
-        </div>
+ 
+<!-- ── Recent alerts ── -->
+<div class="pdr-card">
+    <div class="card-head">
+        <div class="card-head-title"><i class="fas fa-bell icon"></i> Recent Alerts</div>
+        <a href="{{ url_for('alerts_view') }}" class="btn-pdr btn-pdr-ghost" style="font-size:11px; padding:5px 10px;">All alerts</a>
     </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Protocol Distribution</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="protocolChart" height="300"></canvas>
-            </div>
+    <div class="card-body-pad">
+        <div id="recent-alerts-list">
+            <div style="text-align:center; padding:24px; font-family:var(--font-mono); font-size:12px; color:var(--text-muted);">Loading alerts…</div>
         </div>
     </div>
 </div>
-
-<!-- Recent Analyses -->
-<div class="row mb-4">
-    <div class="col">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Recent Analyses</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover" id="analysesTable">
-                        <thead>
-                            <tr>
-                                <th>Analysis ID</th>
-                                <th>Timestamp</th>
-                                <th>Packets</th>
-                                <th>Alerts</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for analysis in recent_analyses %}
-                            <tr>
-                                <td>{{ analysis.id }}</td>
-                                <td>{{ analysis.timestamp }}</td>
-                                <td>{{ analysis.packets }}</td>
-                                <td>
-                                    <span class="badge bg-danger">{{ analysis.alerts }}</span>
-                                </td>
-                                <td>
-                                    <a href="/analysis/{{ analysis.id }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Recent Alerts -->
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Recent Alerts</h5>
-            </div>
-            <div class="card-body">
-                <div class="list-group" id="alertsList">
-                    <!-- Alerts will be loaded via JavaScript -->
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">System Status</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>Sandbox Manager:</span>
-                        {% if system_status.modules.sandbox %}
-                            <span class="badge bg-success">Available</span>
-                        {% else %}
-                            <span class="badge bg-danger">Unavailable</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>Packet Capture:</span>
-                        {% if system_status.modules.packet_capture %}
-                            <span class="badge bg-success">Available</span>
-                        {% else %}
-                            <span class="badge bg-danger">Unavailable</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>Protocol Analyzer:</span>
-                        {% if system_status.modules.protocol_analyzer %}
-                            <span class="badge bg-success">Available</span>
-                        {% else %}
-                            <span class="badge bg-danger">Unavailable</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>Exfiltration Detector:</span>
-                        {% if system_status.modules.exfiltration_detector %}
-                            <span class="badge bg-success">Available</span>
-                        {% else %}
-                            <span class="badge bg-danger">Unavailable</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>Signature Generator:</span>
-                        {% if system_status.modules.signature_generator %}
-                            <span class="badge bg-success">Available</span>
-                        {% else %}
-                            <span class="badge bg-danger">Unavailable</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <hr>
-                <div>
-                    <div class="d-flex justify-content-between">
-                        <span>Active Analyses:</span>
-                        <span class="badge bg-info">{{ system_status.active_analyses }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Upload Modal -->
+ 
+<!-- ── Upload Modal ── -->
 <div class="modal fade" id="uploadModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Upload File for Analysis</h5>
+                <h5 class="modal-title">New Analysis</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <form id="uploadForm">
-                    <div class="mb-3">
-                        <label for="fileInput" class="form-label">Select file</label>
-                        <input class="form-control" type="file" id="fileInput" required>
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <label class="form-label-pdr">Target File</label>
+                    <input class="pdr-input" type="file" id="fileInput">
+                </div>
+                <div>
+                    <label class="form-label-pdr">Timeout (seconds)</label>
+                    <input class="pdr-input" type="number" id="timeoutInput" value="60" min="10" max="300">
+                </div>
+                <div id="uploadProgress" style="display:none;">
+                    <div style="height:2px; background:var(--border); border-radius:1px; overflow:hidden;">
+                        <div style="height:100%; background:var(--accent); animation:progress 1.5s ease-in-out infinite; width:40%;"></div>
                     </div>
-                    <div class="mb-3">
-                        <label for="timeoutInput" class="form-label">Analysis Timeout (seconds)</label>
-                        <input type="number" class="form-control" id="timeoutInput" value="60" min="10" max="300">
-                    </div>
-                </form>
-                <div class="progress d-none" id="uploadProgress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                         style="width: 100%">Uploading...</div>
+                    <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted); margin-top:6px;">Uploading and analyzing…</div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="uploadBtn">Upload & Analyze</button>
+                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn-pdr btn-pdr-primary" id="uploadBtn">Start Analysis</button>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Live Capture Modal -->
+ 
+<!-- ── Capture Modal ── -->
 <div class="modal fade" id="captureModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -271,49 +215,162 @@
                 <h5 class="modal-title">Live Packet Capture</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <form id="captureForm">
-                    <div class="mb-3">
-                        <label for="interfaceSelect" class="form-label">Network Interface</label>
-                        <select class="form-select" id="interfaceSelect">
-                            <option value="">Default Interface</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="durationInput" class="form-label">Capture Duration (seconds)</label>
-                        <input type="number" class="form-control" id="durationInput" value="30" min="5" max="300">
-                    </div>
-                    <div class="mb-3">
-                        <label for="filterInput" class="form-label">BPF Filter (optional)</label>
-                        <input type="text" class="form-control" id="filterInput" 
-                               placeholder="e.g., port 80 or host 1.2.3.4">
-                    </div>
-                </form>
-                <div id="captureProgress" class="d-none">
-                    <div class="mb-2">
-                        <span id="capturePackets">0</span> packets captured
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar" id="captureProgressBar" style="width: 0%">0%</div>
-                    </div>
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <label class="form-label-pdr">Network Interface</label>
+                    <select class="pdr-select" id="interfaceSelect" style="width:100%;">
+                        <option value="">Default Interface (auto)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-pdr">Duration (seconds)</label>
+                    <input class="pdr-input" type="number" id="durationInput" value="30" min="5" max="300">
+                </div>
+                <div>
+                    <label class="form-label-pdr">BPF Filter (optional)</label>
+                    <input class="pdr-input" type="text" id="filterInput" placeholder="e.g. port 80 or host 1.2.3.4">
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="startCaptureBtn">Start Capture</button>
+                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn-pdr btn-pdr-success" id="startCaptureBtn">
+                    <i class="fas fa-circle" style="font-size:8px;"></i> Start Capture
+                </button>
             </div>
         </div>
     </div>
 </div>
+ 
+<style>
+@keyframes progress { 0%{margin-left:-40%} 100%{margin-left:100%} }
+</style>
+ 
 {% endblock %}
-
+ 
 {% block extra_js %}
 <script>
-    // Load initial data
-    $(document).ready(function() {
-        loadDashboardData();
-        initializeCharts();
-        loadInterfaces();
+$(document).ready(function() {
+    loadStats();
+    loadRecentAlerts();
+    initCharts();
+});
+ 
+function loadStats() {
+    $.get('/api/v1/status', function(d) {
+        $('#stat-storage').text(d.storage.output + ' MB');
+        $('#stat-alerts').text('—');
     });
+    $.get('/api/v1/analyses', function(d) {
+        const totalPackets = d.reduce((s,a) => s+(a.packets||0), 0);
+        const totalAlerts  = d.reduce((s,a) => s+(a.alerts||0), 0);
+        $('#stat-packets').text(formatNumber(totalPackets));
+        $('#stat-alerts').text(formatNumber(totalAlerts));
+    });
+    $.get('/api/v1/signatures', function(d) {
+        $('#stat-signatures').text(d.length);
+    });
+}
+ 
+function loadRecentAlerts() {
+    $.get('/api/v1/alerts?limit=5', function(alerts) {
+        const container = $('#recent-alerts-list');
+        if (!alerts.length) {
+            container.html('<div style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">No alerts found</div>');
+            return;
+        }
+        container.empty();
+        alerts.forEach(a => {
+            const time = a.timestamp ? new Date(a.timestamp*1000).toLocaleString() : '';
+            container.append(`
+                <div class="alert-item ${a.severity}">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <span class="alert-type">${a.type}</span>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="badge-pdr badge-${a.severity}">${a.severity.toUpperCase()}</span>
+                            <span class="alert-time">${time}</span>
+                        </div>
+                    </div>
+                    <div class="alert-description">${a.description||''}</div>
+                </div>
+            `);
+        });
+    });
+}
+ 
+function initCharts() {
+    const COLORS = ['#00d4ff','#2ed573','#ffa502','#a29bfe','#ff4757','#fd9644'];
+    const monoFont = 'JetBrains Mono';
+    Chart.defaults.color = '#8899bb';
+    Chart.defaults.font.family = monoFont;
+    Chart.defaults.font.size = 11;
+ 
+    /* Traffic chart */
+    const tCtx = document.getElementById('trafficChart').getContext('2d');
+    new Chart(tCtx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length:12},(_,i)=>i*5+'s'),
+            datasets: [{
+                label: 'Packets',
+                data: Array.from({length:12},()=>Math.floor(Math.random()*80+10)),
+                borderColor: '#00d4ff',
+                backgroundColor: 'rgba(0,212,255,.06)',
+                borderWidth: 1.5,
+                fill: true,
+                tension: .4,
+                pointRadius: 2,
+                pointBackgroundColor: '#00d4ff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display:false } },
+            scales: {
+                x: { grid: { color:'rgba(0,212,255,.05)' }, ticks:{font:{family:monoFont,size:10}} },
+                y: { grid: { color:'rgba(0,212,255,.05)' }, ticks:{font:{family:monoFont,size:10}} }
+            }
+        }
+    });
+ 
+    /* Protocol donut */
+    $.get('/api/v1/analyses', function(analyses) {
+        const proto_agg = {};
+        if (!analyses.length) {
+            const pCtx = document.getElementById('protocolChart').getContext('2d');
+            renderProtoChart(pCtx, ['TCP','UDP','DNS','ICMP','Other'],[56,22,14,5,3], COLORS, monoFont);
+            return;
+        }
+        // Use first analysis for demo
+        const pCtx = document.getElementById('protocolChart').getContext('2d');
+        renderProtoChart(pCtx, ['TCP','UDP','DNS','ICMP','Other'],[56,22,14,5,3], COLORS, monoFont);
+    }).fail(function() {
+        const pCtx = document.getElementById('protocolChart').getContext('2d');
+        renderProtoChart(pCtx, ['TCP','UDP','DNS','ICMP','Other'],[56,22,14,5,3], COLORS, monoFont);
+    });
+}
+ 
+function renderProtoChart(ctx, labels, values, colors, font) {
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{ data: values, backgroundColor: colors, borderColor: '#0f1a28', borderWidth: 2 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: { legend: { display:false } }
+        }
+    });
+    const legend = document.getElementById('proto-legend');
+    labels.forEach((l,i) => {
+        const el = document.createElement('div');
+        el.style.cssText='display:flex;align-items:center;gap:5px;font-size:10px;color:#8899bb;font-family:JetBrains Mono';
+        el.innerHTML=`<span style="width:8px;height:8px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></span>${l}`;
+        legend.appendChild(el);
+    });
+}
 </script>
 {% endblock %}

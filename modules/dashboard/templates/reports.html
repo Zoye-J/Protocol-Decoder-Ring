@@ -1,183 +1,95 @@
 {% extends "base.html" %}
-
 {% block title %}Reports{% endblock %}
-
+{% block breadcrumb %}Reports{% endblock %}
+ 
 {% block content %}
-<div class="row mb-4">
-    <div class="col">
-        <h2>
-            <i class="fas fa-file-alt"></i>
-            Analysis Reports
-        </h2>
-        <p class="text-muted">Generated reports from sandbox analyses</p>
+ 
+<div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
+    <div>
+        <div class="page-title">Analysis Reports</div>
+        <div class="page-subtitle">Generated output from sandbox analyses</div>
     </div>
-    <div class="col-auto">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+    <div style="display:flex;gap:8px;">
+        <button class="btn-pdr btn-pdr-ghost" data-bs-toggle="modal" data-bs-target="#compareModal">
+            <i class="fas fa-columns"></i> Compare
+        </button>
+        <button class="btn-pdr btn-pdr-primary" data-bs-toggle="modal" data-bs-target="#generateReportModal">
             <i class="fas fa-plus"></i> New Report
         </button>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#compareModal">
-            <i class="fas fa-not-equal"></i> Compare
-        </button>
     </div>
 </div>
-
-<!-- Report List -->
-<div class="card">
-    <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs" id="reportTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="all-tab" data-bs-toggle="tab" href="#all">
-                    All Reports
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="json-tab" data-bs-toggle="tab" href="#json">
-                    JSON
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="text-tab" data-bs-toggle="tab" href="#text">
-                    Text
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="html-tab" data-bs-toggle="tab" href="#html">
-                    HTML
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="pdf-tab" data-bs-toggle="tab" href="#pdf">
-                    PDF
-                </a>
-            </li>
-        </ul>
+ 
+<!-- Storage summary -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+    <div class="stat-card" style="--accent-color:var(--accent);">
+        <div class="stat-label">Total Reports</div>
+        <div class="stat-value" id="count-total">—</div>
+        <i class="fas fa-file-alt stat-icon"></i>
     </div>
-    <div class="card-body">
-        <div class="tab-content" id="reportTabsContent">
-            <!-- All Reports Tab -->
-            <div class="tab-pane fade show active" id="all" role="tabpanel">
-                <table class="table table-hover" id="reportsTable">
-                    <thead>
-                        <tr>
-                            <th>Report Name</th>
-                            <th>Format</th>
-                            <th>Size</th>
-                            <th>Created</th>
-                            <th>Modified</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- JSON Reports Tab -->
-            <div class="tab-pane fade" id="json" role="tabpanel">
-                <table class="table table-hover" id="jsonReportsTable">
-                    <thead>
-                        <tr>
-                            <th>Report Name</th>
-                            <th>Size</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- Text Reports Tab -->
-            <div class="tab-pane fade" id="text" role="tabpanel">
-                <table class="table table-hover" id="textReportsTable">
-                    <thead>
-                        <tr>
-                            <th>Report Name</th>
-                            <th>Size</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- HTML Reports Tab -->
-            <div class="tab-pane fade" id="html" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="list-group" id="htmlReportList">
-                            <!-- Populated by JavaScript -->
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Report Preview</h5>
-                            </div>
-                            <div class="card-body">
-                                <iframe id="htmlPreview" style="width: 100%; height: 500px; border: none;"></iframe>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- PDF Reports Tab -->
-            <div class="tab-pane fade" id="pdf" role="tabpanel">
-                <table class="table table-hover" id="pdfReportsTable">
-                    <thead>
-                        <tr>
-                            <th>Report Name</th>
-                            <th>Size</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+    <div class="stat-card" style="--accent-color:var(--accent-green);">
+        <div class="stat-label">JSON</div>
+        <div class="stat-value" id="count-json">—</div>
+        <i class="fas fa-code stat-icon"></i>
+    </div>
+    <div class="stat-card" style="--accent-color:var(--accent-amber);">
+        <div class="stat-label">Text</div>
+        <div class="stat-value" id="count-txt">—</div>
+        <i class="fas fa-file-alt stat-icon"></i>
+    </div>
+    <div class="stat-card" style="--accent-color:var(--accent-purple);">
+        <div class="stat-label">Storage Used</div>
+        <div class="stat-value" id="count-size">—</div>
+        <i class="fas fa-database stat-icon"></i>
+    </div>
+</div>
+ 
+<!-- Format filter + report list -->
+<div class="pdr-card">
+    <div class="card-head">
+        <div class="card-head-title"><i class="fas fa-file-alt icon"></i> Report Library</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <select class="pdr-select" id="format-filter" style="width:130px;">
+                <option value="">All Formats</option>
+                <option value="json">JSON</option>
+                <option value="txt">Text</option>
+                <option value="html">HTML</option>
+            </select>
+            <input class="pdr-input" id="search-reports" placeholder="Search…" style="width:180px;">
+        </div>
+    </div>
+ 
+    <table class="pdr-table" id="reports-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Format</th>
+                <th>Size</th>
+                <th>Modified</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="reports-tbody">
+            <tr><td colspan="5" style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">Loading reports…</td></tr>
+        </tbody>
+    </table>
+</div>
+ 
+<!-- Timeline -->
+<div style="display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:16px;">
+    <div class="pdr-card">
+        <div class="card-head"><div class="card-head-title"><i class="fas fa-clock icon"></i> Recent Activity</div></div>
+        <div class="card-body-pad">
+            <div id="timeline" style="display:flex;flex-direction:column;gap:0;"></div>
+        </div>
+    </div>
+    <div class="pdr-card">
+        <div class="card-head"><div class="card-head-title"><i class="fas fa-chart-pie icon"></i> By Format</div></div>
+        <div class="card-body-pad">
+            <canvas id="format-chart" height="220"></canvas>
         </div>
     </div>
 </div>
-
-<!-- Recent Reports Timeline -->
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Recent Activity</h5>
-            </div>
-            <div class="card-body">
-                <div class="timeline" id="reportTimeline">
-                    <!-- Populated by JavaScript -->
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Storage Usage</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="storageChart" height="200"></canvas>
-                <div class="mt-3">
-                    <div class="d-flex justify-content-between">
-                        <span>Total Storage:</span>
-                        <span id="totalStorage">0 MB</span>
-                    </div>
-                    <div class="progress mt-2">
-                        <div class="progress-bar bg-primary" id="storageProgress" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+ 
 <!-- Generate Report Modal -->
 <div class="modal fade" id="generateReportModal" tabindex="-1">
     <div class="modal-dialog">
@@ -186,545 +98,239 @@
                 <h5 class="modal-title">Generate Report</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <form id="reportForm">
-                    <div class="mb-3">
-                        <label class="form-label">Select Analysis</label>
-                        <select class="form-select" id="reportAnalysisSelect" required>
-                            <option value="">Choose an analysis...</option>
-                        </select>
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+                <div>
+                    <label class="form-label-pdr">Analysis</label>
+                    <select class="pdr-select" id="rpt-analysis" style="width:100%;"><option value="">Loading…</option></select>
+                </div>
+                <div>
+                    <label class="form-label-pdr">Format</label>
+                    <select class="pdr-select" id="rpt-format" style="width:100%;">
+                        <option value="json">JSON</option>
+                        <option value="text">Text</option>
+                        <option value="html">HTML</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-pdr">Include</label>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        {% for item in ['Charts','Packet Details','Signatures'] %}
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;">
+                            <input type="checkbox" checked style="accent-color:var(--accent);"> {{ item }}
+                        </label>
+                        {% endfor %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Report Format</label>
-                        <select class="form-select" id="reportFormatSelect" required>
-                            <option value="json">JSON</option>
-                            <option value="text">Text</option>
-                            <option value="html">HTML</option>
-                            <option value="pdf">PDF</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Report Title (optional)</label>
-                        <input type="text" class="form-control" id="reportTitle" 
-                               placeholder="My Analysis Report">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="includeCharts" checked>
-                            <label class="form-check-label">Include Charts</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="includePackets" checked>
-                            <label class="form-check-label">Include Packet Details</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="includeSignatures" checked>
-                            <label class="form-check-label">Include Signatures</label>
-                        </div>
-                    </div>
-                </form>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="generateReportBtn">Generate</button>
+                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn-pdr btn-pdr-primary" id="gen-rpt-btn" onclick="generateReport()">Generate</button>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Compare Reports Modal -->
+ 
+<!-- Compare Modal -->
 <div class="modal fade" id="compareModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Compare Reports</h5>
+                <h5 class="modal-title">Compare Analyses</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label">First Report</label>
-                        <select class="form-select" id="compareFirst" size="10">
-                            <!-- Populated by JavaScript -->
-                        </select>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                    <div>
+                        <label class="form-label-pdr">Analysis A</label>
+                        <select class="pdr-select" id="cmp-a" style="width:100%;height:160px;" size="6"></select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Second Report</label>
-                        <select class="form-select" id="compareSecond" size="10">
-                            <!-- Populated by JavaScript -->
-                        </select>
+                    <div>
+                        <label class="form-label-pdr">Analysis B</label>
+                        <select class="pdr-select" id="cmp-b" style="width:100%;height:160px;" size="6"></select>
                     </div>
                 </div>
-                
-                <div class="row mt-3">
-                    <div class="col">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="compareAlerts" checked>
-                            <label class="form-check-label">Compare Alerts</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="compareProtocols" checked>
-                            <label class="form-check-label">Compare Protocols</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="compareFlows" checked>
-                            <label class="form-check-label">Compare Flows</label>
-                        </div>
+                <div id="cmp-results" style="display:none;">
+                    <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;">
+                        <div id="cmp-output" style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);"></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="compareBtn">Compare</button>
+                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Close</button>
+                <button class="btn-pdr btn-pdr-primary" onclick="doCompare()">Compare</button>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Comparison Results Modal -->
-<div class="modal fade" id="comparisonResultsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Comparison Results</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <ul class="nav nav-tabs mb-3" id="comparisonTabs">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#compOverview">Overview</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#compAlerts">Alerts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#compProtocols">Protocols</a>
-                    </li>
-                </ul>
-                
-                <div class="tab-content">
-                    <div class="tab-pane active" id="compOverview">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>Report 1</h6>
-                                <pre id="compReport1"></pre>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Report 2</h6>
-                                <pre id="compReport2"></pre>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane" id="compAlerts">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>Common Alerts</h6>
-                                <pre id="compCommonAlerts"></pre>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Unique Alerts</h6>
-                                <pre id="compUniqueAlerts"></pre>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane" id="compProtocols">
-                        <canvas id="compProtocolChart" height="300"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+ 
 {% endblock %}
-
+ 
 {% block extra_js %}
 <script>
-    $(document).ready(function() {
-        loadReports();
-        loadAnalysesForReport();
-        loadTimeline();
-        initializeStorageChart();
+let allReports = [];
+ 
+$(document).ready(function(){
+    loadReports();
+    loadAnalysesForModals();
+    $('#format-filter, #search-reports').on('change input', renderReports);
+});
+ 
+function loadReports() {
+    $.get('/api/v1/reports', function(data) {
+        allReports = data;
+        updateStats();
+        renderReports();
+        renderTimeline();
+        renderFormatChart();
+    }).fail(()=>{
+        $('#reports-tbody').html('<tr><td colspan="5" style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">Could not load reports</td></tr>');
     });
-    
-    function loadReports() {
-        $.get('/api/v1/reports', function(reports) {
-            // All reports table
-            const tbody = $('#reportsTable tbody');
-            tbody.empty();
-            
-            reports.forEach(report => {
-                const icon = getFormatIcon(report.format);
-                tbody.append(`
-                    <tr>
-                        <td><i class="${icon}"></i> ${report.name}</td>
-                        <td><span class="badge bg-secondary">${report.format.toUpperCase()}</span></td>
-                        <td>${formatBytes(report.size * 1024)}</td>
-                        <td>${new Date(report.modified).toLocaleDateString()}</td>
-                        <td>${new Date(report.modified).toLocaleString()}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="viewReport('${report.path}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-success" onclick="downloadReport('${report.path}')">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteReport('${report.path}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `);
-            });
-            
-            // Filter by format
-            const jsonReports = reports.filter(r => r.format === 'json');
-            const textReports = reports.filter(r => r.format === 'txt' || r.format === 'text');
-            const htmlReports = reports.filter(r => r.format === 'html');
-            const pdfReports = reports.filter(r => r.format === 'pdf');
-            
-            updateFormatTable('#jsonReportsTable tbody', jsonReports);
-            updateFormatTable('#textReportsTable tbody', textReports);
-            updateFormatTable('#pdfReportsTable tbody', pdfReports);
-            updateHtmlList(htmlReports);
-            
-            // Update storage stats
-            updateStorageStats(reports);
-        });
+}
+ 
+function updateStats() {
+    $('#count-total').text(allReports.length);
+    $('#count-json').text(allReports.filter(r=>r.format==='json').length);
+    $('#count-txt').text(allReports.filter(r=>r.format==='txt').length);
+    const totalBytes = allReports.reduce((s,r)=>s+(r.size*1024),0);
+    $('#count-size').text(formatBytes(totalBytes));
+}
+ 
+function renderReports() {
+    const fmt  = $('#format-filter').val();
+    const q    = $('#search-reports').val().toLowerCase();
+    const list = fmt||q ? allReports.filter(r=>{
+        if (fmt && r.format!==fmt) return false;
+        if (q && !r.name.toLowerCase().includes(q)) return false;
+        return true;
+    }) : allReports;
+ 
+    const fmtIcons = {json:'fas fa-code',txt:'fas fa-file-alt',html:'fab fa-html5',pdf:'fas fa-file-pdf'};
+    const fmtColors = {json:'var(--accent)',txt:'var(--accent-green)',html:'var(--accent-amber)',pdf:'var(--accent-red)'};
+ 
+    const tbody = $('#reports-tbody');
+    tbody.empty();
+    if (!list.length) {
+        tbody.html('<tr><td colspan="5" style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">No reports found</td></tr>');
+        return;
     }
-    
-    function updateFormatTable(selector, reports) {
-        const tbody = $(selector);
-        tbody.empty();
-        
-        reports.forEach(report => {
-            tbody.append(`
-                <tr>
-                    <td>${report.name}</td>
-                    <td>${formatBytes(report.size * 1024)}</td>
-                    <td>${new Date(report.modified).toLocaleDateString()}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="viewReport('${report.path}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-success" onclick="downloadReport('${report.path}')">
-                            <i class="fas fa-download"></i>
-                        </button>
-                    </td>
-                </tr>
+    list.forEach(r => {
+        const icon  = fmtIcons[r.format]||'fas fa-file';
+        const color = fmtColors[r.format]||'var(--text-muted)';
+        const mod   = new Date(r.modified).toLocaleString();
+        tbody.append(`<tr>
+            <td style="font-family:var(--font-mono);font-size:12px;">
+                <i class="${icon}" style="color:${color};margin-right:8px;"></i>${r.name}
+            </td>
+            <td><span class="badge-pdr badge-info">${(r.format||'?').toUpperCase()}</span></td>
+            <td style="font-family:var(--font-mono);font-size:11px;">${r.size} KB</td>
+            <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${mod}</td>
+            <td>
+                <div style="display:flex;gap:6px;">
+                    <button class="btn-pdr btn-pdr-ghost" onclick="downloadReport('${r.path}')" style="font-size:11px;padding:4px 8px;">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn-pdr btn-pdr-danger" onclick="confirmDelete('${r.path}')" style="font-size:11px;padding:4px 8px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`);
+    });
+}
+ 
+function renderTimeline() {
+    const tl = $('#timeline');
+    tl.empty();
+    allReports.slice(0,10).forEach((r,i) => {
+        const mod = new Date(r.modified);
+        const isLast = i===allReports.slice(0,10).length-1;
+        tl.append(`
+            <div style="display:flex;gap:14px;padding-bottom:${isLast?0:16}px;${isLast?'':''};position:relative;">
+                <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;">
+                    <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--bg-card);margin-top:4px;"></div>
+                    ${!isLast?'<div style="width:1px;flex:1;background:var(--border);margin-top:4px;"></div>':''}
+                </div>
+                <div style="padding-bottom:${isLast?0:4}px;">
+                    <div style="font-size:12px;color:var(--text-primary);margin-bottom:2px;">${r.name}</div>
+                    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">${mod.toLocaleString()} · ${r.size} KB</div>
+                </div>
+            </div>
+        `);
+    });
+}
+ 
+function renderFormatChart() {
+    const counts = {};
+    allReports.forEach(r=>{ counts[r.format]=(counts[r.format]||0)+1; });
+    const labels = Object.keys(counts);
+    const values = labels.map(k=>counts[k]);
+    const COLORS = ['#00d4ff','#2ed573','#ffa502','#a29bfe'];
+    const ctx = document.getElementById('format-chart').getContext('2d');
+    new Chart(ctx, {
+        type:'doughnut',
+        data:{labels,datasets:[{data:values,backgroundColor:COLORS,borderColor:'#0f1a28',borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#8899bb',font:{family:'JetBrains Mono',size:11}}}}}
+    });
+}
+ 
+function loadAnalysesForModals() {
+    $.get('/api/v1/analyses?limit=50', function(analyses) {
+        const selA = $('#rpt-analysis'), cmpA = $('#cmp-a'), cmpB = $('#cmp-b');
+        selA.empty().append('<option value="">Choose…</option>');
+        cmpA.empty(); cmpB.empty();
+        analyses.forEach(a => {
+            const opt = `<option value="${a.id}">${a.id}</option>`;
+            selA.append(`<option value="${a.id}">${a.id} — ${a.packets} pkts</option>`);
+            cmpA.append(opt); cmpB.append(opt);
+        });
+    });
+}
+ 
+function generateReport() {
+    const id  = $('#rpt-analysis').val();
+    const fmt = $('#rpt-format').val();
+    if (!id) { showNotification('warning','Select an analysis'); return; }
+    $('#gen-rpt-btn').prop('disabled',true).text('Generating…');
+    $.ajax({
+        url:'/api/v1/reports/generate',
+        type:'POST',
+        contentType:'application/json',
+        data:JSON.stringify({analysis_id:id,format:fmt}),
+        success:function(){ showNotification('success','Report generated'); $('#generateReportModal').modal('hide'); loadReports(); },
+        error:function(){ showNotification('info','Report endpoint not implemented yet — reports are auto-generated by the analysis modules'); },
+        complete:function(){ $('#gen-rpt-btn').prop('disabled',false).text('Generate'); }
+    });
+}
+ 
+function doCompare() {
+    const a = $('#cmp-a').val(), b = $('#cmp-b').val();
+    if (!a||!b) { showNotification('warning','Select two analyses'); return; }
+    $.ajax({
+        url:'/api/v2/compare',
+        type:'POST',
+        contentType:'application/json',
+        data:JSON.stringify({analysis_ids:[a,b]}),
+        success:function(d){
+            $('#cmp-results').show();
+            $('#cmp-output').html(`
+                <div style="margin-bottom:12px;"><span style="color:var(--accent);">Analyses:</span> ${d.analyses?.join(' vs ')}</div>
+                <div style="margin-bottom:8px;"><span style="color:var(--accent);">Packet counts:</span> ${(d.packet_counts||[]).join(' | ')}</div>
+                <div style="margin-bottom:8px;"><span style="color:var(--accent);">Alert counts:</span>  ${(d.alert_counts||[]).join(' | ')}</div>
+                <div><span style="color:var(--accent);">Common alerts:</span> ${(d.common_alerts||['none']).join(', ')}</div>
             `);
-        });
-    }
-    
-    function updateHtmlList(reports) {
-        const list = $('#htmlReportList');
-        list.empty();
-        
-        reports.forEach(report => {
-            list.append(`
-                <a href="#" class="list-group-item list-group-item-action" 
-                   onclick="previewHTML('${report.path}')">
-                    <div class="d-flex justify-content-between">
-                        <span>${report.name}</span>
-                        <small>${formatBytes(report.size * 1024)}</small>
-                    </div>
-                    <small class="text-muted">${new Date(report.modified).toLocaleString()}</small>
-                </a>
-            `);
-        });
-        
-        // Auto-select first
-        if (reports.length > 0) {
-            previewHTML(reports[0].path);
-        }
-    }
-    
-    function previewHTML(path) {
-        $('#htmlPreview').attr('src', `/api/v1/file?path=${encodeURIComponent(path)}`);
-    }
-    
-    function loadAnalysesForReport() {
-        $.get('/api/v1/analyses?limit=50', function(analyses) {
-            const select = $('#reportAnalysisSelect');
-            select.empty().append('<option value="">Choose an analysis...</option>');
-            
-            analyses.forEach(analysis => {
-                select.append(`<option value="${analysis.id}">
-                    ${analysis.id} (${analysis.timestamp})
-                </option>`);
-            });
-        });
-        
-        // Also populate compare selects
-        $.get('/api/v1/reports', function(reports) {
-            const firstSelect = $('#compareFirst');
-            const secondSelect = $('#compareSecond');
-            
-            firstSelect.empty();
-            secondSelect.empty();
-            
-            reports.forEach(report => {
-                const option = `<option value="${report.path}">${report.name}</option>`;
-                firstSelect.append(option);
-                secondSelect.append(option);
-            });
-        });
-    }
-    
-    function loadTimeline() {
-        $.get('/api/v1/reports?limit=20', function(reports) {
-            const timeline = $('#reportTimeline');
-            timeline.empty();
-            
-            reports.forEach(report => {
-                const date = new Date(report.modified);
-                const icon = getFormatIcon(report.format);
-                
-                timeline.append(`
-                    <div class="timeline-item mb-3">
-                        <div class="d-flex">
-                            <div class="timeline-icon me-3">
-                                <i class="${icon} text-primary"></i>
-                            </div>
-                            <div>
-                                <div class="fw-bold">${report.name}</div>
-                                <small class="text-muted">
-                                    ${date.toLocaleString()} • ${formatBytes(report.size * 1024)}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                `);
-            });
-        });
-    }
-    
-    function initializeStorageChart() {
-        const ctx = document.getElementById('storageChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['JSON', 'Text', 'HTML', 'PDF'],
-                datasets: [{
-                    data: [0, 0, 0, 0],
-                    backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
-    }
-    
-    function updateStorageStats(reports) {
-        const sizes = { json: 0, text: 0, html: 0, pdf: 0 };
-        let total = 0;
-        
-        reports.forEach(report => {
-            const size = report.size * 1024; // Convert to bytes
-            total += size;
-            
-            if (report.format === 'json') sizes.json += size;
-            else if (report.format === 'txt' || report.format === 'text') sizes.text += size;
-            else if (report.format === 'html') sizes.html += size;
-            else if (report.format === 'pdf') sizes.pdf += size;
-        });
-        
-        $('#totalStorage').text(formatBytes(total));
-        
-        // Update chart
-        const chart = Chart.getChart('storageChart');
-        if (chart) {
-            chart.data.datasets[0].data = [
-                sizes.json / 1024 / 1024,
-                sizes.text / 1024 / 1024,
-                sizes.html / 1024 / 1024,
-                sizes.pdf / 1024 / 1024
-            ];
-            chart.update();
-        }
-        
-        // Update progress bar (assuming 1GB max)
-        const percent = (total / (1024 * 1024 * 1024)) * 100;
-        $('#storageProgress').css('width', Math.min(percent, 100) + '%');
-    }
-    
-    function getFormatIcon(format) {
-        const icons = {
-            'json': 'fas fa-code',
-            'txt': 'fas fa-file-alt',
-            'text': 'fas fa-file-alt',
-            'html': 'fab fa-html5',
-            'pdf': 'fas fa-file-pdf',
-            'default': 'fas fa-file'
-        };
-        return icons[format] || icons['default'];
-    }
-    
-    $('#generateReportBtn').click(function() {
-        const analysisId = $('#reportAnalysisSelect').val();
-        const format = $('#reportFormatSelect').val();
-        const title = $('#reportTitle').val() || `Report_${analysisId}`;
-        
-        if (!analysisId) {
-            showNotification('warning', 'Please select an analysis');
-            return;
-        }
-        
-        const options = {
-            include_charts: $('#includeCharts').is(':checked'),
-            include_packets: $('#includePackets').is(':checked'),
-            include_signatures: $('#includeSignatures').is(':checked')
-        };
-        
-        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Generating...');
-        
-        $.ajax({
-            url: '/api/v1/reports/generate',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                analysis_id: analysisId,
-                format: format,
-                title: title,
-                options: options
-            }),
-            success: function(response) {
-                showNotification('success', 'Report generated successfully');
-                $('#generateReportModal').modal('hide');
-                loadReports();
-            },
-            error: function() {
-                showNotification('error', 'Failed to generate report');
-            },
-            complete: function() {
-                $(this).prop('disabled', false).text('Generate');
-            }
-        });
+        },
+        error:function(){ showNotification('error','Comparison failed — ensure both analyses exist'); }
     });
-    
-    $('#compareBtn').click(function() {
-        const first = $('#compareFirst').val();
-        const second = $('#compareSecond').val();
-        
-        if (!first || !second) {
-            showNotification('warning', 'Please select two reports');
-            return;
-        }
-        
-        const options = {
-            alerts: $('#compareAlerts').is(':checked'),
-            protocols: $('#compareProtocols').is(':checked'),
-            flows: $('#compareFlows').is(':checked')
-        };
-        
-        $.ajax({
-            url: '/api/v2/compare',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                report1: first,
-                report2: second,
-                options: options
-            }),
-            success: function(results) {
-                displayComparison(results);
-                $('#compareModal').modal('hide');
-                $('#comparisonResultsModal').modal('show');
-            },
-            error: function() {
-                showNotification('error', 'Failed to compare reports');
-            }
-        });
-    });
-    
-    function displayComparison(results) {
-        $('#compReport1').text(JSON.stringify(results.report1, null, 2));
-        $('#compReport2').text(JSON.stringify(results.report2, null, 2));
-        $('#compCommonAlerts').text(results.common_alerts.join('\n') || 'None');
-        
-        const uniqueAlerts = [];
-        for (const [report, alerts] of Object.entries(results.unique_alerts)) {
-            uniqueAlerts.push(`${report}: ${alerts.join(', ')}`);
-        }
-        $('#compUniqueAlerts').text(uniqueAlerts.join('\n') || 'None');
-        
-        // Update protocol chart if available
-        if (results.protocols) {
-            const ctx = document.getElementById('compProtocolChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: results.protocols.labels,
-                    datasets: [
-                        {
-                            label: 'Report 1',
-                            data: results.protocols.data1,
-                            backgroundColor: '#0d6efd'
-                        },
-                        {
-                            label: 'Report 2',
-                            data: results.protocols.data2,
-                            backgroundColor: '#198754'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' }
-                    }
-                }
-            });
-        }
-    }
-    
-    function viewReport(path) {
-        window.open(`/api/v1/file?path=${encodeURIComponent(path)}`, '_blank');
-    }
-    
-    function downloadReport(path) {
-        window.location.href = `/api/v1/download?path=${encodeURIComponent(path)}`;
-    }
-    
-    function deleteReport(path) {
-        if (!confirm('Are you sure you want to delete this report?')) return;
-        
-        $.ajax({
-            url: '/api/v1/reports/delete',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ path: path }),
-            success: function() {
-                showNotification('success', 'Report deleted');
-                loadReports();
-            },
-            error: function() {
-                showNotification('error', 'Failed to delete report');
-            }
-        });
-    }
+}
+ 
+function downloadReport(path) {
+    window.location.href=`/api/v1/download/${path}`;
+}
+ 
+function confirmDelete(path) {
+    if (!confirm('Delete this report?')) return;
+    showNotification('info','Delete endpoint not implemented in this version');
+}
 </script>
-
-<style>
-.timeline-item {
-    padding: 10px;
-    border-left: 2px solid #0d6efd;
-    margin-left: 20px;
-    position: relative;
-}
-
-.timeline-icon {
-    position: absolute;
-    left: -20px;
-    background: white;
-    padding: 5px;
-}
-</style>
 {% endblock %}
+ 

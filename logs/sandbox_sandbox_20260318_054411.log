@@ -1,0 +1,13 @@
+2026-03-18 05:44:11,946 - SandboxManager.sandbox_20260318_054411 - INFO - [TOOL] SandboxManager initialized with ID: sandbox_20260318_054411
+2026-03-18 05:44:11,964 - SandboxManager.sandbox_20260318_054411 - INFO - [FOLDER] Created isolated directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox__d8kzwz0
+2026-03-18 05:44:11,968 - SandboxManager.sandbox_20260318_054411 - INFO - [NET] Network isolation enabled (basic mode)
+2026-03-18 05:44:11,969 - SandboxManager.sandbox_20260318_054411 - DEBUG - [NET] Basic network isolation configured
+2026-03-18 05:44:11,969 - SandboxManager.sandbox_20260318_054411 - DEBUG - TEMP directory set to: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox__d8kzwz0
+2026-03-18 05:44:11,971 - SandboxManager.sandbox_20260318_054411 - INFO - [RUN] Starting application: C:\Windows\System32\ping.exe
+2026-03-18 05:44:11,971 - SandboxManager.sandbox_20260318_054411 - INFO -       Arguments: ['google.com', '-n', '10']
+2026-03-18 05:44:11,972 - SandboxManager.sandbox_20260318_054411 - INFO -       Working directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox__d8kzwz0
+2026-03-18 05:44:11,991 - SandboxManager.sandbox_20260318_054411 - INFO - [PROC] Process: PING.EXE (PID: 28456)
+2026-03-18 05:44:17,008 - SandboxManager.sandbox_20260318_054411 - INFO - [CLEAN] Cleaning up sandbox environment...
+2026-03-18 05:44:17,009 - SandboxManager.sandbox_20260318_054411 - INFO - [STOP] Terminating application...
+2026-03-18 05:44:17,015 - SandboxManager.sandbox_20260318_054411 - INFO - [OK] Application terminated
+2026-03-18 05:44:17,018 - SandboxManager.sandbox_20260318_054411 - INFO - [OK] Removed temporary directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox__d8kzwz0

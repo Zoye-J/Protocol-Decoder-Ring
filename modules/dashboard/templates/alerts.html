@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+{% block breadcrumb %}Alerts{% endblock %}
+ 
+{% block content %}
+ 
+<div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
+    <div>
+        <div class="page-title">Alert Center</div>
+        <div class="page-subtitle">Anomaly detections across all analyses</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <select class="pdr-select" id="severityFilter" style="width:140px;">
+            <option value="all">All Severity</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select>
+        <input class="pdr-input" type="text" id="alertSearch" placeholder="Search alerts…" style="width:220px;">
+    </div>
+</div>
+ 
+<!-- Severity summary -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+    <div class="stat-card" style="--accent-color:var(--accent-red);">
+        <div class="stat-label">High Severity</div>
+        <div class="stat-value" id="count-high">—</div>
+        <div class="stat-meta">immediate action required</div>
+        <i class="fas fa-exclamation-triangle stat-icon"></i>
+    </div>
+    <div class="stat-card" style="--accent-color:var(--accent-amber);">
+        <div class="stat-label">Medium Severity</div>
+        <div class="stat-value" id="count-medium">—</div>
+        <div class="stat-meta">investigate when possible</div>
+        <i class="fas fa-exclamation-circle stat-icon"></i>
+    </div>
+    <div class="stat-card" style="--accent-color:var(--accent-green);">
+        <div class="stat-label">Low Severity</div>
+        <div class="stat-value" id="count-low">—</div>
+        <div class="stat-meta">informational</div>
+        <i class="fas fa-info-circle stat-icon"></i>
+    </div>
+</div>
+ 
+<!-- Alert type breakdown -->
+<div style="display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:24px;">
+    <div class="pdr-card">
+        <div class="card-head">
+            <div class="card-head-title"><i class="fas fa-bell icon"></i> All Alerts</div>
+            <div id="alert-count-badge" style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);"></div>
+        </div>
+        <div class="card-body-pad">
+            <div id="alerts-list">
+                <div style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">Loading alerts…</div>
+            </div>
+        </div>
+    </div>
+ 
+    <div class="pdr-card">
+        <div class="card-head">
+            <div class="card-head-title"><i class="fas fa-chart-pie icon"></i> By Type</div>
+        </div>
+        <div class="card-body-pad">
+            <canvas id="typeChart" height="200"></canvas>
+            <div id="type-breakdown" style="margin-top:16px;display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+    </div>
+</div>
+ 
+{% endblock %}
+ 
+{% block extra_js %}
+<script>
+let allAlerts = [];
+ 
+$(document).ready(function() {
+    loadAlerts();
+    $('#severityFilter').on('change', renderAlerts);
+    $('#alertSearch').on('input', renderAlerts);
+});
+ 
+function loadAlerts() {
+    $.get('/api/v1/alerts?limit=200', function(data) {
+        allAlerts = data;
+        updateCounts();
+        renderAlerts();
+        renderTypeChart();
+    }).fail(function() {
+        $('#alerts-list').html('<div style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">Could not load alerts</div>');
+    });
+}
+ 
+function updateCounts() {
+    $('#count-high').text(allAlerts.filter(a=>a.severity==='high').length);
+    $('#count-medium').text(allAlerts.filter(a=>a.severity==='medium').length);
+    $('#count-low').text(allAlerts.filter(a=>a.severity==='low').length);
+}
+ 
+function renderAlerts() {
+    const sev   = $('#severityFilter').val();
+    const query = $('#alertSearch').val().toLowerCase();
+ 
+    let filtered = allAlerts;
+    if (sev !== 'all') filtered = filtered.filter(a=>a.severity===sev);
+    if (query)         filtered = filtered.filter(a=>
+        (a.type||'').toLowerCase().includes(query) ||
+        (a.description||'').toLowerCase().includes(query)
+    );
+ 
+    $('#alert-count-badge').text(filtered.length + ' alerts');
+ 
+    const container = $('#alerts-list');
+    container.empty();
+ 
+    if (!filtered.length) {
+        container.html('<div style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">No alerts match the current filter</div>');
+        return;
+    }
+ 
+    filtered.forEach(a => {
+        const ts = a.timestamp ? new Date(a.timestamp*1000).toLocaleString() : '—';
+        const details = a.details ? Object.entries(a.details)
+            .filter(([k])=>!['samples','flows','transfers','methods'].includes(k))
+            .map(([k,v])`<span style="color:var(--text-muted)">${k}:</span> ${JSON.stringify(v)}`)
+            .join('  ') : '';
+        container.append(`
+            <div class="alert-item ${a.severity}" style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <span class="alert-type">${a.type}</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="badge-pdr badge-${a.severity}">${a.severity.toUpperCase()}</span>
+                        <span class="alert-time">${ts}</span>
+                    </div>
+                </div>
+                <div class="alert-description">${a.description||''}</div>
+                ${details ? `<div style="margin-top:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);line-height:1.8;">${details}</div>` : ''}
+                ${a.analysis_id ? `<div style="margin-top:8px;"><a href="/analysis/${a.analysis_id}" style="font-family:var(--font-mono);font-size:10px;color:var(--accent);text-decoration:none;">→ View analysis ${a.analysis_id}</a></div>` : ''}
+            </div>
+        `);
+    });
+}
+ 
+function renderTypeChart() {
+    const typeCounts = {};
+    allAlerts.forEach(a => { typeCounts[a.type] = (typeCounts[a.type]||0)+1; });
+    const sorted = Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const COLORS = ['#ff4757','#ffa502','#00d4ff','#2ed573','#a29bfe','#fd9644'];
+ 
+    const ctx = document.getElementById('typeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: sorted.map(([k])=>k.replace(/_/g,' ')),
+            datasets: [{ data: sorted.map(([,v])=>v), backgroundColor: COLORS, borderColor:'#0f1a28', borderWidth:2 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: { legend:{ display:false } }
+        }
+    });
+ 
+    const bd = document.getElementById('type-breakdown');
+    sorted.forEach(([type,count],i) => {
+        bd.innerHTML += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="width:8px;height:8px;background:${COLORS[i]};border-radius:2px;flex-shrink:0;"></span>
+                <span style="font-size:11px;color:var(--text-secondary);font-family:var(--font-mono);">${type.replace(/_/g,' ')}</span>
+            </div>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-primary);">${count}</span>
+        </div>`;
+    });
+}
+</script>
+{% endblock %}
+ 

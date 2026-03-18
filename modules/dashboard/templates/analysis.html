@@ -1,243 +1,121 @@
 {% extends "base.html" %}
-
-{% block title %}Analysis Details{% endblock %}
-
+{% block title %}Analysis — {{ analysis_id }}{% endblock %}
+{% block breadcrumb %}Analysis / <span>{{ analysis_id }}</span>{% endblock %}
+ 
 {% block content %}
-<div class="row mb-4">
-    <div class="col">
-        <h2>
-            <i class="fas fa-chart-line"></i>
-            Analysis Details
-        </h2>
-        <p class="text-muted">Analysis ID: {{ analysis_id }}</p>
+ 
+<div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
+    <div>
+        <div class="page-title">Analysis Details</div>
+        <div class="page-subtitle" style="font-family:var(--font-mono);">// {{ analysis_id }}</div>
     </div>
-    <div class="col-auto">
-        <button class="btn btn-primary" onclick="exportAnalysis()">
-            <i class="fas fa-download"></i> Export
+    <div style="display:flex;gap:8px;">
+        <button class="btn-pdr btn-pdr-ghost" onclick="exportAnalysis()">
+            <i class="fas fa-download"></i> Export JSON
         </button>
-        <button class="btn btn-success" onclick="generateSignatures()">
+        <button class="btn-pdr btn-pdr-primary" data-bs-toggle="modal" data-bs-target="#signatureModal">
             <i class="fas fa-shield-alt"></i> Generate Signatures
         </button>
     </div>
 </div>
-
-<!-- Analysis Info -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <h3 id="packet-count">0</h3>
-                <span class="text-muted">Total Packets</span>
-            </div>
-        </div>
+ 
+<!-- Stats row -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+    <div class="stat-card" style="--accent-color:var(--accent);">
+        <div class="stat-label">Total Packets</div>
+        <div class="stat-value" id="a-packets">—</div>
+        <i class="fas fa-network-wired stat-icon"></i>
     </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <h3 id="byte-count">0 MB</h3>
-                <span class="text-muted">Data Volume</span>
-            </div>
-        </div>
+    <div class="stat-card" style="--accent-color:var(--accent-purple);">
+        <div class="stat-label">Data Volume</div>
+        <div class="stat-value" id="a-bytes">—</div>
+        <i class="fas fa-hdd stat-icon"></i>
     </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <h3 id="alert-count">0</h3>
-                <span class="text-muted">Alerts</span>
-            </div>
-        </div>
+    <div class="stat-card" style="--accent-color:var(--accent-red);">
+        <div class="stat-label">Alerts</div>
+        <div class="stat-value" id="a-alerts">—</div>
+        <i class="fas fa-bell stat-icon"></i>
     </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <h3 id="flow-count">0</h3>
-                <span class="text-muted">Flows</span>
-            </div>
-        </div>
+    <div class="stat-card" style="--accent-color:var(--accent-green);">
+        <div class="stat-label">Flows</div>
+        <div class="stat-value" id="a-flows">—</div>
+        <i class="fas fa-project-diagram stat-icon"></i>
     </div>
 </div>
-
+ 
 <!-- Tabs -->
-<ul class="nav nav-tabs mb-4" id="analysisTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview">
-            <i class="fas fa-home"></i> Overview
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="protocols-tab" data-bs-toggle="tab" data-bs-target="#protocols">
-            <i class="fas fa-sitemap"></i> Protocols
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts">
-            <i class="fas fa-exclamation-triangle"></i> Alerts
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="flows-tab" data-bs-toggle="tab" data-bs-target="#flows">
-            <i class="fas fa-project-diagram"></i> Flows
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="packets-tab" data-bs-toggle="tab" data-bs-target="#packets">
-            <i class="fas fa-network-wired"></i> Packets
-        </button>
-    </li>
-</ul>
-
-<!-- Tab Content -->
-<div class="tab-content" id="analysisTabsContent">
-    <!-- Overview Tab -->
-    <div class="tab-pane fade show active" id="overview" role="tabpanel">
-        <div class="row">
-            <div class="col-md-8">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5>Traffic Timeline</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="timelineChart" height="300"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5>Protocol Distribution</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="protocolChart" height="300"></canvas>
-                    </div>
-                </div>
-            </div>
+<div class="pdr-tabs">
+    <button class="pdr-tab active" data-tab="overview"><i class="fas fa-th-large"></i> Overview</button>
+    <button class="pdr-tab" data-tab="alerts"><i class="fas fa-bell"></i> Alerts</button>
+    <button class="pdr-tab" data-tab="protocols"><i class="fas fa-sitemap"></i> Protocols</button>
+    <button class="pdr-tab" data-tab="flows"><i class="fas fa-project-diagram"></i> Flows</button>
+</div>
+ 
+<!-- Overview tab -->
+<div id="tab-overview" class="tab-panel">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;">
+        <div class="pdr-card">
+            <div class="card-head"><div class="card-head-title"><i class="fas fa-chart-line icon"></i> Packet Size Distribution</div></div>
+            <div class="card-body-pad"><canvas id="sizeChart" height="220"></canvas></div>
         </div>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Top Talkers</h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-sm" id="topTalkers">
-                            <thead>
-                                <tr>
-                                    <th>IP Address</th>
-                                    <th>Packets</th>
-                                    <th>Bytes</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Alert Summary</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="alertsPieChart" height="200"></canvas>
-                    </div>
-                </div>
+        <div class="pdr-card">
+            <div class="card-head"><div class="card-head-title"><i class="fas fa-circle-notch icon"></i> Protocol Distribution</div></div>
+            <div class="card-body-pad">
+                <canvas id="protoChart" height="200"></canvas>
+                <div id="proto-legend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;"></div>
             </div>
         </div>
     </div>
-    
-    <!-- Protocols Tab -->
-    <div class="tab-pane fade" id="protocols" role="tabpanel">
-        <div class="card">
-            <div class="card-header">
-                <h5>Detected Protocols</h5>
-            </div>
-            <div class="card-body">
-                <table class="table" id="protocolsTable">
-                    <thead>
-                        <tr>
-                            <th>Protocol</th>
-                            <th>Packet Count</th>
-                            <th>Percentage</th>
-                            <th>Confidence</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
+    <div style="margin-top:16px;" class="pdr-card">
+        <div class="card-head"><div class="card-head-title"><i class="fas fa-map-marker-alt icon"></i> Top Talkers</div></div>
+        <table class="pdr-table" id="talkers-table">
+            <thead><tr><th>IP Address</th><th>Packets</th><th>Direction</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
-    
-    <!-- Alerts Tab -->
-    <div class="tab-pane fade" id="alerts" role="tabpanel">
-        <div class="card">
-            <div class="card-header">
-                <h5>Generated Alerts</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <select class="form-select" id="alertFilter" style="width: auto;">
-                        <option value="all">All Alerts</option>
-                        <option value="high">High Severity</option>
-                        <option value="medium">Medium Severity</option>
-                        <option value="low">Low Severity</option>
-                    </select>
-                </div>
-                <div id="alertsList"></div>
-            </div>
+</div>
+ 
+<!-- Alerts tab -->
+<div id="tab-alerts" class="tab-panel" style="display:none;">
+    <div class="pdr-card">
+        <div class="card-head">
+            <div class="card-head-title"><i class="fas fa-bell icon"></i> Detected Alerts</div>
+            <select class="pdr-select" id="alert-severity-filter" style="width:140px;">
+                <option value="all">All</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
         </div>
-    </div>
-    
-    <!-- Flows Tab -->
-    <div class="tab-pane fade" id="flows" role="tabpanel">
-        <div class="card">
-            <div class="card-header">
-                <h5>Network Flows</h5>
-            </div>
-            <div class="card-body">
-                <table class="table" id="flowsTable">
-                    <thead>
-                        <tr>
-                            <th>Source</th>
-                            <th>Destination</th>
-                            <th>Protocol</th>
-                            <th>Packets</th>
-                            <th>Bytes</th>
-                            <th>Duration</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Packets Tab -->
-    <div class="tab-pane fade" id="packets" role="tabpanel">
-        <div class="card">
-            <div class="card-header">
-                <h5>Packet List</h5>
-            </div>
-            <div class="card-body">
-                <table class="table" id="packetsTable">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Protocol</th>
-                            <th>Source</th>
-                            <th>Destination</th>
-                            <th>Length</th>
-                            <th>Info</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+        <div class="card-body-pad" id="analysis-alerts-list">
+            <div style="text-align:center;padding:32px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">Loading…</div>
         </div>
     </div>
 </div>
-
-<!-- Signature Generation Modal -->
+ 
+<!-- Protocols tab -->
+<div id="tab-protocols" class="tab-panel" style="display:none;">
+    <div class="pdr-card">
+        <div class="card-head"><div class="card-head-title"><i class="fas fa-sitemap icon"></i> Detected Protocols</div></div>
+        <table class="pdr-table" id="protocols-table">
+            <thead><tr><th>Protocol</th><th>Packets</th><th>Confidence</th><th>Match Basis</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+ 
+<!-- Flows tab -->
+<div id="tab-flows" class="tab-panel" style="display:none;">
+    <div class="pdr-card">
+        <div class="card-head"><div class="card-head-title"><i class="fas fa-project-diagram icon"></i> Network Flows</div></div>
+        <table class="pdr-table" id="flows-table">
+            <thead><tr><th>Source</th><th>Destination</th><th>Protocol</th><th>Packets</th><th>Bytes</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+ 
+<!-- Signature Modal -->
 <div class="modal fade" id="signatureModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -245,191 +123,180 @@
                 <h5 class="modal-title">Generate Signatures</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p>Generate detection signatures from this analysis?</p>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="sigSnort" checked>
-                    <label class="form-check-label">Snort Rules</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="sigSuricata" checked>
-                    <label class="form-check-label">Suricata Rules</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="sigYara" checked>
-                    <label class="form-check-label">YARA Rules</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="sigSigma" checked>
-                    <label class="form-check-label">Sigma Rules</label>
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:10px;">
+                <p style="font-size:13px;color:var(--text-secondary);margin:0;">Generate detection rules from this analysis for deployment in IDS/IPS or SIEM systems.</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+                    {% for fmt in ['Snort Rules','Suricata Rules','YARA Rules','Sigma Rules'] %}
+                    <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-elevated);border-radius:var(--radius-md);border:1px solid var(--border);cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:var(--accent);">
+                        <span style="font-size:13px;color:var(--text-secondary);">{{ fmt }}</span>
+                    </label>
+                    {% endfor %}
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="doGenerateSignatures()">Generate</button>
+                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn-pdr btn-pdr-primary" onclick="doGenerateSignatures()">Generate</button>
             </div>
         </div>
     </div>
 </div>
+ 
+<style>
+.pdr-tab { transition: all 150ms; }
+</style>
+ 
 {% endblock %}
-
+ 
 {% block extra_js %}
 <script>
-    const analysisId = '{{ analysis_id }}';
-    
-    $(document).ready(function() {
-        loadAnalysisData();
+const analysisId = '{{ analysis_id }}';
+let analysisData = null;
+ 
+$(document).ready(function() {
+    loadData();
+ 
+    // Tab switching
+    document.querySelectorAll('.pdr-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.pdr-tab').forEach(b=>b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p=>p.style.display='none');
+            this.classList.add('active');
+            document.getElementById('tab-'+this.dataset.tab).style.display='block';
+        });
     });
-    
-    function loadAnalysisData() {
-        $.get(`/api/v1/analysis/${analysisId}`, function(data) {
-            updateOverview(data);
-            updateProtocols(data);
-            updateAlerts(data);
-            updateFlows(data);
-            updatePackets(data);
-            updateCharts(data);
-        }).fail(function() {
-            showNotification('error', 'Could not load analysis data');
-        });
+ 
+    $('#alert-severity-filter').on('change', function() {
+        if (analysisData) renderAlerts(analysisData.alerts||[], $(this).val());
+    });
+});
+ 
+function loadData() {
+    $.get(`/api/v1/analysis/${analysisId}`, function(d) {
+        analysisData = d;
+        const stats = d.statistics||{};
+ 
+        $('#a-packets').text(formatNumber(stats.total_packets||0));
+        $('#a-bytes').text(formatBytes(stats.total_bytes||0));
+        $('#a-alerts').text((d.alerts||[]).length);
+        $('#a-flows').text(d.flow_count||0);
+ 
+        renderAlerts(d.alerts||[], 'all');
+        renderProtocols(d.protocols||{}, stats);
+        renderOverviewCharts(d);
+    }).fail(function() {
+        showNotification('error', 'Could not load analysis data');
+    });
+}
+ 
+function renderAlerts(alerts, filter) {
+    const filtered = filter==='all' ? alerts : alerts.filter(a=>a.severity===filter);
+    const container = $('#analysis-alerts-list');
+    container.empty();
+    if (!filtered.length) {
+        container.html('<div style="text-align:center;padding:32px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">No alerts</div>');
+        return;
     }
-    
-    function updateOverview(data) {
-        $('#packet-count').text(data.statistics?.total_packets || 0);
-        $('#byte-count').text(formatBytes(data.statistics?.total_bytes || 0));
-        $('#alert-count').text(data.alerts?.length || 0);
-        $('#flow-count').text(data.flow_count || 0);
-        
-        // Top talkers
-        const talkers = Object.entries(data.statistics?.ips || {})
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 10);
-        
-        const tbody = $('#topTalkers tbody');
-        tbody.empty();
-        talkers.forEach(([ip, count]) => {
-            tbody.append(`<tr><td>${ip}</td><td>${count}</td><td>-</td></tr>`);
-        });
-    }
-    
-    function updateProtocols(data) {
-        const tbody = $('#protocolsTable tbody');
-        tbody.empty();
-        
-        const protocols = data.protocols || {};
-        const total = data.statistics?.total_packets || 1;
-        
-        Object.entries(protocols).forEach(([proto, info]) => {
-            const percentage = (info.count / total * 100).toFixed(1);
-            tbody.append(`
-                <tr>
-                    <td>${proto}</td>
-                    <td>${info.count}</td>
-                    <td>${percentage}%</td>
-                    <td>${info.confidence || 'N/A'}</td>
-                </tr>
-            `);
-        });
-    }
-    
-    function updateAlerts(data) {
-        const alerts = data.alerts || [];
-        const container = $('#alertsList');
-        
-        $('#alertFilter').change(function() {
-            const severity = $(this).val();
-            filterAlerts(alerts, severity);
-        });
-        
-        filterAlerts(alerts, 'all');
-    }
-    
-    function filterAlerts(alerts, severity) {
-        const container = $('#alertsList');
-        container.empty();
-        
-        const filtered = severity === 'all' ? alerts : alerts.filter(a => a.severity === severity);
-        
-        if (filtered.length === 0) {
-            container.append('<div class="text-muted text-center py-3">No alerts</div>');
-            return;
-        }
-        
-        filtered.forEach(alert => {
-            const time = new Date(alert.timestamp * 1000).toLocaleString();
-            container.append(`
-                <div class="alert-item ${alert.severity}">
-                    <div class="d-flex justify-content-between">
-                        <span class="alert-type">${alert.type}</span>
-                        <span class="alert-time">${time}</span>
+    filtered.forEach(a => {
+        const ts = a.timestamp ? new Date(a.timestamp*1000).toLocaleString() : '';
+        container.append(`
+            <div class="alert-item ${a.severity}" style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <span class="alert-type">${a.type}</span>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <span class="badge-pdr badge-${a.severity}">${a.severity.toUpperCase()}</span>
+                        <span class="alert-time">${ts}</span>
                     </div>
-                    <div class="alert-description">${alert.description || ''}</div>
                 </div>
-            `);
-        });
-    }
-    
-    function updateFlows(data) {
-        // This would need actual flow data from the API
-    }
-    
-    function updatePackets(data) {
-        // This would need actual packet data from the API
-    }
-    
-    function updateCharts(data) {
-        // Update timeline chart
-        if (charts.timeline) {
-            charts.timeline.destroy();
-        }
-        charts.timeline = charts.createTimelineChart('timelineChart', {
-            labels: ['0s', '10s', '20s', '30s', '40s', '50s', '60s'],
-            packets: [10, 25, 15, 30, 45, 35, 20],
-            bytes: [1000, 2500, 1500, 3000, 4500, 3500, 2000]
-        });
-        
-        // Update protocol chart
-        if (charts.protocol) {
-            charts.protocol.destroy();
-        }
-        const protocols = data.protocols || {};
-        charts.protocol = charts.createProtocolChart('protocolChart', {
-            labels: Object.keys(protocols).slice(0, 5),
-            values: Object.values(protocols).map(p => p.count).slice(0, 5)
-        });
-    }
-    
-    function exportAnalysis() {
-        window.location.href = `/api/v2/export/analysis/${analysisId}?format=json`;
-    }
-    
-    function generateSignatures() {
-        $('#signatureModal').modal('show');
-    }
-    
-    function doGenerateSignatures() {
-        const formats = [];
-        if ($('#sigSnort').is(':checked')) formats.push('snort');
-        if ($('#sigSuricata').is(':checked')) formats.push('suricata');
-        if ($('#sigYara').is(':checked')) formats.push('yara');
-        if ($('#sigSigma').is(':checked')) formats.push('sigma');
-        
-        $.ajax({
-            url: '/api/v1/signatures/generate',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                analysis_id: analysisId,
-                formats: formats
-            }),
-            success: function(response) {
-                showNotification('success', 'Signatures generated');
-                $('#signatureModal').modal('hide');
-            },
-            error: function() {
-                showNotification('error', 'Failed to generate signatures');
+                <div class="alert-description">${a.description||''}</div>
+            </div>
+        `);
+    });
+}
+ 
+function renderProtocols(protocols, stats) {
+    const tbody = $('#protocols-table tbody');
+    tbody.empty();
+    const total = stats.total_packets||1;
+    Object.entries(protocols).forEach(([proto,info]) => {
+        const pct = ((info.count/total)*100).toFixed(1);
+        const bar = `<div style="display:flex;align-items:center;gap:8px;"><div style="width:${Math.max(pct,2)}px;height:4px;background:var(--accent);border-radius:2px;min-width:2px;max-width:120px;"></div><span>${pct}%</span></div>`;
+        const conf = Math.round((info.confidence||0)*100);
+        tbody.append(`<tr>
+            <td><span class="badge-pdr badge-proto">${proto}</span></td>
+            <td style="font-family:var(--font-mono)">${info.count}</td>
+            <td>${bar}</td>
+            <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${conf}% confidence</td>
+        </tr>`);
+    });
+    if (!Object.keys(protocols).length) tbody.append('<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted);">No protocols detected</td></tr>');
+}
+ 
+function renderOverviewCharts(d) {
+    const COLORS=['#00d4ff','#2ed573','#ffa502','#a29bfe','#ff4757'];
+    const protocols = d.protocols||{};
+    const labels = Object.keys(protocols);
+    const values = labels.map(k=>protocols[k].count);
+ 
+    // Donut
+    const pCtx = document.getElementById('protoChart').getContext('2d');
+    new Chart(pCtx, {
+        type:'doughnut',
+        data:{labels,datasets:[{data:values,backgroundColor:COLORS,borderColor:'#0f1a28',borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}
+    });
+    const legend = document.getElementById('proto-legend');
+    labels.forEach((l,i)=>{
+        legend.innerHTML+=`<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#8899bb;font-family:JetBrains Mono"><span style="width:8px;height:8px;border-radius:2px;background:${COLORS[i]};flex-shrink:0;"></span>${l}</div>`;
+    });
+ 
+    // Packet size bar (placeholder)
+    const sCtx = document.getElementById('sizeChart').getContext('2d');
+    const sizes = ['<64','64-128','128-256','256-512','512-1024','1024+'];
+    new Chart(sCtx, {
+        type:'bar',
+        data:{
+            labels:sizes,
+            datasets:[{label:'Packets',data:[12,28,45,22,18,9],backgroundColor:'rgba(0,212,255,.5)',borderColor:'#00d4ff',borderWidth:1,borderRadius:3}]
+        },
+        options:{
+            responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{
+                x:{grid:{color:'rgba(0,212,255,.05)'},ticks:{font:{family:'JetBrains Mono',size:10}}},
+                y:{grid:{color:'rgba(0,212,255,.05)'},ticks:{font:{family:'JetBrains Mono',size:10}}}
             }
-        });
-    }
+        }
+    });
+ 
+    // Top talkers from stats
+    const ips = d.statistics?.ips||{};
+    const tbody = $('#talkers-table tbody');
+    tbody.empty();
+    Object.entries(ips).sort((a,b)=>b[1]-a[1]).slice(0,8).forEach(([ip,count])=>{
+        tbody.append(`<tr>
+            <td style="font-family:var(--font-mono);color:var(--accent);">${ip}</td>
+            <td style="font-family:var(--font-mono);">${count}</td>
+            <td><span class="badge-pdr badge-info">mixed</span></td>
+        </tr>`);
+    });
+    if (!Object.keys(ips).length) tbody.append('<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--text-muted);">No IP data</td></tr>');
+}
+ 
+function exportAnalysis() {
+    window.location.href = `/api/v2/export/analysis/${analysisId}?format=json`;
+}
+ 
+function doGenerateSignatures() {
+    $.ajax({
+        url:'/api/v1/signatures/generate',
+        type:'POST',
+        contentType:'application/json',
+        data:JSON.stringify({analysis_id:analysisId}),
+        headers:{'X-API-Key': 'change-this-in-production'},
+        success:function(){showNotification('success','Signatures generated');$('#signatureModal').modal('hide');},
+        error:function(){showNotification('error','Failed to generate signatures');}
+    });
+}
 </script>
 {% endblock %}
