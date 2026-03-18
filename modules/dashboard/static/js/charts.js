@@ -1,140 +1,107 @@
 /**
- * Chart Visualizations, charts.js
+ * PDR Dashboard — charts.js
+ * Chart factory functions. All use Chart.js globals already loaded by base.html.
  */
 
-// Chart color schemes
-const colorSchemes = {
-    primary: ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#0dcaf0', '#6c757d'],
-    pastel: ['#a8d5e5', '#b5e5d5', '#f9d5b5', '#f5b5b5', '#d5b5e5', '#b5b5f5'],
-    gradient: ['#4158D0', '#C850C0', '#FFCC70', '#2193b0', '#6dd5ed', '#cc2b5e']
+const PDR_COLORS = {
+    cyan:   '#00d4ff',
+    green:  '#2ed573',
+    amber:  '#ffa502',
+    purple: '#a29bfe',
+    red:    '#ff4757',
+    coral:  '#fd9644',
+    palette: ['#00d4ff','#2ed573','#ffa502','#a29bfe','#ff4757','#fd9644']
 };
 
+const PDR_CHART_DEFAULTS = {
+    font:        'JetBrains Mono',
+    gridColor:   'rgba(0,212,255,.05)',
+    textColor:   '#8899bb',
+    borderColor: '#0f1a28'
+};
+
+/* Apply global Chart.js defaults once */
+(function applyDefaults() {
+    if (typeof Chart === 'undefined') return;
+    Chart.defaults.color       = PDR_CHART_DEFAULTS.textColor;
+    Chart.defaults.font.family = PDR_CHART_DEFAULTS.font;
+    Chart.defaults.font.size   = 11;
+})();
+
 /**
- * Create Timeline Chart
+ * Line chart for traffic timelines
  */
 function createTimelineChart(canvasId, data) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return null;
-    
+
     return new Chart(ctx, {
         type: 'line',
         data: {
             labels: data.labels || [],
             datasets: [{
                 label: 'Packets',
-                data: data.packets || [],
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                borderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                tension: 0.4,
-                fill: true
-            }, {
-                label: 'Bytes (KB)',
-                data: data.bytes || [],
-                borderColor: '#198754',
-                backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                borderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                tension: 0.4,
+                data: data.packets || data.values || [],
+                borderColor: PDR_COLORS.cyan,
+                backgroundColor: 'rgba(0,212,255,.06)',
+                borderWidth: 1.5,
                 fill: true,
-                yAxisID: 'y1'
+                tension: .4,
+                pointRadius: 2,
+                pointBackgroundColor: PDR_COLORS.cyan
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.dataset.label.includes('Bytes')) {
-                                label += formatBytes(context.raw);
-                            } else {
-                                label += context.raw;
-                            }
-                            return label;
-                        }
-                    }
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Packets'
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Bytes'
-                    },
-                    grid: {
-                        drawOnChartArea: false
-                    }
-                }
+                x: { grid: { color: PDR_CHART_DEFAULTS.gridColor }, ticks: { font: { family: PDR_CHART_DEFAULTS.font, size: 10 } } },
+                y: { grid: { color: PDR_CHART_DEFAULTS.gridColor }, ticks: { font: { family: PDR_CHART_DEFAULTS.font, size: 10 } }, beginAtZero: true }
             }
         }
     });
 }
 
 /**
- * Create Protocol Distribution Chart
+ * Doughnut chart for protocol distribution
  */
 function createProtocolChart(canvasId, data) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return null;
-    
+
     return new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: data.labels || [],
             datasets: [{
                 data: data.values || [],
-                backgroundColor: colorSchemes.primary,
-                borderWidth: 0,
+                backgroundColor: PDR_COLORS.palette,
+                borderColor: PDR_CHART_DEFAULTS.borderColor,
+                borderWidth: 2,
                 hoverOffset: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '68%',
             plugins: {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        boxWidth: 12,
-                        padding: 15
+                        color: PDR_CHART_DEFAULTS.textColor,
+                        font: { family: PDR_CHART_DEFAULTS.font, size: 11 },
+                        boxWidth: 10,
+                        padding: 12
                     }
                 },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${value} (${percentage}%)`;
+                        label: function (ctx) {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct   = ((ctx.raw / total) * 100).toFixed(1);
+                            return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
                         }
                     }
                 }
@@ -144,266 +111,81 @@ function createProtocolChart(canvasId, data) {
 }
 
 /**
- * Create Alerts Timeline Chart
+ * Stacked bar chart for alerts by severity over time
  */
 function createAlertsChart(canvasId, data) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return null;
-    
+
     return new Chart(ctx, {
         type: 'bar',
         data: {
             labels: data.labels || [],
-            datasets: [{
-                label: 'High',
-                data: data.high || [],
-                backgroundColor: '#dc3545',
-                stack: 'alerts'
-            }, {
-                label: 'Medium',
-                data: data.medium || [],
-                backgroundColor: '#ffc107',
-                stack: 'alerts'
-            }, {
-                label: 'Low',
-                data: data.low || [],
-                backgroundColor: '#198754',
-                stack: 'alerts'
-            }]
+            datasets: [
+                { label: 'High',   data: data.high   || [], backgroundColor: PDR_COLORS.red,   stack: 'alerts' },
+                { label: 'Medium', data: data.medium || [], backgroundColor: PDR_COLORS.amber,  stack: 'alerts' },
+                { label: 'Low',    data: data.low    || [], backgroundColor: PDR_COLORS.green,  stack: 'alerts' }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
+            plugins: { legend: { position: 'top', labels: { color: PDR_CHART_DEFAULTS.textColor, font: { family: PDR_CHART_DEFAULTS.font, size: 11 } } } },
             scales: {
-                x: {
-                    stacked: true,
-                    title: {
-                        display: true,
-                        text: 'Time'
-                    }
-                },
-                y: {
-                    stacked: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Alerts'
-                    },
-                    beginAtZero: true
-                }
+                x: { stacked: true, grid: { color: PDR_CHART_DEFAULTS.gridColor }, ticks: { font: { family: PDR_CHART_DEFAULTS.font, size: 10 } } },
+                y: { stacked: true, grid: { color: PDR_CHART_DEFAULTS.gridColor }, ticks: { font: { family: PDR_CHART_DEFAULTS.font, size: 10 } }, beginAtZero: true }
             }
         }
     });
 }
 
 /**
- * Create Flow Sankey Diagram (simplified)
+ * Bar chart for packet size distribution
  */
-function createFlowChart(canvasId, data) {
+function createSizeDistributionChart(canvasId, sizes) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return null;
-    
-    // Simplified flow visualization using bar chart
-    const sources = [...new Set(data.flows.map(f => f.src))].slice(0, 10);
-    const destinations = [...new Set(data.flows.map(f => f.dst))].slice(0, 10);
-    
-    return new Chart(ctx, {
-        type: 'matrix',
-        data: {
-            labels: sources,
-            datasets: destinations.map(dst => ({
-                label: dst,
-                data: sources.map(src => {
-                    const flow = data.flows.find(f => f.src === src && f.dst === dst);
-                    return flow ? flow.bytes : 0;
-                })
-            }))
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const src = context.label;
-                            const dst = context.dataset.label;
-                            const bytes = context.raw;
-                            return `${src} → ${dst}: ${formatBytes(bytes)}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Source IP'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Destination IP'
-                    }
-                }
-            }
-        }
-    });
-}
 
-/**
- * Create Heat Map for Timing Analysis
- */
-function createTimingHeatmap(canvasId, data) {
-    const ctx = document.getElementById(canvasId);
-    if (!ctx) return null;
-    
-    // Prepare data for heatmap
-    const intervals = data.intervals || [];
-    const matrix = [];
-    const size = Math.min(20, Math.floor(Math.sqrt(intervals.length)));
-    
-    for (let i = 0; i < size; i++) {
-        matrix[i] = [];
-        for (let j = 0; j < size; j++) {
-            const idx = i * size + j;
-            matrix[i][j] = idx < intervals.length ? intervals[idx] : 0;
-        }
-    }
-    
-    return new Chart(ctx, {
-        type: 'matrix',
-        data: {
-            datasets: [{
-                label: 'Inter-arrival Times',
-                data: matrix.map((row, i) => 
-                    row.map((value, j) => ({
-                        x: j,
-                        y: i,
-                        v: value
-                    }))
-                ).flat(),
-                backgroundColor: function(context) {
-                    const value = context.dataset.data[context.dataIndex].v;
-                    const alpha = Math.min(1, value / 5); // Normalize
-                    return `rgba(220, 53, 69, ${alpha})`;
-                },
-                borderWidth: 1,
-                borderColor: '#ffffff',
-                width: 20,
-                height: 20
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: false,
-                tooltip: {
-                    callbacks: {
-                        title: function() {
-                            return '';
-                        },
-                        label: function(context) {
-                            const value = context.raw.v;
-                            return `Interval: ${value.toFixed(3)}s`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    type: 'linear',
-                    offset: true,
-                    grid: { display: false },
-                    ticks: { display: false }
-                },
-                y: {
-                    type: 'linear',
-                    offset: true,
-                    grid: { display: false },
-                    ticks: { display: false }
-                }
-            }
-        }
-    });
-}
+    const arr    = sizes || [];
+    const bins   = [0,64,128,256,512,1024,1500];
+    const labels = ['<64','64–128','128–256','256–512','512–1024','1024–1500','1500+'];
+    const counts = Array(labels.length).fill(0);
 
-/**
- * Create Size Distribution Chart
- */
-function createSizeDistributionChart(canvasId, data) {
-    const ctx = document.getElementById(canvasId);
-    if (!ctx) return null;
-    
-    // Create histogram bins
-    const sizes = data.sizes || [];
-    const binCount = 20;
-    const max = Math.max(...sizes, 1500);
-    const binSize = max / binCount;
-    
-    const bins = Array(binCount).fill(0);
-    sizes.forEach(size => {
-        const binIndex = Math.min(binCount - 1, Math.floor(size / binSize));
-        bins[binIndex]++;
+    arr.forEach(function (s) {
+        for (let i = bins.length - 1; i >= 0; i--) {
+            if (s >= bins[i]) { counts[i]++; break; }
+        }
     });
-    
-    const labels = bins.map((_, i) => `${Math.round(i * binSize)}-${Math.round((i + 1) * binSize)}`);
-    
+
     return new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Packet Count',
-                data: bins,
-                backgroundColor: '#0d6efd',
-                borderWidth: 0
+                label: 'Packets',
+                data: counts,
+                backgroundColor: 'rgba(0,212,255,.5)',
+                borderColor: PDR_COLORS.cyan,
+                borderWidth: 1,
+                borderRadius: 3
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Packets: ${context.raw}`;
-                        }
-                    }
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Packet Size (bytes)'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Frequency'
-                    },
-                    beginAtZero: true
-                }
+                x: { grid: { color: PDR_CHART_DEFAULTS.gridColor }, ticks: { font: { family: PDR_CHART_DEFAULTS.font, size: 10 } } },
+                y: { grid: { color: PDR_CHART_DEFAULTS.gridColor }, ticks: { font: { family: PDR_CHART_DEFAULTS.font, size: 10 } }, beginAtZero: true }
             }
         }
     });
 }
 
-// Export chart creation functions
-window.charts = {
-    createTimelineChart,
-    createProtocolChart,
-    createAlertsChart,
-    createFlowChart,
-    createTimingHeatmap,
-    createSizeDistributionChart
-};
+/* Export */
+window.PDR_COLORS = PDR_COLORS;
+window.charts = window.charts || {};
+window.charts.createTimelineChart       = createTimelineChart;
+window.charts.createProtocolChart       = createProtocolChart;
+window.charts.createAlertsChart         = createAlertsChart;
+window.charts.createSizeDistributionChart = createSizeDistributionChart;

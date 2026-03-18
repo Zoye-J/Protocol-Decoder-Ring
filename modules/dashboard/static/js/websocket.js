@@ -1,169 +1,135 @@
 /**
- * WebSocket Real-time Updates, websocket.js
+ * PDR Dashboard — websocket.js
+ * Real-time event handlers. Attaches to window.pdrSocket which is
+ * created by dashboard.js. Safe to load before socket is ready.
  */
 
-// WebSocket event handlers
-socket.on('packet_captured', function(data) {
-    // Update packet counter
-    updatePacketCounter(data);
-    
-    // Add to recent packets table
-    addRecentPacket(data);
-    
-    // Update traffic chart
-    updateTrafficChartRealTime(data);
-});
-
-socket.on('alert_generated', function(data) {
-    // Show notification
-    showNotification('warning', `New alert: ${data.type}`);
-    
-    // Add to alerts list
-    addAlertToList(data);
-    
-    // Update alert counter
-    updateAlertCounter();
-});
-
-socket.on('analysis_progress', function(data) {
-    // Update progress bar
-    updateAnalysisProgress(data);
-});
-
-socket.on('signature_generated', function(data) {
-    showNotification('success', `New signature generated: ${data.name}`);
-    refreshSignaturesList();
-});
-
-// Update functions
-function updatePacketCounter(data) {
-    const counter = $('#live-packet-count');
-    if (counter.length) {
-        let count = parseInt(counter.text()) || 0;
-        count++;
-        counter.text(count);
+(function attachWebSocketHandlers() {
+    /* Wait until the socket is available (dashboard.js runs first) */
+    function waitForSocket(cb, attempts) {
+        attempts = attempts || 0;
+        if (window.pdrSocket) {
+            cb(window.pdrSocket);
+        } else if (attempts < 20) {
+            setTimeout(function () { waitForSocket(cb, attempts + 1); }, 150);
+        } else {
+            console.warn('[PDR] websocket.js: socket not available after waiting');
+        }
     }
+
+    waitForSocket(function (socket) {
+
+        /* ── Packet captured ── */
+        socket.on('packet_captured', function (packet) {
+            updatePacketCounter();
+            addRecentPacket(packet);
+            updateTrafficChartRealTime(packet);
+        });
+
+        /* ── Alert generated ── */
+        socket.on('alert_generated', function (alert) {
+            if (typeof showNotification === 'function') {
+                showNotification('warning', 'New alert: ' + alert.type);
+            }
+            addAlertToList(alert);
+            bumpAlertCounter();
+        });
+
+        /* ── Analysis progress ── */
+        socket.on('analysis_progress', function (data) {
+            const bar    = document.getElementById('analysis-progress-bar');
+            const status = document.getElementById('analysis-status');
+            if (bar)    bar.style.width = (data.percent || 0) + '%';
+            if (status) status.textContent = data.message || 'Processing…';
+        });
+
+        /* ── Signature generated ── */
+        socket.on('signature_generated', function (data) {
+            if (typeof showNotification === 'function') {
+                showNotification('success', 'Signature generated: ' + (data.name || ''));
+            }
+        });
+
+    });
+
+})();
+
+/* ── Helper functions ── */
+
+function updatePacketCounter() {
+    const el = document.getElementById('live-packet-count');
+    if (!el) return;
+    el.textContent = (parseInt(el.textContent) || 0) + 1;
 }
 
 function addRecentPacket(packet) {
-    const table = $('#recent-packets tbody');
-    if (!table.length) return;
-    
-    // Add new row
-    const row = `
-        <tr>
-            <td>${formatTimestamp(packet.time)}</td>
-            <td>${packet.protocol || 'Unknown'}</td>
-            <td>${packet.src}:${packet.sport}</td>
-            <td>${packet.dst}:${packet.dport}</td>
-            <td>${packet.length} bytes</td>
-        </tr>
-    `;
-    
-    table.prepend(row);
-    
-    // Keep only last 50 rows
-    if (table.children().length > 50) {
-        table.children().last().remove();
+    const tbody = document.querySelector('#recent-packets tbody');
+    if (!tbody) return;
+
+    const ts    = packet.time ? new Date(packet.time * 1000).toLocaleTimeString() : '—';
+    const proto = packet.protocol || 'Unknown';
+    const src   = packet.src ? packet.src + (packet.sport ? ':' + packet.sport : '') : '—';
+    const dst   = packet.dst ? packet.dst + (packet.dport ? ':' + packet.dport : '') : '—';
+
+    const row = document.createElement('tr');
+    row.innerHTML =
+        '<td style="font-family:var(--font-mono);font-size:11px;">' + ts    + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:11px;color:var(--accent);">' + proto + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:11px;">' + src   + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:11px;">' + dst   + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:11px;">' + (packet.length || 0) + ' B</td>';
+
+    tbody.insertBefore(row, tbody.firstChild);
+
+    /* Keep at most 50 rows */
+    while (tbody.children.length > 50) {
+        tbody.removeChild(tbody.lastChild);
     }
 }
 
 function addAlertToList(alert) {
-    const container = $('#live-alerts');
-    if (!container.length) return;
-    
-    const severityClass = alert.severity || 'medium';
+    const container = document.getElementById('live-alerts') ||
+                      document.getElementById('recent-alerts-list');
+    if (!container) return;
+
+    const sev  = alert.severity || 'medium';
     const time = new Date().toLocaleTimeString();
-    
-    const alertEl = `
-        <div class="alert-item ${severityClass} fade-in">
-            <div class="d-flex justify-content-between">
-                <span class="alert-type">${alert.type}</span>
-                <span class="alert-time">${time}</span>
-            </div>
-            <div class="alert-description">${alert.description || ''}</div>
-        </div>
-    `;
-    
-    container.prepend(alertEl);
-    
-    // Keep only last 20 alerts
-    if (container.children().length > 20) {
-        container.children().last().remove();
+
+    const el = document.createElement('div');
+    el.className = 'alert-item ' + sev;
+    el.style.marginBottom = '8px';
+    el.innerHTML =
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+            '<span class="alert-type">' + (alert.type || '') + '</span>' +
+            '<span class="alert-time">' + time + '</span>' +
+        '</div>' +
+        '<div class="alert-description">' + (alert.description || '') + '</div>';
+
+    container.insertBefore(el, container.firstChild);
+
+    while (container.children.length > 20) {
+        container.removeChild(container.lastChild);
     }
 }
 
-function updateAnalysisProgress(data) {
-    const progressBar = $('#analysis-progress .progress-bar');
-    const statusText = $('#analysis-status');
-    
-    if (progressBar.length) {
-        progressBar.css('width', data.percent + '%');
-        progressBar.text(data.percent + '%');
-    }
-    
-    if (statusText.length) {
-        statusText.text(data.message || 'Processing...');
-    }
-}
-
-function refreshSignaturesList() {
-    if ($('#signatures-list').length) {
-        $.get('/api/v1/signatures?limit=5', function(signatures) {
-            const list = $('#signatures-list');
-            list.empty();
-            
-            signatures.forEach(function(sig) {
-                list.append(`
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <span>${sig.name}</span>
-                            <span class="badge bg-info">${sig.format}</span>
-                        </div>
-                        <small class="text-muted">${formatTimestamp(sig.modified)}</small>
-                    </div>
-                `);
-            });
-        });
-    }
-}
-
-function updateAlertCounter() {
-    const counter = $('#alert-counter');
-    if (counter.length) {
-        let count = parseInt(counter.text()) || 0;
-        count++;
-        counter.text(count);
-        
-        // Add animation
-        counter.addClass('pulse');
-        setTimeout(() => counter.removeClass('pulse'), 500);
-    }
+function bumpAlertCounter() {
+    const el = document.getElementById('alert-counter');
+    if (!el) return;
+    el.textContent = (parseInt(el.textContent) || 0) + 1;
 }
 
 function updateTrafficChartRealTime(packet) {
-    if (charts.traffic) {
-        // Add new data point
-        const now = new Date().toLocaleTimeString();
-        charts.traffic.data.labels.push(now);
-        charts.traffic.data.datasets[0].data.push(packet.length || 1);
-        
-        // Keep only last 20 points
-        if (charts.traffic.data.labels.length > 20) {
-            charts.traffic.data.labels.shift();
-            charts.traffic.data.datasets[0].data.shift();
-        }
-        
-        charts.traffic.update();
-    }
-}
+    const chart = window.charts?.traffic;
+    if (!chart) return;
 
-// Export functions for use in other scripts
-window.websocketHandlers = {
-    updatePacketCounter,
-    addRecentPacket,
-    addAlertToList,
-    updateAnalysisProgress,
-    refreshSignaturesList,
-    updateAlertCounter
-};
+    const now = new Date().toLocaleTimeString();
+    chart.data.labels.push(now);
+    chart.data.datasets[0].data.push(packet.length || 1);
+
+    if (chart.data.labels.length > 30) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+    }
+
+    chart.update('none'); /* 'none' skips animation for real-time feel */
+}

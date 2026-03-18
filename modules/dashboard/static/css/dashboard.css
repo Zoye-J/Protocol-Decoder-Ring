@@ -1,302 +1,230 @@
-/* Dashboard Custom Styles- dashboard.css */
+/*
+ * PDR Dashboard — dashboard.css
+ * Supplementary styles only. Core design system lives in base.html.
+ * This file handles page-specific overrides and component polish.
+ */
 
-:root {
-    --primary-color: #0d6efd;
-    --success-color: #198754;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #0dcaf0;
-    --dark-bg: #212529;
-    --light-bg: #f8f9fa;
-}
-
-/* Dark Theme */
-[data-theme="dark"] {
-    --bg-primary: #1a1d20;
-    --bg-secondary: #2c3034;
-    --text-primary: #f8f9fa;
-    --text-secondary: #adb5bd;
-    --border-color: #495057;
-}
-
-body {
-    transition: background-color 0.3s, color 0.3s;
-}
-
-/* Navigation */
-.navbar-brand i {
-    margin-right: 8px;
-    color: var(--primary-color);
-}
-
-/* Stats Cards */
-.stats-card {
-    transition: transform 0.2s;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.stats-card:hover {
-    transform: translateY(-5px);
-}
-
-.stats-card .card-body {
-    padding: 1.5rem;
-}
-
-.stats-card i {
-    opacity: 0.3;
-    transition: opacity 0.2s;
-}
-
-.stats-card:hover i {
-    opacity: 0.5;
-}
-
-/* Tables */
-.table th {
-    border-top: none;
-    font-weight: 600;
+/* ── DataTables integration ── */
+.dataTables_wrapper .dataTables_filter label,
+.dataTables_wrapper .dataTables_length label {
     color: var(--text-secondary);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.dataTables_wrapper .dataTables_filter input {
+    background: var(--bg-elevated) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-primary) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 5px 10px !important;
+    font-family: var(--font-mono) !important;
+    font-size: 12px !important;
+    margin-left: 8px;
+}
+.dataTables_wrapper .dataTables_info {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: var(--font-mono);
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: var(--text-muted) !important;
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+    font-size: 12px !important;
+    padding: 4px 10px !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+    border: none !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--accent-dim) !important;
+    color: var(--accent) !important;
+    border: none !important;
 }
 
-.table-hover tbody tr:hover {
-    background-color: rgba(13, 110, 253, 0.05);
+/* ── Bootstrap modal theme override ── */
+/* ── Fix modal backdrop blocking everything ── */
+.modal-backdrop {
+    --bs-backdrop-opacity: 0.6 !important;
 }
 
-/* Cards */
-.card {
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.2s;
+.modal-backdrop.show {
+    opacity: 0.6 !important;
 }
 
-.card:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* Ensure modal sits above backdrop */
+.modal {
+    z-index: 1055 !important;
 }
 
-.card-header {
-    background-color: transparent;
-    border-bottom: 1px solid var(--border-color);
-    padding: 1rem 1.25rem;
+.modal-backdrop {
+    z-index: 1050 !important;
 }
 
-.card-header h5 {
-    margin: 0;
-    font-weight: 600;
-}
+/* Fix body scroll lock not releasing */
+body.modal-open {
+    overflow: hidden !important;
+    padding-right: 0 !important;
 
-/* Badges */
-.badge {
-    padding: 0.5em 0.8em;
-    font-weight: 500;
 }
-
-/* Alerts */
-.alert-item {
-    padding: 1rem;
-    margin-bottom: 0.5rem;
-    border-radius: 8px;
-    border-left: 4px solid;
-    transition: background-color 0.2s;
-}
-
-.alert-item:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-}
-
-.alert-item.high {
-    border-left-color: var(--danger-color);
-}
-
-.alert-item.medium {
-    border-left-color: var(--warning-color);
-}
-
-.alert-item.low {
-    border-left-color: var(--success-color);
-}
-
-.alert-item .alert-time {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.alert-item .alert-type {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-/* Packets Table */
-.packet-details {
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 0.9rem;
-}
-
-.hex-view {
-    background-color: var(--bg-secondary);
-    padding: 1rem;
-    border-radius: 6px;
-    font-family: monospace;
-    font-size: 0.85rem;
-    overflow-x: auto;
-}
-
-/* Progress Bars */
-.progress {
-    height: 10px;
-    border-radius: 5px;
-}
-
-.progress-bar {
-    border-radius: 5px;
-}
-
-/* Modals */
 .modal-content {
-    border: none;
-    border-radius: 12px;
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-lg) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5) !important;
 }
-
 .modal-header {
-    border-bottom: 1px solid var(--border-color);
-    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 20px 24px 16px !important;
 }
-
+.modal-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+}
 .modal-body {
-    padding: 1.5rem;
+    padding: 20px 24px !important;
 }
-
 .modal-footer {
-    border-top: 1px solid var(--border-color);
-    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--border) !important;
+    padding: 16px 24px !important;
+}
+.btn-close {
+    filter: invert(1) opacity(0.5) !important;
+}
+.btn-close:hover {
+    filter: invert(1) opacity(0.8) !important;
 }
 
-/* Forms */
+/* ── Bootstrap form control overrides ── */
 .form-control, .form-select {
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-    padding: 0.6rem 1rem;
+    background: var(--bg-elevated) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-primary) !important;
+    border-radius: var(--radius-md) !important;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    padding: 8px 12px !important;
+    transition: border-color var(--transition) !important;
 }
-
 .form-control:focus, .form-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-dim) !important;
+    background: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+}
+.form-control::placeholder {
+    color: var(--text-muted) !important;
+}
+.form-select option {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+}
+.form-check-input {
+    background-color: var(--bg-elevated) !important;
+    border-color: var(--border) !important;
+}
+.form-check-input:checked {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+}
+.form-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.form-range {
+    accent-color: var(--accent);
 }
 
-/* Footer */
-.footer {
-    margin-top: auto;
-    border-top: 1px solid var(--border-color);
+/* ── Bootstrap progress override ── */
+.progress {
+    background: var(--bg-elevated) !important;
+    border-radius: 2px !important;
+    height: 4px !important;
+}
+.progress-bar {
+    background: var(--accent) !important;
+    border-radius: 2px !important;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .stats-card {
-        margin-bottom: 1rem;
-    }
-    
-    .card-header {
-        padding: 0.75rem 1rem;
-    }
-    
-    .modal-dialog {
-        margin: 0.5rem;
-    }
+/* ── Bootstrap list-group override ── */
+.list-group-item {
+    background: var(--bg-elevated) !important;
+    border-color: var(--border) !important;
+    color: var(--text-secondary) !important;
+    font-size: 13px;
+}
+.list-group-item:hover {
+    background: var(--bg-hover) !important;
+    color: var(--text-primary) !important;
+}
+.list-group-item.active {
+    background: var(--accent-dim) !important;
+    border-color: var(--border-hover) !important;
+    color: var(--accent) !important;
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ── Upload / progress animations ── */
+@keyframes indeterminate {
+    0%   { margin-left: -40%; width: 40%; }
+    100% { margin-left: 100%; width: 40%; }
+}
+.progress-indeterminate .progress-bar {
+    animation: indeterminate 1.4s ease-in-out infinite !important;
+    width: 40% !important;
 }
 
-.fade-in {
-    animation: fadeIn 0.3s ease-out;
+/* ── Hex view ── */
+.hex-view {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    color: var(--accent) !important;
+    background: var(--bg-base) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 14px !important;
+    overflow-x: auto;
+    line-height: 1.6;
 }
 
-/* Loading Spinner */
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-left-color: var(--primary-color);
+/* ── Timeline component ── */
+.timeline-dot {
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    background: var(--accent);
+    border: 2px solid var(--bg-card);
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+.timeline-line {
+    width: 1px;
+    flex: 1;
+    background: var(--border);
+    margin: 4px auto 0;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Tooltips */
-.tooltip-inner {
-    max-width: 200px;
-    padding: 0.5rem 1rem;
-    background-color: var(--dark-bg);
-    border-radius: 6px;
-}
-
-/* Code Blocks */
-pre {
-    background-color: var(--bg-secondary);
-    padding: 1rem;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-}
-
-code {
-    color: var(--danger-color);
-    background-color: rgba(220, 53, 69, 0.1);
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-}
-
-/* Signature View */
-.signature-block {
-    background-color: var(--bg-secondary);
-    padding: 1rem;
-    border-radius: 6px;
-    font-family: monospace;
-    font-size: 0.85rem;
-    white-space: pre-wrap;
-    border: 1px solid var(--border-color);
-}
-
-/* Dark Theme Overrides */
-[data-theme="dark"] {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .card {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .table {
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .modal-content {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .form-control,
-[data-theme="dark"] .form-select {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    border-color: var(--border-color);
-}
-
-[data-theme="dark"] .footer {
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-secondary);
-}
-
-[data-theme="dark"] .alert-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 200ms ease;
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    .main-wrapper {
+        margin-left: 0 !important;
+    }
 }
