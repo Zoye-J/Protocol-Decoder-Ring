@@ -1,0 +1,13 @@
+{
+  "analysis_id": "analysis_20260319_073156",
+  "timestamp": "2026-03-19T07:32:27.275343",
+  "file": "test_beacon.bat",
+  "alerts": [],
+  "protocols": {},
+  "statistics": {
+    "total_packets": 0
+  },
+  "flow_count": 0,
+  "packet_count": 0,
+  "error": "can only concatenate list (not \"int\") to list"
+}

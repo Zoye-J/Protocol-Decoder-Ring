@@ -301,7 +301,8 @@ level: {level}
         samples = details.get('samples', [])
         suspicious_queries = details.get('suspicious_queries', [])
         
-        for item in samples + suspicious_queries:
+        for item in (samples if isinstance(samples, list) else []) + \
+            (suspicious_queries if isinstance(suspicious_queries, list) else []):
             if isinstance(item, dict):
                 query = item.get('query', '')
                 if query and len(query) > 30:
@@ -347,7 +348,8 @@ level: {level}
         samples = details.get('samples', [])
         suspicious_flows = details.get('suspicious_flows', [])
         
-        for item in samples + suspicious_flows:
+        for item in (samples if isinstance(samples, list) else []) + \
+            (suspicious_flows if isinstance(suspicious_flows, list) else []):
             if isinstance(item, dict):
                 uri = item.get('info', '')
                 if uri and len(uri) > 50:
@@ -424,7 +426,7 @@ level: {level}
             if isinstance(raw_data, str):
                 raw_data = raw_data.encode('utf-8', errors='ignore')
             
-            if len(raw_data) < 8:  # Skip very short payloads
+            if not raw_data or len(raw_data) < 8:  # Skip None or very short payloads
                 continue
             
             # Look for repeating patterns
@@ -445,7 +447,7 @@ level: {level}
                     pos = raw_data.find(pattern)
                     start = max(0, pos - 10)
                     end = min(len(raw_data), pos + len(pattern) + 20)
-                    signature = raw_data[start:end]
+                    signature = (raw_data or b'')[start:end]
                     
                     # Convert to hex string for signature
                     hex_str = ' '.join(f'{b:02x}' for b in signature)

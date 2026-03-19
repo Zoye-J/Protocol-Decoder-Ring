@@ -1,0 +1,158 @@
+{
+  "detection_id": "exfil_20260319_073227",
+  "timestamp": "2026-03-19T07:32:27.224629",
+  "statistics": {
+    "total_packets": 580,
+    "total_bytes": 311765,
+    "total_flows": 46,
+    "start_time": 1773883947.1764278,
+    "end_time": 1773883947.2222416,
+    "outbound_bytes": 97904,
+    "inbound_bytes": 213861,
+    "unique_destinations": [
+      "103.60.172.20",
+      "4.237.22.41",
+      "185.199.108.133",
+      "192.168.0.109",
+      "ff02::16",
+      "20.189.173.6",
+      "23.55.235.109",
+      "192.168.0.100",
+      "13.107.137.11",
+      "192.168.0.105",
+      "151.101.194.137",
+      "192.168.0.103",
+      "192.168.0.104",
+      "20.42.65.88",
+      "224.0.0.252",
+      "192.168.0.255",
+      "192.168.0.106",
+      "104.208.16.89",
+      "142.250.206.46",
+      "4.230.171.124",
+      "52.104.49.55",
+      "239.255.255.250",
+      "150.171.28.12",
+      "142.250.182.68",
+      "224.0.0.251",
+      "104.26.8.123",
+      "4.213.25.242",
+      "104.17.25.14",
+      "192.168.0.101",
+      "185.199.110.133",
+      "18.97.36.23",
+      "192.168.0.108",
+      "13.89.179.14",
+      "13.67.9.5",
+      "ff02::fb",
+      "140.82.114.25"
+    ]
+  },
+  "alerts": [
+    {
+      "type": "unusual_destination",
+      "severity": "medium",
+      "timestamp": 1773883947.1954868,
+      "details": {
+        "destinations": [
+          {
+            "destination": "185.199.110.133",
+            "bytes": 55,
+            "megabytes": 0.0,
+            "packets": 1,
+            "flows": 1,
+            "reason": "suspicious_ip_range"
+          },
+          {
+            "destination": "185.199.108.133",
+            "bytes": 55,
+            "megabytes": 0.0,
+            "packets": 1,
+            "flows": 1,
+            "reason": "suspicious_ip_range"
+          }
+        ],
+        "total_unusual": 2
+      },
+      "description": "Detected connections to 2 unusual IP addresses"
+    },
+    {
+      "type": "timing_channel_regular",
+      "severity": "high",
+      "timestamp": 1773883947.2109098,
+      "details": {
+        "flow": "TCP_192.168.0.109:57317->23.55.235.109:443",
+        "mean_interval": 0.0039,
+        "std_interval": 0.0061,
+        "packet_count": 119
+      },
+      "description": "Timing channel detected: extremely regular intervals (0.0039s \u00b1 0.0061s)"
+    },
+    {
+      "type": "possible_steganography",
+      "severity": "medium",
+      "timestamp": 1773883947.2128031,
+      "details": {
+        "suspicious_transfers": [
+          {
+            "flow": "TCP_192.168.0.109:57204->13.107.137.11:443",
+            "total_kb": 15.83,
+            "large_packets": 11,
+            "total_packets": 23
+          },
+          {
+            "flow": "TCP_192.168.0.109:57310->13.107.137.11:443",
+            "total_kb": 19.29,
+            "large_packets": 12,
+            "total_packets": 32
+          },
+          {
+            "flow": "TCP_192.168.0.109:57207->52.104.49.55:443",
+            "total_kb": 11.99,
+            "large_packets": 9,
+            "total_packets": 16
+          },
+          {
+            "flow": "TCP_192.168.0.109:57311->13.67.9.5:443",
+            "total_kb": 12.44,
+            "large_packets": 6,
+            "total_packets": 29
+          },
+          {
+            "flow": "TCP_192.168.0.109:57313->4.230.171.124:443",
+            "total_kb": 12.81,
+            "large_packets": 6,
+            "total_packets": 34
+          }
+        ],
+        "note": "Image files detected - further analysis recommended"
+      },
+      "description": "Detected 9 potential image transfers (possible steganography)"
+    },
+    {
+      "type": "many_small_packets",
+      "severity": "low",
+      "timestamp": 1773883947.2222216,
+      "details": {
+        "small_packets": 270,
+        "percentage": 46.55
+      },
+      "description": "High percentage of very small packets (possible covert signaling)"
+    }
+  ],
+  "suspicious_flows": {
+    "TCP_192.168.0.109:57317->23.55.235.109:443": {
+      "reason": "timing_channel",
+      "severity": "high"
+    }
+  },
+  "exfiltration_attempts": [],
+  "summary": {
+    "total_alerts": 4,
+    "high_severity": 1,
+    "medium_severity": 2,
+    "low_severity": 1,
+    "suspicious_flows": 1,
+    "warnings": 0
+  }
+}

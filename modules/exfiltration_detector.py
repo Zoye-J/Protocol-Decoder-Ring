@@ -829,7 +829,10 @@ class ExfiltrationDetector:
             
             dest_part = parts[1]
             if ':' in dest_part:
-                port = int(dest_part.split(':')[1])
+                try:
+                    port = int(dest_part.split(':')[1])
+                except (ValueError, IndexError):
+                    continue
                 
                 # Check if port is in unusual list
                 if port in unusual_ports and bytes_sent > 1024 * 1024:  # > 1MB on unusual port
