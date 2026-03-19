@@ -1,0 +1,32 @@
+# PDR Generated Sigma Rules
+# Generated: 2026-03-19T07:59:49.298907
+# Analysis ID: siggen_20260319_075949
+# ==================================================
+
+
+title: DNS Tunneling Detection
+id: pdr-f8b039ea
+status: experimental
+description: 'Detects possible DNS tunneling based on long domain names'
+author: PDR
+date: 2026/03/19
+modified: 2026/03/19
+
+logsource:
+    product: windows
+    category: dns_query
+
+detection:
+    selection:
+
+            EventID: 22
+            Protocol: udp
+            DestinationPort: 53
+            Query|re: '[a-z0-9]{50,}\..*'
+    condition: selection
+
+falsepositives:
+    - Unknown
+
+level: high
+

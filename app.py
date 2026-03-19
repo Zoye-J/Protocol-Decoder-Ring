@@ -286,7 +286,6 @@ def api_get_analysis(analysis_id):
     """Get specific analysis results"""
     # Try different possible filenames
     possible_paths = [
-        Path(f'output/analysis/analysis_{analysis_id}.json'),
         Path(f'output/analysis/{analysis_id}.json'),
         Path(f'output/analysis/{analysis_id}')
     ]
