@@ -1,0 +1,189 @@
+{
+  "signature_id": "PDR-siggen_20260319_083132",
+  "generated": "2026-03-19T08:31:32.809877",
+  "analysis_id": "siggen_20260319_083132",
+  "patterns": {
+    "byte_sequences": [
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 21 aa dc 0d dd cf be b3 b0 4d a7 b7 75 19 82 33 2c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 c6 00 00 00 00 00 00 00 22 19 18 fa ee 9f 16 97 27 d0 57 17 f9 88 99 d0 c0",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "00 0b 13 e5 66 7d 4a 9b 55 80 00 00 00 00 00 0b 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0c 05 00 30 51 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 56 3a 77 b5 a5 bf 6c 4f 86 cc b0 6b 40 fc 8f 41 74 20 0f 55",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 81 a3 c6 77 66 9b 1a 08 a8 fb 48 9c 40 db 8d b2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 02 9c c4 59 a4 d4 cd d3 46 b8 ac 28 09 58 fc 40 79",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 5d 00 00 00 00 00 00 00 26 94 b1 c6 f8 2f 9c c1 24 f2 c1 c3 bd 29 0f c1 6e",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 23 81 34 bc 6d 93 26 96 fe ad f7 9e 6d 37 d0 e0 26",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 d6 00 00 00 00 00 00 00 24 8e b7 9f 87 fd c6 ed 33 e5 e7 8a 9a ef 82 38 c9",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 68 00 00 00 00 00 00 00 01 78 79 48 2e c2 20 f6 88 95 1a a5 8e d9 47 d1 46",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 62 00 00 00 00 00 00 00 27 a4 c5 9f e8 c4 d2 de c9 10 63 49 67 b9 58 71 7a",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 90 00 00 00 00 00 00 00 11 99 4d a9 73 a9 58 fe 0c 48 49 ae db a5 03 e8 33",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 29 49 00 00 00 00 00 00 00 12 5f 5c 69 44 ec d0 54 a5 82 fc 5c 88 39 31 4c b7",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 27 fd 1d f0 54 72 57 d4 64 c0 b0 07 65 8b e8 fb 40",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 5a 00 00 00 00 00 00 00 28 98 b2 42 94 f7 94 48 4d 81 5e b9 03 df 73 99 79",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c0 00 00 00 00 00 00 00 16 ed 10 3b 13 91 ec eb 4e 7d ec b9 04 3f d5 92 22",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "11 00 ee ff 00 00 00 00",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 8
+      }
+    ],
+    "domain_patterns": [],
+    "ip_patterns": [],
+    "port_patterns": [],
+    "timing_patterns": [],
+    "size_patterns": []
+  },
+  "rules": {
+    "snort_count": 0,
+    "suricata_count": 0,
+    "yara_count": 1,
+    "sigma_count": 0
+  },
+  "threat_intel": {
+    "c2_servers": [],
+    "exfil_destinations": [],
+    "dns_patterns": [],
+    "byte_signatures": [
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 21 aa dc 0d dd cf be b3 b0 4d a7 b7 75 19 82 33 2c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 c6 00 00 00 00 00 00 00 22 19 18 fa ee 9f 16 97 27 d0 57 17 f9 88 99 d0 c0",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "00 0b 13 e5 66 7d 4a 9b 55 80 00 00 00 00 00 0b 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0c 05 00 30 51 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 56 3a 77 b5 a5 bf 6c 4f 86 cc b0 6b 40 fc 8f 41 74 20 0f 55",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 81 a3 c6 77 66 9b 1a 08 a8 fb 48 9c 40 db 8d b2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 02 9c c4 59 a4 d4 cd d3 46 b8 ac 28 09 58 fc 40 79",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 5d 00 00 00 00 00 00 00 26 94 b1 c6 f8 2f 9c c1 24 f2 c1 c3 bd 29 0f c1 6e",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 23 81 34 bc 6d 93 26 96 fe ad f7 9e 6d 37 d0 e0 26",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 d6 00 00 00 00 00 00 00 24 8e b7 9f 87 fd c6 ed 33 e5 e7 8a 9a ef 82 38 c9",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 68 00 00 00 00 00 00 00 01 78 79 48 2e c2 20 f6 88 95 1a a5 8e d9 47 d1 46",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ]
+  }
+}

@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Reports{% endblock %}
 {% block breadcrumb %}Reports{% endblock %}
- 
+
 {% block content %}
- 
+
 <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
     <div>
         <div class="page-title">Analysis Reports</div>
         <div class="page-subtitle">Generated output from sandbox analyses</div>
     </div>
     <div style="display:flex;gap:8px;">
-        <button class="btn-pdr btn-pdr-ghost" data-bs-toggle="modal" data-bs-target="#compareModal">
+        <button type="button" class="btn-pdr btn-pdr-ghost" data-bs-toggle="modal" data-bs-target="#compareModal">
             <i class="fas fa-columns"></i> Compare
         </button>
-        <button class="btn-pdr btn-pdr-primary" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+        <button type="button" class="btn-pdr btn-pdr-primary" data-bs-toggle="modal" data-bs-target="#generateReportModal">
             <i class="fas fa-plus"></i> New Report
         </button>
     </div>
 </div>
- 
+
 <!-- Storage summary -->
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
     <div class="stat-card" style="--accent-color:var(--accent);">
@@ -27,13 +27,13 @@
         <i class="fas fa-file-alt stat-icon"></i>
     </div>
     <div class="stat-card" style="--accent-color:var(--accent-green);">
-        <div class="stat-label">JSON</div>
+        <div class="stat-label">Analysis JSON</div>
         <div class="stat-value" id="count-json">—</div>
         <i class="fas fa-code stat-icon"></i>
     </div>
     <div class="stat-card" style="--accent-color:var(--accent-amber);">
-        <div class="stat-label">Text</div>
-        <div class="stat-value" id="count-txt">—</div>
+        <div class="stat-label">Exfil Reports</div>
+        <div class="stat-value" id="count-exfil">—</div>
         <i class="fas fa-file-alt stat-icon"></i>
     </div>
     <div class="stat-card" style="--accent-color:var(--accent-purple);">
@@ -42,27 +42,27 @@
         <i class="fas fa-database stat-icon"></i>
     </div>
 </div>
- 
-<!-- Format filter + report list -->
-<div class="pdr-card">
+
+<!-- Tabs for different report sources -->
+<div class="pdr-card" style="margin-bottom:16px;">
     <div class="card-head">
         <div class="card-head-title"><i class="fas fa-file-alt icon"></i> Report Library</div>
         <div style="display:flex;gap:8px;align-items:center;">
-            <select class="pdr-select" id="format-filter" style="width:130px;">
-                <option value="">All Formats</option>
-                <option value="json">JSON</option>
-                <option value="txt">Text</option>
-                <option value="html">HTML</option>
+            <select class="pdr-select" id="source-filter" style="width:160px;">
+                <option value="all">All Sources</option>
+                <option value="analysis">Analysis Results</option>
+                <option value="exfiltration">Exfil Reports</option>
+                <option value="signatures">Signature Reports</option>
             </select>
             <input class="pdr-input" id="search-reports" placeholder="Search…" style="width:180px;">
         </div>
     </div>
- 
-    <table class="pdr-table" id="reports-table">
+
+    <table class="pdr-table">
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Format</th>
+                <th>Source</th>
                 <th>Size</th>
                 <th>Modified</th>
                 <th>Actions</th>
@@ -73,8 +73,8 @@
         </tbody>
     </table>
 </div>
- 
-<!-- Timeline -->
+
+<!-- Timeline + chart -->
 <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:16px;">
     <div class="pdr-card">
         <div class="card-head"><div class="card-head-title"><i class="fas fa-clock icon"></i> Recent Activity</div></div>
@@ -83,13 +83,13 @@
         </div>
     </div>
     <div class="pdr-card">
-        <div class="card-head"><div class="card-head-title"><i class="fas fa-chart-pie icon"></i> By Format</div></div>
+        <div class="card-head"><div class="card-head-title"><i class="fas fa-chart-pie icon"></i> By Source</div></div>
         <div class="card-body-pad">
             <canvas id="format-chart" height="220"></canvas>
         </div>
     </div>
 </div>
- 
+
 <!-- Generate Report Modal -->
 <div class="modal fade" id="generateReportModal" tabindex="-1">
     <div class="modal-dialog">
@@ -107,29 +107,19 @@
                     <label class="form-label-pdr">Format</label>
                     <select class="pdr-select" id="rpt-format" style="width:100%;">
                         <option value="json">JSON</option>
-                        <option value="text">Text</option>
                         <option value="html">HTML</option>
+                        <option value="csv">CSV</option>
                     </select>
-                </div>
-                <div>
-                    <label class="form-label-pdr">Include</label>
-                    <div style="display:flex;flex-direction:column;gap:8px;">
-                        {% for item in ['Charts','Packet Details','Signatures'] %}
-                        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;">
-                            <input type="checkbox" checked style="accent-color:var(--accent);"> {{ item }}
-                        </label>
-                        {% endfor %}
-                    </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-pdr btn-pdr-primary" id="gen-rpt-btn" onclick="generateReport()">Generate</button>
+                <button type="button" class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-pdr btn-pdr-primary" id="gen-rpt-btn" onclick="generateReport()">Export</button>
             </div>
         </div>
     </div>
 </div>
- 
+
 <!-- Compare Modal -->
 <div class="modal fade" id="compareModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -139,6 +129,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Select two analyses to compare alerts, packet counts, and protocols.</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
                     <div>
                         <label class="form-label-pdr">Analysis A</label>
@@ -149,64 +140,113 @@
                         <select class="pdr-select" id="cmp-b" style="width:100%;height:160px;" size="6"></select>
                     </div>
                 </div>
+                <div id="cmp-spinner" style="display:none;text-align:center;padding:16px;">
+                    <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">Comparing…</div>
+                </div>
                 <div id="cmp-results" style="display:none;">
-                    <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;">
-                        <div id="cmp-output" style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);"></div>
+                    <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;">
+                        <div id="cmp-output" style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);line-height:1.8;"></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Close</button>
-                <button class="btn-pdr btn-pdr-primary" onclick="doCompare()">Compare</button>
+                <button type="button" class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-pdr btn-pdr-primary" id="do-compare-btn" onclick="doCompare()">
+                    <i class="fas fa-not-equal"></i> Compare
+                </button>
             </div>
         </div>
     </div>
 </div>
- 
+
 {% endblock %}
- 
+
 {% block extra_js %}
 <script>
 let allReports = [];
- 
+
 $(document).ready(function(){
     loadReports();
     loadAnalysesForModals();
-    $('#format-filter, #search-reports').on('change input', renderReports);
+    $('#source-filter, #search-reports').on('change input', renderReports);
 });
- 
+
 function loadReports() {
-    $.get('/api/v1/reports', function(data) {
-        allReports = data;
-        updateStats();
-        renderReports();
-        renderTimeline();
-        renderFormatChart();
-    }).fail(()=>{
+    // Load from ALL report sources: analysis results, exfil reports, signature reports
+    const sources = [
+        { url: '/api/v1/analyses', label: 'analysis' },
+    ];
+
+    // Fetch analysis files
+    $.get('/api/v1/analyses', function(analyses) {
+        const analysisReports = analyses.map(a => ({
+            name: `${a.id}.json`,
+            source: 'analysis',
+            format: 'json',
+            path: `output/analysis/${a.id}.json`,
+            size: '—',
+            modified: a.timestamp,
+            id: a.id,
+            alerts: a.alerts,
+            packets: a.packets
+        }));
+
+        // Fetch reports dir
+        $.get('/api/v1/reports', function(reports) {
+            allReports = [...analysisReports, ...reports.map(r => ({...r, source: guessSource(r.name)}))];
+            updateStats();
+            renderReports();
+            renderTimeline();
+            renderFormatChart();
+        }).fail(function() {
+            allReports = analysisReports;
+            updateStats();
+            renderReports();
+            renderTimeline();
+            renderFormatChart();
+        });
+    }).fail(function() {
         $('#reports-tbody').html('<tr><td colspan="5" style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">Could not load reports</td></tr>');
     });
 }
- 
+
+function guessSource(name) {
+    if (name.startsWith('analysis_')) return 'analysis';
+    if (name.startsWith('exfil_')) return 'exfiltration';
+    if (name.startsWith('report_siggen')) return 'signatures';
+    return 'other';
+}
+
 function updateStats() {
     $('#count-total').text(allReports.length);
-    $('#count-json').text(allReports.filter(r=>r.format==='json').length);
-    $('#count-txt').text(allReports.filter(r=>r.format==='txt').length);
-    const totalBytes = allReports.reduce((s,r)=>s+(r.size*1024),0);
+    $('#count-json').text(allReports.filter(r=>r.source==='analysis').length);
+    $('#count-exfil').text(allReports.filter(r=>r.source==='exfiltration').length);
+    const totalBytes = allReports.reduce((s,r)=>s+(parseFloat(r.size)||0)*1024,0);
     $('#count-size').text(formatBytes(totalBytes));
 }
- 
+
 function renderReports() {
-    const fmt  = $('#format-filter').val();
-    const q    = $('#search-reports').val().toLowerCase();
-    const list = fmt||q ? allReports.filter(r=>{
-        if (fmt && r.format!==fmt) return false;
+    const src = $('#source-filter').val();
+    const q   = $('#search-reports').val().toLowerCase();
+    const list = allReports.filter(r => {
+        if (src && src !== 'all' && r.source !== src) return false;
         if (q && !r.name.toLowerCase().includes(q)) return false;
         return true;
-    }) : allReports;
- 
-    const fmtIcons = {json:'fas fa-code',txt:'fas fa-file-alt',html:'fab fa-html5',pdf:'fas fa-file-pdf'};
-    const fmtColors = {json:'var(--accent)',txt:'var(--accent-green)',html:'var(--accent-amber)',pdf:'var(--accent-red)'};
- 
+    });
+
+    const srcColors = {
+        analysis:    'var(--accent)',
+        exfiltration:'var(--accent-red)',
+        signatures:  'var(--accent-green)',
+        other:       'var(--text-muted)'
+    };
+    const srcIcons = {
+        analysis:    'fas fa-chart-line',
+        exfiltration:'fas fa-eye',
+        signatures:  'fas fa-shield-alt',
+        other:       'fas fa-file'
+    };
+
     const tbody = $('#reports-tbody');
     tbody.empty();
     if (!list.length) {
@@ -214,123 +254,163 @@ function renderReports() {
         return;
     }
     list.forEach(r => {
-        const icon  = fmtIcons[r.format]||'fas fa-file';
-        const color = fmtColors[r.format]||'var(--text-muted)';
-        const mod   = new Date(r.modified).toLocaleString();
+        const color = srcColors[r.source]||'var(--text-muted)';
+        const icon  = srcIcons[r.source]||'fas fa-file';
+        const mod   = r.modified ? new Date(r.modified).toLocaleString() : '—';
+        const sizeStr = r.size && r.size !== '—' ? r.size + ' KB' : '—';
+
+        // Extra info for analysis reports
+        const extra = r.source === 'analysis' && r.alerts !== undefined
+            ? `<span class="badge-pdr badge-high" style="margin-left:8px;">${r.alerts} alerts</span>`
+            : '';
+
         tbody.append(`<tr>
             <td style="font-family:var(--font-mono);font-size:12px;">
-                <i class="${icon}" style="color:${color};margin-right:8px;"></i>${r.name}
+                <i class="${icon}" style="color:${color};margin-right:8px;"></i>${r.name}${extra}
             </td>
-            <td><span class="badge-pdr badge-info">${(r.format||'?').toUpperCase()}</span></td>
-            <td style="font-family:var(--font-mono);font-size:11px;">${r.size} KB</td>
+            <td><span class="badge-pdr badge-info">${r.source.toUpperCase()}</span></td>
+            <td style="font-family:var(--font-mono);font-size:11px;">${sizeStr}</td>
             <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${mod}</td>
             <td>
                 <div style="display:flex;gap:6px;">
-                    <button class="btn-pdr btn-pdr-ghost" onclick="downloadReport('${r.path}')" style="font-size:11px;padding:4px 8px;">
-                        <i class="fas fa-download"></i>
-                    </button>
-                    <button class="btn-pdr btn-pdr-danger" onclick="confirmDelete('${r.path}')" style="font-size:11px;padding:4px 8px;">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    ${r.id ? `<a href="/analysis/${r.id}" class="btn-pdr btn-pdr-ghost" style="font-size:11px;padding:4px 8px;"><i class="fas fa-eye"></i></a>` : ''}
+                    ${r.path ? `<button type="button" class="btn-pdr btn-pdr-ghost" onclick="downloadReport('${r.path}')" style="font-size:11px;padding:4px 8px;"><i class="fas fa-download"></i></button>` : ''}
                 </div>
             </td>
         </tr>`);
     });
 }
- 
+
 function renderTimeline() {
     const tl = $('#timeline');
     tl.empty();
-    allReports.slice(0,10).forEach((r,i) => {
-        const mod = new Date(r.modified);
-        const isLast = i===allReports.slice(0,10).length-1;
+    const items = allReports.slice(0,10);
+    if (!items.length) {
+        tl.html('<div style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">No activity yet</div>');
+        return;
+    }
+    items.forEach((r,i) => {
+        const mod = r.modified ? new Date(r.modified) : null;
+        const isLast = i === items.length-1;
         tl.append(`
-            <div style="display:flex;gap:14px;padding-bottom:${isLast?0:16}px;${isLast?'':''};position:relative;">
+            <div style="display:flex;gap:14px;padding-bottom:${isLast?0:16}px;position:relative;">
                 <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;">
-                    <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--bg-card);margin-top:4px;"></div>
+                    <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--bg-card);margin-top:4px;flex-shrink:0;"></div>
                     ${!isLast?'<div style="width:1px;flex:1;background:var(--border);margin-top:4px;"></div>':''}
                 </div>
-                <div style="padding-bottom:${isLast?0:4}px;">
-                    <div style="font-size:12px;color:var(--text-primary);margin-bottom:2px;">${r.name}</div>
-                    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">${mod.toLocaleString()} · ${r.size} KB</div>
+                <div style="padding-bottom:${isLast?0:4}px;min-width:0;">
+                    <div style="font-size:12px;color:var(--text-primary);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+                    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">${mod?mod.toLocaleString():'—'}</div>
                 </div>
             </div>
         `);
     });
 }
- 
+
 function renderFormatChart() {
-    const counts = {};
-    allReports.forEach(r=>{ counts[r.format]=(counts[r.format]||0)+1; });
-    const labels = Object.keys(counts);
-    const values = labels.map(k=>counts[k]);
-    const COLORS = ['#00d4ff','#2ed573','#ffa502','#a29bfe'];
+    const counts = {analysis:0, exfiltration:0, signatures:0, other:0};
+    allReports.forEach(r=>{ counts[r.source||'other']++; });
+    const labels = ['Analysis','Exfiltration','Signatures','Other'];
+    const values = [counts.analysis, counts.exfiltration, counts.signatures, counts.other];
+    const COLORS = ['#00d4ff','#ff4757','#2ed573','#a29bfe'];
+    const existing = Chart.getChart('format-chart');
+    if (existing) existing.destroy();
     const ctx = document.getElementById('format-chart').getContext('2d');
     new Chart(ctx, {
         type:'doughnut',
         data:{labels,datasets:[{data:values,backgroundColor:COLORS,borderColor:'#0f1a28',borderWidth:2}]},
-        options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#8899bb',font:{family:'JetBrains Mono',size:11}}}}}
+        options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+            plugins:{legend:{position:'bottom',labels:{color:'#8899bb',font:{family:'JetBrains Mono',size:11}}}}}
     });
 }
- 
+
 function loadAnalysesForModals() {
     $.get('/api/v1/analyses?limit=50', function(analyses) {
         const selA = $('#rpt-analysis'), cmpA = $('#cmp-a'), cmpB = $('#cmp-b');
-        selA.empty().append('<option value="">Choose…</option>');
+        selA.empty().append('<option value="">Choose analysis…</option>');
         cmpA.empty(); cmpB.empty();
         analyses.forEach(a => {
-            const opt = `<option value="${a.id}">${a.id}</option>`;
-            selA.append(`<option value="${a.id}">${a.id} — ${a.packets} pkts</option>`);
-            cmpA.append(opt); cmpB.append(opt);
+            const label = `${a.id} — ${a.packets||0} pkts, ${a.alerts||0} alerts`;
+            selA.append(`<option value="${a.id}">${label}</option>`);
+            cmpA.append(`<option value="${a.id}">${a.id}</option>`);
+            cmpB.append(`<option value="${a.id}">${a.id}</option>`);
         });
+        if (analyses.length > 1) {
+            $('#cmp-b option:nth-child(2)').prop('selected', true);
+        }
     });
 }
- 
+
 function generateReport() {
     const id  = $('#rpt-analysis').val();
     const fmt = $('#rpt-format').val();
-    if (!id) { showNotification('warning','Select an analysis'); return; }
-    $('#gen-rpt-btn').prop('disabled',true).text('Generating…');
-    $.ajax({
-        url:'/api/v1/reports/generate',
-        type:'POST',
-        contentType:'application/json',
-        data:JSON.stringify({analysis_id:id,format:fmt}),
-        success:function(){ showNotification('success','Report generated'); $('#generateReportModal').modal('hide'); loadReports(); },
-        error:function(){ showNotification('info','Report endpoint not implemented yet — reports are auto-generated by the analysis modules'); },
-        complete:function(){ $('#gen-rpt-btn').prop('disabled',false).text('Generate'); }
-    });
+    if (!id) { showNotification('warning','Select an analysis first'); return; }
+    // Export directly via the v2 export endpoint
+    window.location.href = `/api/v2/export/analysis/${id}?format=${fmt}`;
+    bootstrap.Modal.getInstance(document.getElementById('generateReportModal')).hide();
 }
- 
+
 function doCompare() {
-    const a = $('#cmp-a').val(), b = $('#cmp-b').val();
-    if (!a||!b) { showNotification('warning','Select two analyses'); return; }
+    const a = $('#cmp-a').val();
+    const b = $('#cmp-b').val();
+    if (!a || !b) { showNotification('warning','Select two analyses to compare'); return; }
+    if (a === b)  { showNotification('warning','Select two different analyses'); return; }
+
+    const btn = document.getElementById('do-compare-btn');
+    btn.disabled = true;
+    btn.textContent = 'Comparing…';
+    $('#cmp-results').hide();
+    $('#cmp-spinner').show();
+
     $.ajax({
-        url:'/api/v2/compare',
-        type:'POST',
-        contentType:'application/json',
-        data:JSON.stringify({analysis_ids:[a,b]}),
-        success:function(d){
+        url: '/api/v2/compare',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ analysis_ids: [a, b] }),
+        success: function(d) {
+            $('#cmp-spinner').hide();
             $('#cmp-results').show();
+
+            const packetCounts = (d.packet_counts||[]).map(formatNumber).join(' vs ');
+            const alertCounts  = (d.alert_counts||[]).join(' vs ');
+            const common = (d.common_alerts||[]).length
+                ? d.common_alerts.join(', ')
+                : '<span style="color:var(--text-muted)">None</span>';
+
+            const uniqueRows = Object.entries(d.unique_alerts||{}).map(([id, types]) =>
+                `<div style="margin-top:6px;"><span style="color:var(--accent)">${id}:</span> ${types.length ? types.join(', ') : '<span style="color:var(--text-muted)">none</span>'}</div>`
+            ).join('');
+
             $('#cmp-output').html(`
-                <div style="margin-bottom:12px;"><span style="color:var(--accent);">Analyses:</span> ${d.analyses?.join(' vs ')}</div>
-                <div style="margin-bottom:8px;"><span style="color:var(--accent);">Packet counts:</span> ${(d.packet_counts||[]).join(' | ')}</div>
-                <div style="margin-bottom:8px;"><span style="color:var(--accent);">Alert counts:</span>  ${(d.alert_counts||[]).join(' | ')}</div>
-                <div><span style="color:var(--accent);">Common alerts:</span> ${(d.common_alerts||['none']).join(', ')}</div>
+                <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+                    <span style="color:var(--accent);">Analyses:</span> ${(d.analyses||[]).join(' <span style="color:var(--text-muted)">vs</span> ')}
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:10px;">
+                    <div><span style="color:var(--text-muted)">Packets:</span><br><strong>${packetCounts}</strong></div>
+                    <div><span style="color:var(--text-muted)">Alerts:</span><br><strong>${alertCounts}</strong></div>
+                </div>
+                <div style="margin-bottom:8px;padding-top:8px;border-top:1px solid var(--border);">
+                    <span style="color:var(--accent);">Common alerts:</span> ${common}
+                </div>
+                <div>
+                    <span style="color:var(--accent);">Unique alerts:</span>${uniqueRows}
+                </div>
             `);
         },
-        error:function(){ showNotification('error','Comparison failed — ensure both analyses exist'); }
+        error: function(xhr) {
+            $('#cmp-spinner').hide();
+            const msg = xhr.responseJSON?.error || 'Comparison failed';
+            showNotification('error', msg);
+        },
+        complete: function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-not-equal"></i> Compare';
+        }
     });
 }
- 
+
 function downloadReport(path) {
-    window.location.href=`/api/v1/download/${path}`;
-}
- 
-function confirmDelete(path) {
-    if (!confirm('Delete this report?')) return;
-    showNotification('info','Delete endpoint not implemented in this version');
+    window.location.href = `/api/v1/download/${path}`;
 }
 </script>
 {% endblock %}
- 

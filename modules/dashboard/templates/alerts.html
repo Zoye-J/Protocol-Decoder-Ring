@@ -121,7 +121,7 @@ function renderAlerts() {
         const ts = a.timestamp ? new Date(a.timestamp*1000).toLocaleString() : '—';
         const details = a.details ? Object.entries(a.details)
             .filter(([k])=>!['samples','flows','transfers','methods'].includes(k))
-            .map(([k,v])`<span style="color:var(--text-muted)">${k}:</span> ${JSON.stringify(v)}`)
+            .map(([k,v]) => `<span style="color:var(--text-muted)">${k}:</span> ${JSON.stringify(v)}`)
             .join('  ') : '';
         container.append(`
             <div class="alert-item ${a.severity}" style="margin-bottom:8px;">

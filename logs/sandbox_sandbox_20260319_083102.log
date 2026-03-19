@@ -1,0 +1,11 @@
+2026-03-19 08:31:02,388 - SandboxManager.sandbox_20260319_083102 - INFO - [TOOL] SandboxManager initialized with ID: sandbox_20260319_083102
+2026-03-19 08:31:02,407 - SandboxManager.sandbox_20260319_083102 - INFO - [FOLDER] Created isolated directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_3nq60j8_
+2026-03-19 08:31:02,415 - SandboxManager.sandbox_20260319_083102 - INFO - [NET] Network isolation enabled (basic mode)
+2026-03-19 08:31:02,437 - SandboxManager.sandbox_20260319_083102 - DEBUG - [NET] Basic network isolation configured
+2026-03-19 08:31:02,438 - SandboxManager.sandbox_20260319_083102 - DEBUG - TEMP directory set to: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_3nq60j8_
+2026-03-19 08:31:02,467 - SandboxManager.sandbox_20260319_083102 - INFO - [RUN] Starting application: uploads\20260319_083102_test_beacon.bat
+2026-03-19 08:31:02,468 - SandboxManager.sandbox_20260319_083102 - INFO -       Arguments: None
+2026-03-19 08:31:02,470 - SandboxManager.sandbox_20260319_083102 - INFO -       Working directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_3nq60j8_
+2026-03-19 08:31:02,573 - SandboxManager.sandbox_20260319_083102 - INFO - [PROC] Process: cmd.exe (PID: 23288)
+2026-03-19 08:31:03,587 - SandboxManager.sandbox_20260319_083102 - INFO - [DONE] Application finished with code: 1
+2026-03-19 08:31:03,589 - SandboxManager.sandbox_20260319_083102 - WARNING - STDERR: b'The system cannot find the path specified.\r\n'...

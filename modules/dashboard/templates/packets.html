@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Packet Explorer{% endblock %}
 {% block breadcrumb %}Packet Explorer{% endblock %}
- 
+
 {% block content %}
- 
+
 <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
     <div>
         <div class="page-title">Packet Explorer</div>
-        <div class="page-subtitle">Capture, filter, and inspect network traffic</div>
+        <div class="page-subtitle">Browse packets from completed analyses</div>
     </div>
     <div style="display:flex;gap:8px;">
-        <button class="btn-pdr btn-pdr-ghost" data-bs-toggle="modal" data-bs-target="#captureModal">
+        <button type="button" class="btn-pdr btn-pdr-ghost" data-bs-toggle="modal" data-bs-target="#captureModal">
             <i class="fas fa-circle" style="color:var(--accent-red);font-size:8px;"></i>
             Live Capture
         </button>
-        <button class="btn-pdr btn-pdr-primary" data-bs-toggle="modal" data-bs-target="#uploadPcapModal">
-            <i class="fas fa-upload"></i>
-            Load PCAP
+        <button type="button" class="btn-pdr btn-pdr-primary" id="open-load-btn">
+            <i class="fas fa-folder-open"></i>
+            Load Analysis
         </button>
     </div>
 </div>
- 
+
 <!-- Live stats bar -->
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
     <div class="stat-card" style="--accent-color:var(--accent);">
@@ -40,7 +40,22 @@
         <div class="stat-value" id="stat-dur">—</div>
     </div>
 </div>
- 
+
+<!-- Analysis selector -->
+<div class="pdr-card" style="margin-bottom:16px;">
+    <div class="card-head">
+        <div class="card-head-title"><i class="fas fa-database icon"></i> Load from Analysis</div>
+    </div>
+    <div class="card-body-pad" style="display:flex;gap:12px;align-items:center;">
+        <select class="pdr-select" id="analysis-select" style="flex:1;">
+            <option value="">Select an analysis to explore its packets…</option>
+        </select>
+        <button type="button" class="btn-pdr btn-pdr-primary" onclick="loadFromAnalysis()">
+            <i class="fas fa-upload"></i> Load
+        </button>
+    </div>
+</div>
+
 <!-- Filter bar + table -->
 <div class="pdr-card">
     <div class="card-head">
@@ -52,15 +67,15 @@
                 <option>DNS</option><option>ICMP</option><option>ARP</option>
             </select>
             <input class="pdr-input" id="ip-filter" placeholder="Filter by IP…" style="width:160px;">
-            <button class="btn-pdr btn-pdr-ghost" id="clear-filter" style="font-size:11px;padding:6px 10px;">
+            <button type="button" class="btn-pdr btn-pdr-ghost" id="clear-filter" style="font-size:11px;padding:6px 10px;">
                 <i class="fas fa-times"></i> Clear
             </button>
-            <button class="btn-pdr btn-pdr-ghost" id="export-btn" style="font-size:11px;padding:6px 10px;">
+            <button type="button" class="btn-pdr btn-pdr-ghost" id="export-btn" style="font-size:11px;padding:6px 10px;">
                 <i class="fas fa-download"></i> Export JSON
             </button>
         </div>
     </div>
- 
+
     <div style="overflow-x:auto;">
         <table class="pdr-table" id="packet-table">
             <thead>
@@ -77,50 +92,47 @@
             </thead>
             <tbody id="packet-tbody">
                 <tr><td colspan="8" style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">
-                    No packets loaded — start a capture or load a PCAP file
+                    Select an analysis above to explore its network traffic
                 </td></tr>
             </tbody>
         </table>
     </div>
- 
-    <!-- Pagination -->
+
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);">
         <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);" id="page-info"></div>
         <div style="display:flex;gap:6px;" id="pagination"></div>
     </div>
 </div>
- 
-<!-- Packet detail panel (slide-in) -->
+
+<!-- Packet detail panel -->
 <div id="detail-panel" style="display:none;margin-top:16px;">
     <div class="pdr-card">
         <div class="card-head">
             <div class="card-head-title"><i class="fas fa-search icon"></i> Packet Detail</div>
-            <button class="btn-pdr btn-pdr-ghost" onclick="closeDetail()" style="font-size:11px;padding:5px 10px;">
+            <button type="button" class="btn-pdr btn-pdr-ghost" onclick="closeDetail()" style="font-size:11px;padding:5px 10px;">
                 <i class="fas fa-times"></i> Close
             </button>
         </div>
         <div class="card-body-pad" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
             <div>
                 <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">FIELDS</div>
-                <table class="pdr-table" id="detail-fields">
-                    <tbody></tbody>
-                </table>
+                <table class="pdr-table" id="detail-fields"><tbody></tbody></table>
             </div>
             <div>
-                <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">RAW / HEX</div>
+                <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">RAW DATA</div>
                 <pre class="signature-block" id="detail-hex" style="max-height:280px;"></pre>
             </div>
         </div>
     </div>
 </div>
- 
+
 <!-- Capture Modal -->
-<div class="modal fade" id="captureModal" tabindex="-1">
+<div class="modal fade" id="captureModal" tabindex="-1" aria-labelledby="captureModalLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Live Capture</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="captureModalLabel">Live Capture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
                 <div>
@@ -151,71 +163,151 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-pdr btn-pdr-success" id="start-cap-btn">
+                <button type="button" class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-pdr btn-pdr-success" id="start-cap-btn">
                     <i class="fas fa-play"></i> Start
                 </button>
             </div>
         </div>
     </div>
 </div>
- 
-<!-- Load PCAP Modal -->
-<div class="modal fade" id="uploadPcapModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Load PCAP File</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
-                <div>
-                    <label class="form-label-pdr">PCAP / PCAPNG File</label>
-                    <input class="pdr-input" type="file" id="pcap-file" accept=".pcap,.pcapng,.cap">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-pdr btn-pdr-primary" id="load-pcap-btn">Load</button>
-            </div>
-        </div>
-    </div>
-</div>
- 
+
 {% endblock %}
- 
+
 {% block extra_js %}
 <script>
 let allPackets = [];
 let filteredPackets = [];
 let currentPage = 1;
 const pageSize = 50;
-const protoColors = {TCP:'var(--accent)',UDP:'var(--accent-green)',DNS:'var(--accent-amber)',ICMP:'var(--accent-purple)',ARP:'var(--accent-red)'};
- 
+const protoColors = {
+    TCP:'var(--accent)', UDP:'var(--accent-green)',
+    DNS:'var(--accent-amber)', ICMP:'var(--accent-purple)', ARP:'var(--accent-red)'
+};
+
 $(document).ready(function() {
+    loadAnalysisList();
     $('#proto-filter, #ip-filter').on('change input', applyFilter);
     $('#clear-filter').on('click', function() {
-        $('#proto-filter').val('');
-        $('#ip-filter').val('');
+        $('#proto-filter').val(''); $('#ip-filter').val('');
         applyFilter();
     });
     $('#export-btn').on('click', exportPackets);
     $('#start-cap-btn').on('click', startCapture);
-    $('#load-pcap-btn').on('click', loadPcap);
+    $('#open-load-btn').on('click', function() {
+        // Just scroll to the selector
+        document.getElementById('analysis-select').focus();
+        document.getElementById('analysis-select').scrollIntoView({behavior:'smooth', block:'center'});
+    });
+
+    // Fix aria-hidden issue: blur focused element when modal hides
+    document.querySelectorAll('.modal').forEach(function(modal) {
+        modal.addEventListener('hide.bs.modal', function() {
+            if (document.activeElement && modal.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        });
+    });
 });
- 
+
+function loadAnalysisList() {
+    $.get('/api/v1/analyses', function(analyses) {
+        const sel = $('#analysis-select');
+        sel.empty().append('<option value="">Select an analysis to explore…</option>');
+        analyses.forEach(a => {
+            sel.append(`<option value="${a.id}">${a.id} — ${a.packets||0} packets, ${a.alerts||0} alerts</option>`);
+        });
+        if (!analyses.length) {
+            sel.append('<option disabled>No analyses yet — run an analysis first</option>');
+        }
+    });
+}
+
+function loadFromAnalysis() {
+    const id = $('#analysis-select').val();
+    if (!id) { showNotification('warning', 'Select an analysis first'); return; }
+
+    showNotification('info', 'Loading packet data…');
+
+    $.get(`/api/v1/analysis/${id}`, function(data) {
+        // Extract packet summaries from analysis data
+        const packets = [];
+
+        // Build packets from flow data if available
+        const flows = data.protocol_analysis?.flows || data.flows || {};
+        let pktNum = 0;
+
+        Object.entries(flows).forEach(([flowKey, flowData]) => {
+            const parts = flowKey.split('->');
+            const src = parts[0]?.trim() || '—';
+            const dst = parts[1]?.trim() || '—';
+
+            // Create synthetic packet entries from flow data
+            const indices = flowData.packet_indices || [];
+            const sizes   = flowData.packet_sizes || [];
+            const times   = flowData.timestamps || [];
+            const proto   = flowData.protocol || 'Unknown';
+
+            const count = Math.max(indices.length, sizes.length, 1);
+            for (let i = 0; i < Math.min(count, 20); i++) {
+                packets.push({
+                    num:      ++pktNum,
+                    time:     times[i] || null,
+                    protocol: proto.toUpperCase(),
+                    src:      src.split(':')[0] || src,
+                    sport:    src.includes(':') ? src.split(':')[1] : null,
+                    dst:      dst.split(':')[0] || dst,
+                    dport:    dst.includes(':') ? dst.split(':')[1] : null,
+                    length:   sizes[i] || 0,
+                    info:     `Flow: ${flowKey}`
+                });
+            }
+        });
+
+        // Also show alerts as synthetic entries if no flow data
+        if (!packets.length) {
+            const alerts = data.alerts || [];
+            alerts.forEach((a, i) => {
+                packets.push({
+                    num:      i+1,
+                    time:     a.timestamp || null,
+                    protocol: 'ALERT',
+                    src:      a.details?.src_ip || '—',
+                    dst:      a.details?.dst_ip || '—',
+                    length:   0,
+                    info:     `${a.type}: ${a.description||''}`
+                });
+            });
+        }
+
+        if (!packets.length) {
+            showNotification('warning', 'No packet-level data in this analysis — packet details are stored in the PCAP file');
+            return;
+        }
+
+        allPackets = packets;
+        filteredPackets = [];
+        currentPage = 1;
+        updateStats();
+        renderTable();
+        showNotification('success', `Loaded ${packets.length} packet records from ${id}`);
+    }).fail(function() {
+        showNotification('error', 'Could not load analysis data');
+    });
+}
+
 function applyFilter() {
     const proto = $('#proto-filter').val();
     const ip    = $('#ip-filter').val().toLowerCase();
     filteredPackets = allPackets.filter(p => {
         if (proto && p.protocol !== proto) return false;
-        if (ip && !((p.src||'').includes(ip) || (p.dst||'').includes(ip))) return false;
+        if (ip && !((p.src||'').includes(ip)||(p.dst||'').includes(ip))) return false;
         return true;
     });
     currentPage = 1;
     renderTable();
 }
- 
+
 function renderTable() {
     const packets = filteredPackets.length ? filteredPackets : allPackets;
     const total   = packets.length;
@@ -223,20 +315,19 @@ function renderTable() {
     const page    = packets.slice(start, start+pageSize);
     const tbody   = $('#packet-tbody');
     tbody.empty();
- 
+
     if (!page.length) {
-        tbody.html('<tr><td colspan="8" style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">No packets match</td></tr>');
-        $('#page-info').text('');
-        $('#pagination').empty();
+        tbody.html('<tr><td colspan="8" style="text-align:center;padding:48px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">No packets match filter</td></tr>');
+        $('#page-info').text(''); $('#pagination').empty();
         return;
     }
- 
+
     page.forEach((p,i) => {
-        const num  = start+i+1;
-        const ts   = p.time ? new Date(p.time*1000).toLocaleTimeString() : '—';
-        const pc   = protoColors[p.protocol]||'var(--text-muted)';
-        const src  = p.src?(p.sport?`${p.src}:${p.sport}`:p.src):'—';
-        const dst  = p.dst?(p.dport?`${p.dst}:${p.dport}`:p.dst):'—';
+        const num = start+i+1;
+        const ts  = p.time ? new Date(p.time*1000).toLocaleTimeString() : '—';
+        const pc  = protoColors[p.protocol]||'var(--text-muted)';
+        const src = p.src?(p.sport?`${p.src}:${p.sport}`:p.src):'—';
+        const dst = p.dst?(p.dport?`${p.dst}:${p.dport}`:p.dst):'—';
         const info = (p.info||'').substring(0,60);
         tbody.append(`<tr onclick="showDetail(${start+i})" style="cursor:pointer;">
             <td style="font-family:var(--font-mono);color:var(--text-muted);font-size:11px;">${num}</td>
@@ -249,98 +340,85 @@ function renderTable() {
             <td style="text-align:center;"><i class="fas fa-chevron-right" style="font-size:10px;color:var(--text-muted);"></i></td>
         </tr>`);
     });
- 
+
     const totalPages = Math.ceil(total/pageSize);
-    $('#page-info').text(`Showing ${start+1}–${Math.min(start+pageSize,total)} of ${total} packets`);
- 
+    $('#page-info').text(`Showing ${start+1}–${Math.min(start+pageSize,total)} of ${total} records`);
     const pag = $('#pagination');
     pag.empty();
-    const pageFn = (p,label,disabled) => `<button onclick="goPage(${p})" class="btn-pdr btn-pdr-ghost" style="font-size:11px;padding:5px 10px;${disabled?'opacity:.4;pointer-events:none':''}">${label}</button>`;
-    pag.append(pageFn(currentPage-1,'← Prev', currentPage===1));
+    const btn = (p,label,dis) => `<button type="button" onclick="goPage(${p})" class="btn-pdr btn-pdr-ghost" style="font-size:11px;padding:5px 10px;${dis?'opacity:.4;pointer-events:none':''}">${label}</button>`;
+    pag.append(btn(currentPage-1,'← Prev', currentPage===1));
     pag.append(`<span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);padding:0 8px;line-height:30px;">${currentPage}/${totalPages}</span>`);
-    pag.append(pageFn(currentPage+1,'Next →', currentPage===totalPages));
+    pag.append(btn(currentPage+1,'Next →', currentPage===totalPages));
 }
- 
+
 function goPage(p) { currentPage=p; renderTable(); window.scrollTo(0,0); }
- 
+
 function showDetail(idx) {
     const packets = filteredPackets.length ? filteredPackets : allPackets;
     const p = packets[idx];
     if (!p) return;
     const fields = [
-        ['Time', p.time ? new Date(p.time*1000).toLocaleString() : '—'],
-        ['Protocol', p.protocol||'—'],
-        ['Source', p.src||'—'],
-        ['Src Port', p.sport||'—'],
+        ['Time',        p.time ? new Date(p.time*1000).toLocaleString() : '—'],
+        ['Protocol',    p.protocol||'—'],
+        ['Source',      p.src||'—'],
+        ['Src Port',    p.sport||'—'],
         ['Destination', p.dst||'—'],
-        ['Dst Port', p.dport||'—'],
-        ['Length', (p.length||0)+' bytes'],
-        ['Info', p.info||'—'],
+        ['Dst Port',    p.dport||'—'],
+        ['Length',      (p.length||0)+' bytes'],
+        ['Info',        p.info||'—'],
     ];
     const tbody = $('#detail-fields tbody');
     tbody.empty();
     fields.forEach(([k,v]) => {
-        tbody.append(`<tr><td style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);width:100px;">${k}</td><td style="font-family:var(--font-mono);font-size:11px;">${v}</td></tr>`);
+        tbody.append(`<tr>
+            <td style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);width:100px;">${k}</td>
+            <td style="font-family:var(--font-mono);font-size:11px;">${v}</td>
+        </tr>`);
     });
-    let hex = '';
-    if (p.raw_data) {
-        const raw = typeof p.raw_data === 'string' ? p.raw_data : JSON.stringify(p.raw_data);
-        hex = raw;
-    } else { hex = '(no payload data)'; }
-    $('#detail-hex').text(hex);
+    $('#detail-hex').text(p.raw_data ? JSON.stringify(p.raw_data, null, 2) : '(no raw payload data available)');
     $('#detail-panel').show();
+    document.getElementById('detail-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 function closeDetail() { $('#detail-panel').hide(); }
- 
+
 function updateStats() {
-    const packets = allPackets;
-    $('#stat-pkts').text(formatNumber(packets.length));
-    const bytes = packets.reduce((s,p)=>s+(p.length||0),0);
+    $('#stat-pkts').text(formatNumber(allPackets.length));
+    const bytes = allPackets.reduce((s,p)=>s+(p.length||0),0);
     $('#stat-vol').text(formatBytes(bytes));
     const ips = new Set();
-    packets.forEach(p=>{if(p.src)ips.add(p.src);if(p.dst)ips.add(p.dst);});
+    allPackets.forEach(p=>{if(p.src)ips.add(p.src);if(p.dst)ips.add(p.dst);});
     $('#stat-ips').text(ips.size);
-    if (packets.length>1) {
-        const times = packets.map(p=>p.time).filter(Boolean);
+    if (allPackets.length>1) {
+        const times = allPackets.map(p=>p.time).filter(Boolean);
         if (times.length>1) {
-            const d = (Math.max(...times)-Math.min(...times));
+            const d = Math.max(...times)-Math.min(...times);
             $('#stat-dur').text(d.toFixed(1)+'s');
         }
     }
 }
- 
+
 function startCapture() {
-    const dur = parseInt($('#cap-dur').val())||30;
-    const iface = $('#cap-iface').val();
+    const dur    = parseInt($('#cap-dur').val())||30;
+    const iface  = $('#cap-iface').val();
     const filter = $('#cap-filter').val();
     $('#cap-progress').show();
-    $('#start-cap-btn').prop('disabled',true).text('Capturing…');
- 
-    const socket = io();
-    socket.emit('start_capture',{interface:iface,duration:dur,filter});
-    socket.on('capture_update',function(d) {
-        const pct = Math.min((d.duration/dur)*100,100);
-        $('#cap-bar').css('width',pct+'%');
-        $('#cap-status').text(`${d.packet_count} packets · ${d.duration.toFixed(1)}s / ${dur}s`);
-    });
-    socket.on('capture_complete',function(d) {
-        showNotification('success',`Captured ${d.packet_count} packets`);
-        $('#captureModal').modal('hide');
+    $('#start-cap-btn').prop('disabled',true).html('<i class="fas fa-spinner fa-spin"></i> Capturing…');
+
+    if (!window.pdrSocket) { showNotification('error','Socket not connected'); return; }
+    window.pdrSocket.emit('start_capture', {interface:iface, duration:dur, filter});
+    showNotification('info', `Capture started (${dur}s) — use New Analysis on the dashboard to run a full analysis`);
+
+    window.pdrSocket.on('capture_complete', function(d) {
+        showNotification('success', `Capture complete: ${d.packet_count} packets`);
+        bootstrap.Modal.getInstance(document.getElementById('captureModal')).hide();
         $('#cap-progress').hide();
         $('#start-cap-btn').prop('disabled',false).html('<i class="fas fa-play"></i> Start');
-        socket.disconnect();
-        // reload from saved pcap if available
     });
 }
- 
-function loadPcap() {
-    // In production this would upload and parse the PCAP
-    showNotification('info','PCAP loading requires server-side parsing — use the sandbox capture flow');
-    $('#uploadPcapModal').modal('hide');
-}
- 
+
 function exportPackets() {
     const data = filteredPackets.length ? filteredPackets : allPackets;
+    if (!data.length) { showNotification('warning','No packets to export'); return; }
     const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);

@@ -1,7 +1,0 @@
-2026-03-19 07:32:27,242 - SignatureGenerator.siggen_20260319_073227 - INFO - [TOOL] SignatureGenerator initialized with ID: siggen_20260319_073227
-2026-03-19 07:32:27,242 - SignatureGenerator.siggen_20260319_073227 - INFO - [LOAD] Loaded protocol analysis with 5 alerts
-2026-03-19 07:32:27,243 - SignatureGenerator.siggen_20260319_073227 - INFO - [LOAD] Loaded exfiltration results with 4 alerts
-2026-03-19 07:32:27,244 - SignatureGenerator.siggen_20260319_073227 - INFO - [LOAD] Loaded 580 packets for pattern extraction
-2026-03-19 07:32:27,245 - SignatureGenerator.siggen_20260319_073227 - INFO - [GENERATE] Starting signature generation...
-2026-03-19 07:32:27,246 - SignatureGenerator.siggen_20260319_073227 - INFO - [PATTERNS] Extracting patterns from alerts...
-2026-03-19 07:32:27,246 - SignatureGenerator.siggen_20260319_073227 - INFO - [CLEAN] Signature generator cleaned up
