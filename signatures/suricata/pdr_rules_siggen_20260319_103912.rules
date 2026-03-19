@@ -1,0 +1,9 @@
+# PDR Generated Suricata Rules
+# Generated: 2026-03-19T10:39:12.616169
+# Analysis ID: siggen_20260319_103912
+# ==================================================
+
+alert dns $HOME_NET any -> any 53 (msg:"PDR - DNS_Tunneling_2000000"; dns.query; content:"telemetry.individual.githubcopilot.com."; nocase; metadata: confidence 0.8; classtype:policy-violation; sid:2000000; rev:1; priority:2;)
+
+alert dns $HOME_NET any -> any 53 (msg:"PDR - DNS_Tunneling_2000001"; dns.query; content:"telemetry.individual.githubcopilot.com."; nocase; metadata: confidence 0.8; classtype:policy-violation; sid:2000001; rev:1; priority:2;)
+

@@ -1,0 +1,9 @@
+# PDR Generated Snort Rules
+# Generated: 2026-03-19T10:45:42.563204
+# Analysis ID: siggen_20260319_104542
+# ==================================================
+
+alert udp $HOME_NET any -> $EXTERNAL_NET 53 (msg:"PDR - DNS_Tunneling_Detection_1000000"; content:"|01 00 00 01|"; depth:4; content:"mobile.events.data.microsoft.com."; nocase;  metadata: confidence 0.8, pattern_type dns_tunneling; sid:1000000; rev:1; priority:2;)
+
+alert udp $HOME_NET any -> $EXTERNAL_NET 53 (msg:"PDR - DNS_Tunneling_Detection_1000001"; content:"|01 00 00 01|"; depth:4; content:"mobile.events.data.microsoft.com."; nocase;  metadata: confidence 0.8, pattern_type dns_tunneling; sid:1000001; rev:1; priority:2;)
+

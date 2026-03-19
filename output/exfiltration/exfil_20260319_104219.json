@@ -1,0 +1,105 @@
+{
+  "detection_id": "exfil_20260319_104219",
+  "timestamp": "2026-03-19T10:42:19.344404",
+  "statistics": {
+    "total_packets": 307,
+    "total_bytes": 169793,
+    "total_flows": 34,
+    "start_time": 1773895339.3153129,
+    "end_time": 1773895339.3421974,
+    "outbound_bytes": 40375,
+    "inbound_bytes": 129418,
+    "unique_destinations": [
+      "20.189.173.4",
+      "18.67.233.68",
+      "13.107.137.11",
+      "192.168.0.1",
+      "172.67.75.33",
+      "192.168.0.105",
+      "140.82.114.25",
+      "192.168.0.100",
+      "192.168.0.104",
+      "192.168.0.113",
+      "151.101.2.137",
+      "52.104.49.55",
+      "192.168.0.107",
+      "142.250.182.68",
+      "239.255.255.250",
+      "52.168.117.174",
+      "224.0.0.251",
+      "192.168.0.102",
+      "ff02::fb",
+      "192.168.0.109",
+      "ff02::16",
+      "13.107.253.59",
+      "192.168.0.108",
+      "13.67.9.5",
+      "192.168.0.103",
+      "103.60.172.20",
+      "192.168.0.106"
+    ]
+  },
+  "alerts": [
+    {
+      "type": "possible_steganography",
+      "severity": "medium",
+      "timestamp": 1773895339.3319821,
+      "details": {
+        "suspicious_transfers": [
+          {
+            "flow": "TCP_192.168.0.109:62837->13.107.253.59:443",
+            "total_kb": 80.32,
+            "large_packets": 58,
+            "total_packets": 105
+          },
+          {
+            "flow": "TCP_192.168.0.109:62838->13.107.137.11:443",
+            "total_kb": 21.66,
+            "large_packets": 14,
+            "total_packets": 35
+          },
+          {
+            "flow": "TCP_192.168.0.109:62839->13.107.137.11:443",
+            "total_kb": 17.75,
+            "large_packets": 11,
+            "total_packets": 30
+          },
+          {
+            "flow": "TCP_192.168.0.109:62781->52.104.49.55:443",
+            "total_kb": 13.17,
+            "large_packets": 10,
+            "total_packets": 17
+          },
+          {
+            "flow": "TCP_192.168.0.109:62840->20.189.173.4:443",
+            "total_kb": 11.04,
+            "large_packets": 7,
+            "total_packets": 25
+          }
+        ],
+        "note": "Image files detected - further analysis recommended"
+      },
+      "description": "Detected 5 potential image transfers (possible steganography)"
+    },
+    {
+      "type": "many_small_packets",
+      "severity": "low",
+      "timestamp": 1773895339.3421502,
+      "details": {
+        "small_packets": 148,
+        "percentage": 48.21
+      },
+      "description": "High percentage of very small packets (possible covert signaling)"
+    }
+  ],
+  "suspicious_flows": {},
+  "exfiltration_attempts": [],
+  "summary": {
+    "total_alerts": 2,
+    "high_severity": 0,
+    "medium_severity": 1,
+    "low_severity": 1,
+    "suspicious_flows": 0,
+    "warnings": 0
+  }
+}

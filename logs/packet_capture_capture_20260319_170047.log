@@ -1,0 +1,14 @@
+2026-03-19 17:00:47,185 - PacketCapture.capture_20260319_170047 - INFO - [OK] Npcap found - packet capture available
+2026-03-19 17:00:47,190 - PacketCapture.capture_20260319_170047 - INFO - [TOOL] PacketCapture initialized with ID: capture_20260319_170047
+2026-03-19 17:00:47,192 - PacketCapture.capture_20260319_170047 - INFO - [TOOL] Capture method: scapy_npcap
+2026-03-19 17:00:47,195 - PacketCapture.capture_20260319_170047 - INFO - [START] Packet capture started
+2026-03-19 17:00:47,202 - PacketCapture.capture_20260319_170047 - INFO -          Interface: Default
+2026-03-19 17:00:47,203 - PacketCapture.capture_20260319_170047 - INFO -          Filter: None
+2026-03-19 17:00:47,204 - PacketCapture.capture_20260319_170047 - INFO -          Max packets: 10000
+2026-03-19 17:00:47,204 - PacketCapture.capture_20260319_170047 - INFO -          Timeout: 30s
+2026-03-19 17:00:50,087 - PacketCapture.capture_20260319_170047 - INFO - [PROGRESS] Captured 100 packets (34.6 pkt/s)
+2026-03-19 17:00:51,336 - PacketCapture.capture_20260319_170047 - INFO - [PROGRESS] Captured 200 packets (48.3 pkt/s)
+2026-03-19 17:01:09,719 - PacketCapture.capture_20260319_170047 - INFO - [PROGRESS] Captured 300 packets (13.3 pkt/s)
+2026-03-19 17:01:12,187 - PacketCapture.capture_20260319_170047 - INFO - [PROGRESS] Captured 400 packets (16.0 pkt/s)
+2026-03-19 17:01:17,216 - PacketCapture.capture_20260319_170047 - INFO - [STOP] Capture stopped - 467 packets captured
+2026-03-19 17:01:17,367 - PacketCapture.capture_20260319_170047 - INFO - [CLEAN] Packet capture cleaned up

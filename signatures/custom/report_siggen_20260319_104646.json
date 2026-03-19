@@ -1,0 +1,167 @@
+{
+  "generator_id": "siggen_20260319_104646",
+  "timestamp": "2026-03-19T10:46:46.254883",
+  "statistics": {
+    "start_time": 1773895606.1478746,
+    "end_time": 1773895606.2379646,
+    "patterns_extracted": 4,
+    "signatures_generated": 12,
+    "formats_generated": [
+      "snort",
+      "suricata",
+      "yara",
+      "sigma",
+      "custom_json"
+    ]
+  },
+  "patterns_extracted": {
+    "byte_sequences": [
+      {
+        "pattern": "17 03 03 0a 72 00 00 00 00 00 00 00 08 d4 7a c8 8a d5 12 a7 cc 04 f6 a9 09 6d 83 a5 94",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 1c a3 00 00 00 00 00 00 00 09 37 2c e3 4f be cb 00 e1 a7 95 a0 b0 8e 20 d6 b8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 09 8b b3 21 66 8f bd 90 c1 df 27 4a 7d f5 60 25 7b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 0a c9 47 4a 6e 5b bc 01 28 0f 59 b5 54 20 ae 5c b7",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 69 00 00 00 00 00 00 00 05 b0 60 6d c3 ef e5 4f 31 7f 18 5b 5b ce 46 39 0e",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 08 dd 6c 72 f4 8d 82 61 4c 8b b2 dc 96 2c 88 25 6c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 e1 00 00 00 00 00 00 00 09 07 34 bb a5 2a 68 42 66 73 14 5d 63 7f 1a 57 35",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 6c 00 00 00 00 00 00 00 05 fe d3 0d a8 8c b9 c8 84 7b f2 7a 9b 8c 53 f4 f2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 62 00 00 00 00 00 00 00 04 c3 4a 47 cc f9 5f a5 38 be 43 30 c5 a8 65 00 a8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 09 58 da 78 35 db d8 51 85 2c 55 df 7c 41 ea da c8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 55 00 00 00 00 00 00 00 0a 52 e8 17 44 c6 66 40 9a f3 8b 3e 83 c7 80 61 8e",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c0 00 00 00 00 00 00 00 06 45 8d 66 02 ef 90 93 7b 66 ab d5 87 16 ae 30 d2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 00 26 00 00 00 00 00 00 00 49 5d 59 d8 d8 49 21 4d 0b 43 f6 b5 08 bb 12 34 ab",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 00 a9 00 00 00 00 00 00 00 4a a0 49 38 a3 9f 9e f8 f6 51 35 e1 a9 4a e8 b4 44",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 0d 31 91 0a c4 ea a2 18 60 64 70 c9 eb be 8c 79 ac",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 7f 00 00 00 00 00 00 00 0e d0 1b 17 df 42 d5 02 ef b8 ba 69 b9 72 f2 36 19",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 6a 00 00 00 00 00 00 00 08 31 e3 99 e5 e1 8e 73 95 13 69 e5 9c 7b df eb 56",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ],
+    "domain_patterns": [
+      {
+        "pattern": "api.individual.githubcopilot.com.",
+        "original": "api.individual.githubcopilot.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "api.individual.githubcopilot.com.",
+        "original": "api.individual.githubcopilot.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "api.individual.githubcopilot.com.",
+        "original": "api.individual.githubcopilot.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "api.individual.githubcopilot.com.",
+        "original": "api.individual.githubcopilot.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      }
+    ],
+    "ip_patterns": [],
+    "port_patterns": [],
+    "timing_patterns": [],
+    "size_patterns": []
+  },
+  "signatures": {
+    "snort": 4,
+    "suricata": 4,
+    "yara": 2,
+    "sigma": 1,
+    "custom_json": 1
+  },
+  "output_locations": {
+    "snort": "signatures/snort/pdr_rules_siggen_20260319_104646.rules",
+    "suricata": "signatures/suricata/pdr_rules_siggen_20260319_104646.rules",
+    "yara": "signatures/yara/pdr_rules_siggen_20260319_104646.yar",
+    "sigma": "signatures/sigma/pdr_rules_siggen_20260319_104646.yml",
+    "custom": "signatures/custom/pdr_signatures_siggen_20260319_104646.json"
+  }
+}

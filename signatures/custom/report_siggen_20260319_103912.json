@@ -1,0 +1,161 @@
+{
+  "generator_id": "siggen_20260319_103912",
+  "timestamp": "2026-03-19T10:39:12.661086",
+  "statistics": {
+    "start_time": 1773895152.5717301,
+    "end_time": 1773895152.6523712,
+    "patterns_extracted": 2,
+    "signatures_generated": 8,
+    "formats_generated": [
+      "snort",
+      "suricata",
+      "yara",
+      "sigma",
+      "custom_json"
+    ]
+  },
+  "patterns_extracted": {
+    "byte_sequences": [
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 0b ac 55 aa 19 62 71 0a 10 cb 3b fe 87 a6 f4 da 47",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 c1 00 00 00 00 00 00 00 0c 2f cc 0c 14 ad 85 d2 b8 ba 56 e2 7e 0f 6d 15 38",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "00 0b 13 e5 66 7d 4a 9b 55 80 00 00 00 00 00 0b 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0c 05 00 30 51 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 f4 13 64 df 58 06 5f 4c 8a 33 a6 19 7a fb 40 e1 28 a9 4f 26",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 46 ca ce b8 44 8d 53 0d 07 a5 28 76 6d 36 7c c9",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 02 7f f6 01 9e 6f 16 19 4a 8e 1d c8 c4 60 dc d6 10",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 66 00 00 00 00 00 00 00 08 d8 04 6f f4 84 6c 77 83 7a 82 b5 89 3f 96 c4 eb",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 66 00 00 00 00 00 00 00 01 c3 d4 4f 0b 35 ce 7b 09 12 1d cc f1 6b b8 c3 a2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 8f 00 00 00 00 00 00 00 06 e7 4f 66 77 cf c9 f3 fe 5e e0 41 80 83 82 90 23",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 1a db 00 00 00 00 00 00 00 06 07 b1 31 7f 21 6e df ef 5b f9 b7 1f bc 5d 08 62",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 0d 76 bf 6c 4c 08 8f f1 cb ae 67 57 23 20 e3 89 00",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 e1 00 00 00 00 00 00 00 0e b6 a4 3e 5f 78 f2 34 21 b4 24 e9 8e e9 ea 41 8c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 60 00 00 00 00 00 00 00 09 6e 48 82 c2 fb e6 82 09 65 d5 99 13 88 12 4f 0b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 8d 00 00 00 00 00 00 00 07 6b 1c 90 4e d7 8a 38 86 b0 d0 55 61 46 ab ac 64",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 13 80 00 00 00 00 00 00 00 07 52 32 90 d0 e1 13 35 9e fd 01 24 7a e8 a4 84 4a",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 09 b9 36 d9 63 bf f4 39 ac 72 04 45 f2 fd 5c 68 d8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 57 00 00 00 00 00 00 00 0a 72 29 d9 52 b2 c7 c8 1a dc ed 82 9b f6 69 10 23",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c0 00 00 00 00 00 00 00 05 af 38 9f 55 9d ae b9 9e e5 f6 57 3c d3 8e d4 a7",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ],
+    "domain_patterns": [
+      {
+        "pattern": "telemetry.individual.githubcopilot.com.",
+        "original": "telemetry.individual.githubcopilot.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "telemetry.individual.githubcopilot.com.",
+        "original": "telemetry.individual.githubcopilot.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      }
+    ],
+    "ip_patterns": [],
+    "port_patterns": [],
+    "timing_patterns": [],
+    "size_patterns": []
+  },
+  "signatures": {
+    "snort": 2,
+    "suricata": 2,
+    "yara": 2,
+    "sigma": 1,
+    "custom_json": 1
+  },
+  "output_locations": {
+    "snort": "signatures/snort/pdr_rules_siggen_20260319_103912.rules",
+    "suricata": "signatures/suricata/pdr_rules_siggen_20260319_103912.rules",
+    "yara": "signatures/yara/pdr_rules_siggen_20260319_103912.yar",
+    "sigma": "signatures/sigma/pdr_rules_siggen_20260319_103912.yml",
+    "custom": "signatures/custom/pdr_signatures_siggen_20260319_103912.json"
+  }
+}

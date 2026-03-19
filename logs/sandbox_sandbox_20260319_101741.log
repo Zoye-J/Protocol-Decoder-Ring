@@ -1,0 +1,11 @@
+2026-03-19 10:17:41,334 - SandboxManager.sandbox_20260319_101741 - INFO - [TOOL] SandboxManager initialized with ID: sandbox_20260319_101741
+2026-03-19 10:17:41,352 - SandboxManager.sandbox_20260319_101741 - INFO - [FOLDER] Created isolated directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_t3dy4s6a
+2026-03-19 10:17:41,365 - SandboxManager.sandbox_20260319_101741 - INFO - [NET] Network isolation enabled (basic mode)
+2026-03-19 10:17:41,366 - SandboxManager.sandbox_20260319_101741 - DEBUG - [NET] Basic network isolation configured
+2026-03-19 10:17:41,366 - SandboxManager.sandbox_20260319_101741 - DEBUG - TEMP directory set to: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_t3dy4s6a
+2026-03-19 10:17:41,415 - SandboxManager.sandbox_20260319_101741 - INFO - [RUN] Starting application: uploads\20260319_101741_run_demo_bat
+2026-03-19 10:17:41,427 - SandboxManager.sandbox_20260319_101741 - INFO -       Arguments: None
+2026-03-19 10:17:41,429 - SandboxManager.sandbox_20260319_101741 - INFO -       Working directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_t3dy4s6a
+2026-03-19 10:17:41,433 - SandboxManager.sandbox_20260319_101741 - ERROR - [ERROR] Failed to run application: [WinError 2] The system cannot find the file specified
+2026-03-19 10:18:11,513 - SandboxManager.sandbox_20260319_101741 - INFO - [CLEAN] Cleaning up sandbox environment...
+2026-03-19 10:18:11,515 - SandboxManager.sandbox_20260319_101741 - INFO - [OK] Removed temporary directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_t3dy4s6a

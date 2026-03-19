@@ -1,0 +1,15 @@
+# PDR Generated Suricata Rules
+# Generated: 2026-03-19T17:01:17.521279
+# Analysis ID: siggen_20260319_170117
+# ==================================================
+
+alert dns $HOME_NET any -> any 53 (msg:"PDR - DNS_Tunneling_2000000"; dns.query; content:"194291\-ipv4mte.gr.global.aa\-rt.sharepoint.com."; nocase; metadata: confidence 0.8; classtype:policy-violation; sid:2000000; rev:1; priority:2;)
+
+alert dns $HOME_NET any -> any 53 (msg:"PDR - DNS_Tunneling_2000001"; dns.query; content:"194291\-ipv4mte.gr.global.aa\-rt.sharepoint.com."; nocase; metadata: confidence 0.8; classtype:policy-violation; sid:2000001; rev:1; priority:2;)
+
+alert dns $HOME_NET any -> any 53 (msg:"PDR - DNS_Tunneling_2000002"; dns.query; content:"194291\-ipv4mte.gr.global.aa\-rt.sharepoint.com."; nocase; metadata: confidence 0.8; classtype:policy-violation; sid:2000002; rev:1; priority:2;)
+
+alert dns $HOME_NET any -> any 53 (msg:"PDR - DNS_Tunneling_2000003"; dns.query; content:"194291\-ipv4mte.gr.global.aa\-rt.sharepoint.com."; nocase; metadata: confidence 0.8; classtype:policy-violation; sid:2000003; rev:1; priority:2;)
+
+alert dns $HOME_NET any -> any 53 (msg:"PDR - DNS_Tunneling_2000004"; dns.query; content:"194291\-ipv4fdsmte.gr.global.aa\-rt.sharepoint.com."; nocase; metadata: confidence 0.8; classtype:policy-violation; sid:2000004; rev:1; priority:2;)
+

@@ -1,0 +1,201 @@
+{
+  "signature_id": "PDR-siggen_20260319_104219",
+  "generated": "2026-03-19T10:42:19.381894",
+  "analysis_id": "siggen_20260319_104219",
+  "patterns": {
+    "byte_sequences": [
+      {
+        "pattern": "15 03 03 00 1a 00 00 00 00 00 00 00 03 19 ca 2e 48 64 1b ef 13 c0 79 6f 09 d7 c7 fe d9",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 05 bd 2d 7f 7d 45 e8 f2 27 63 a6 6a 0d 23 f1 19 97",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 fa 00 00 00 00 00 00 00 06 ba e9 81 41 4e 91 3a d7 aa d7 9c 43 4b 8a ad c4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "00 0b 13 e5 66 7d 4a 9b 55 80 00 00 00 00 00 0b 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0c 05 00 30 51 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 4d 60 2b 22 4c 46 00 47 92 f3 22 27 5b df 09 e9 89 8e bd b8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 75 8e d8 06 bf 96 27 bc 1e 66 31 ef 14 3c af 08",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 e1 00 00 00 00 00 00 00 02 01 a7 f6 ec 37 2f 52 5b a1 6f 02 49 a7 b9 d3 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 56 3a 77 b5 a5 bf 6c 4f 86 cc b0 6b 40 fc 8f 41 4c 09 44 0b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 cb f7 03 de ce 6b 56 83 f4 bd bd 5c fd 4e 8e 35",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 08 04 00 00 00 00 00 00 00 02 3d b7 2d 69 9d a2 32 14 5b f6 d0 63 6e c3 fd f1",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 6a 00 00 00 00 00 00 00 04 37 21 e1 cf e9 62 5e 1a fe 89 7b 0f 0c 64 1c 6b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 60 00 00 00 00 00 00 00 01 fd ab 45 e7 fc de c1 d3 5c b2 ed 58 6e 8e 05 1d",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 63 00 00 00 00 00 00 00 01 0a ba 13 37 d6 5e c2 36 62 32 21 56 28 58 ae 83",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 90 00 00 00 00 00 00 00 03 10 4d 05 95 23 f5 31 fc 01 b9 79 20 53 ed 82 b0",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 22 1b 00 00 00 00 00 00 00 06 dd 57 74 9d d5 71 e3 e5 36 09 37 d8 33 fc b2 db",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "03 03 00 01 01 16 03 03 00 28 00 00 00 00 00 00 00 00 3b b7 ed af d3 fb 04 7a 4e e9 2c 31 70 5e 68 8c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 01 54 ea ba be 4b 05 9e 7a b2 12 90 01 ab 52 83 0d",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 56 00 00 00 00 00 00 00 02 76 56 9b dc be ab 54 85 37 1a 98 38 bd 61 95 06",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c0 00 00 00 00 00 00 00 01 db 73 e2 3f 71 ab 05 40 ca 4c 98 f1 4f cb ba 1d",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ],
+    "domain_patterns": [],
+    "ip_patterns": [],
+    "port_patterns": [],
+    "timing_patterns": [],
+    "size_patterns": []
+  },
+  "rules": {
+    "snort_count": 0,
+    "suricata_count": 0,
+    "yara_count": 1,
+    "sigma_count": 0
+  },
+  "threat_intel": {
+    "c2_servers": [],
+    "exfil_destinations": [],
+    "dns_patterns": [],
+    "byte_signatures": [
+      {
+        "pattern": "15 03 03 00 1a 00 00 00 00 00 00 00 03 19 ca 2e 48 64 1b ef 13 c0 79 6f 09 d7 c7 fe d9",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 05 bd 2d 7f 7d 45 e8 f2 27 63 a6 6a 0d 23 f1 19 97",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 fa 00 00 00 00 00 00 00 06 ba e9 81 41 4e 91 3a d7 aa d7 9c 43 4b 8a ad c4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "00 0b 13 e5 66 7d 4a 9b 55 80 00 00 00 00 00 0b 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0c 05 00 30 51 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 4d 60 2b 22 4c 46 00 47 92 f3 22 27 5b df 09 e9 89 8e bd b8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 75 8e d8 06 bf 96 27 bc 1e 66 31 ef 14 3c af 08",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 e1 00 00 00 00 00 00 00 02 01 a7 f6 ec 37 2f 52 5b a1 6f 02 49 a7 b9 d3 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 56 3a 77 b5 a5 bf 6c 4f 86 cc b0 6b 40 fc 8f 41 4c 09 44 0b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 cb f7 03 de ce 6b 56 83 f4 bd bd 5c fd 4e 8e 35",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 08 04 00 00 00 00 00 00 00 02 3d b7 2d 69 9d a2 32 14 5b f6 d0 63 6e c3 fd f1",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ]
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "generator_id": "siggen_20260319_170117",
+  "timestamp": "2026-03-19T17:01:17.585311",
+  "statistics": {
+    "start_time": 1773918077.507836,
+    "end_time": 1773918077.5778637,
+    "patterns_extracted": 5,
+    "signatures_generated": 14,
+    "formats_generated": [
+      "snort",
+      "suricata",
+      "yara",
+      "sigma",
+      "custom_json"
+    ]
+  },
+  "patterns_extracted": {
+    "byte_sequences": [
+      {
+        "pattern": "00 0b 13 e5 66 7d 4a 9b 55 80 00 00 00 00 00 0b 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0c 05 00 30 51 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 66 06 b4 2b ad 73 e5 4d 9a b3 ca 8b ce 9d 67 66 16 ee fa bf",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 01 f3 b5 5b 0e cf 36 fc 80 a1 ce f1 28 75 4d 60 a3",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 b4 00 00 00 00 00 00 00 02 16 f5 60 4b a0 0d e6 16 fb 8c 55 d1 c2 40 37 01",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 cc 65 f6 8e 6d 76 d4 4e 89 1f b6 b2 e6 3d ea 63 30 67 ba 89",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 34 4d ed 23 2a c7 5e f6 64 dd 67 68 26 04 64 d5",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 d1 00 00 00 00 00 00 00 02 18 92 15 31 9d 81 3a a4 23 ba 22 42 d1 14 bc c3",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 c2 cb 15 6d f6 c2 b6 42 b7 0a 7b 07 35 f2 39 8e e5 c9 e4 e3",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 01 06 45 0f e9 8e a2 00 ac 62 35 1f 07 44 08 a6 98",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 02 30 3e 59 5c cd 9c dd 0c 83 85 04 1e 15 c2 80 07",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 59 00 00 00 00 00 00 00 01 e1 96 02 e0 70 2b c7 7e ee f5 20 3d 69 a7 d7 29",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 62 00 00 00 00 00 00 00 01 d0 d0 60 c7 db 16 aa 08 0e 94 f4 93 cd 1f 02 41",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 08 ed 00 00 00 00 00 00 00 01 13 12 0a 1e f9 e9 3f 74 38 b3 36 e2 80 bd b8 3c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 02 8d 00 00 00 00 00 00 00 02 c0 46 e9 d2 63 c7 cf 3f 39 4c fe f5 44 ea 8a 6a",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "00 00 00 17 00 00 ff 01 00 01 00 00 00 00 00 0b 00",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 17
+      },
+      {
+        "pattern": "03 03 00 01 01 16 03 03 00 28 00 00 00 00 00 00 00 00 48 85 c3 79 07 d2 c8 2e ca 0b 41 ae d9 eb 4e b5",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 90 00 00 00 00 00 00 00 01 40 eb 55 d4 bd 44 b4 30 2f 58 72 df b1 d2 1a bd",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 29 20 00 00 00 00 00 00 00 01 19 d2 ab 42 3d 08 2e 4a 9d 07 10 bd 9f 4c f7 c8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 03 f4 77 53 13 4a 65 db dd 23 3f ec 18 ac ec 48 92",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 08 ad 00 00 00 00 00 00 00 04 7d 6a d0 3c 48 7c c3 cd a4 0f 94 ee c9 f3 80 a1",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 69 00 00 00 00 00 00 00 02 5a 8f b8 b5 4e af 6c 7a 6c 7b c9 0e 9d 89 23 44",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 8d 00 00 00 00 00 00 00 02 b5 c9 dd 21 b9 2c 8d a8 66 0c 23 c6 04 fe f7 89",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 13 8d 00 00 00 00 00 00 00 02 48 a0 50 7f cb 51 ea dc c6 58 6b 60 1e ff 8c 39",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "03 03 00 01 01 16 03 03 00 28 00 00 00 00 00 00 00 00 fd 60 c0 8a 18 8f 92 5f 86 6a 86 49 8a 38 e6 b8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 01 bb bf 4a f1 dc 77 2d 4e 82 aa 67 12 34 9a c6 35",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 08 50 00 00 00 00 00 00 00 02 a1 c4 30 c5 55 8a 92 93 15 70 ce eb 2e 7b cd d2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c0 00 00 00 00 00 00 00 01 8b 82 2b 55 e2 b6 cc bf 53 1f 27 48 5e f3 bc 7b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 00 26 00 00 00 00 00 00 00 1f ab 23 34 be e3 8a 39 85 e9 45 72 05 27 f5 cb 5c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 00 a9 00 00 00 00 00 00 00 20 29 a0 1a dd 7a 46 9d a7 f2 91 ef c3 9a 6a 2f 18",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ],
+    "domain_patterns": [
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4fdsmte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4fdsmte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      }
+    ],
+    "ip_patterns": [],
+    "port_patterns": [],
+    "timing_patterns": [],
+    "size_patterns": []
+  },
+  "signatures": {
+    "snort": 5,
+    "suricata": 5,
+    "yara": 2,
+    "sigma": 1,
+    "custom_json": 1
+  },
+  "output_locations": {
+    "snort": "signatures/snort/pdr_rules_siggen_20260319_170117.rules",
+    "suricata": "signatures/suricata/pdr_rules_siggen_20260319_170117.rules",
+    "yara": "signatures/yara/pdr_rules_siggen_20260319_170117.yar",
+    "sigma": "signatures/sigma/pdr_rules_siggen_20260319_170117.yml",
+    "custom": "signatures/custom/pdr_signatures_siggen_20260319_170117.json"
+  }
+}

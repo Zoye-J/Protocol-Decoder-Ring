@@ -1,0 +1,305 @@
+{
+  "signature_id": "PDR-siggen_20260319_102053",
+  "generated": "2026-03-19T10:20:54.020992",
+  "analysis_id": "siggen_20260319_102053",
+  "patterns": {
+    "byte_sequences": [
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 03 e9 cc 01 30 d2 b4 c8 43 ad 1b 79 ba c5 6f 2e da",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 7f 00 00 00 00 00 00 00 04 7b 59 4c 1a cd f5 41 fe 37 f9 ad 62 96 50 e5 3d",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 03 15 aa bb 29 fa e4 c9 a9 b9 21 f6 02 31 9e f0 12",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 04 59 6b 2a 17 21 9e 3f 73 35 b4 42 82 97 a1 07 86",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 5e 00 00 00 00 00 00 00 02 a8 6e ce 09 4a 97 f3 59 c1 37 16 8b 76 9b 7e 86",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 05 5c 96 2d ad b0 9b 5a 7f da f1 fd 13 24 f2 0f 91",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 b8 00 00 00 00 00 00 00 06 44 f0 25 90 9b fa 3a fa 71 df f6 28 57 8a f0 87",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 07 a3 b4 fd 74 31 55 d0 04 69 00 1a 52 ad 80 36 d4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 d2 00 00 00 00 00 00 00 08 65 aa 02 d5 0a b4 75 38 77 b2 b0 8b 41 f8 63 13",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 63 00 00 00 00 00 00 00 02 71 84 f3 8c af 21 db 31 a4 de fc fb 53 c7 6b a2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c0 00 00 00 00 00 00 00 05 a1 03 e1 9f e9 6d c2 9a 98 b5 83 f5 01 1b 00 5e",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 07 ad 4b 46 3f fd c7 68 96 dd 2c 15 b1 c5 e1 d6 98",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 0c 00 00 00 00 00 00 00 08 cf 8d 0a 93 f7 a8 a9 5d ed 13 6e c1 38 3d c8 27",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c0 00 00 00 00 00 00 00 06 91 b4 b7 c9 f9 2b 18 d0 91 b1 f9 66 13 03 97 aa",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 66 00 00 00 00 00 00 00 05 18 25 b4 a2 bd 96 aa 63 1f d4 dd 13 cb 00 7a 45",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 16 00 00 00 00 00 00 00 06 19 8e 34 46 d8 63 e6 dc fd 9c 1a 06 0d 3e c2 74",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 90 00 00 00 00 00 00 00 04 ba 2a 67 17 c1 47 b1 4d d9 11 2d da d5 fd c3 b2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 21 fd 00 00 00 00 00 00 00 04 47 08 42 ae eb 98 ae 46 c4 c9 b1 10 d7 4d ef dc",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 05 8e 77 56 f2 c1 dd 71 a2 84 64 b1 ef 1f f2 1e f1",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 08 35 00 00 00 00 00 00 00 06 88 83 df d6 ac 32 d4 b6 54 af 58 23 83 b9 bf b4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 6c 00 00 00 00 00 00 00 03 e2 e3 00 ea cb 0c f7 e0 cd ed 7d 42 23 57 dc ae",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 8f 00 00 00 00 00 00 00 05 15 da ef 26 38 c5 c0 63 82 d6 f3 f1 ac f7 88 0b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 13 8d 00 00 00 00 00 00 00 05 1a 7b 28 60 74 79 38 bf 96 16 c9 52 5f ed be ba",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "15 03 03 00 1a 00 00 00 00 00 00 00 02 47 5d 83 37 67 4b ff fd d1 38 3b 04 df 97 ff 9e",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 09 e3 33 91 3f 61 ec e0 75 c3 89 61 04 b2 ec 93 43",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 0b 00 00 00 00 00 00 00 0a dc e2 ef c8 18 10 2b 5a 57 fb fc e0 a5 07 a4 29",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 00 31 00 00 00 00 00 00 00 07 ea 39 c5 51 78 3c aa 9c 40 ad 09 c9 0c 80 42 a8",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c0 00 00 00 00 00 00 00 08 31 21 d1 47 c3 83 de 3f cf 9d 5f 34 f3 1e d7 a2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ],
+    "domain_patterns": [
+      {
+        "pattern": "mobile.events.data.microsoft.com.",
+        "original": "mobile.events.data.microsoft.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "mobile.events.data.microsoft.com.",
+        "original": "mobile.events.data.microsoft.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "mobile.events.data.microsoft.com.",
+        "original": "mobile.events.data.microsoft.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "mobile.events.data.microsoft.com.",
+        "original": "mobile.events.data.microsoft.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      }
+    ],
+    "ip_patterns": [],
+    "port_patterns": [],
+    "timing_patterns": [],
+    "size_patterns": []
+  },
+  "rules": {
+    "snort_count": 4,
+    "suricata_count": 4,
+    "yara_count": 2,
+    "sigma_count": 1
+  },
+  "threat_intel": {
+    "c2_servers": [],
+    "exfil_destinations": [],
+    "dns_patterns": [
+      {
+        "pattern": "mobile.events.data.microsoft.com.",
+        "original": "mobile.events.data.microsoft.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "mobile.events.data.microsoft.com.",
+        "original": "mobile.events.data.microsoft.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "mobile.events.data.microsoft.com.",
+        "original": "mobile.events.data.microsoft.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "mobile.events.data.microsoft.com.",
+        "original": "mobile.events.data.microsoft.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      }
+    ],
+    "byte_signatures": [
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 03 e9 cc 01 30 d2 b4 c8 43 ad 1b 79 ba c5 6f 2e da",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 7f 00 00 00 00 00 00 00 04 7b 59 4c 1a cd f5 41 fe 37 f9 ad 62 96 50 e5 3d",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 03 15 aa bb 29 fa e4 c9 a9 b9 21 f6 02 31 9e f0 12",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 04 59 6b 2a 17 21 9e 3f 73 35 b4 42 82 97 a1 07 86",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 5e 00 00 00 00 00 00 00 02 a8 6e ce 09 4a 97 f3 59 c1 37 16 8b 76 9b 7e 86",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 05 5c 96 2d ad b0 9b 5a 7f da f1 fd 13 24 f2 0f 91",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 b8 00 00 00 00 00 00 00 06 44 f0 25 90 9b fa 3a fa 71 df f6 28 57 8a f0 87",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 07 a3 b4 fd 74 31 55 d0 04 69 00 1a 52 ad 80 36 d4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 d2 00 00 00 00 00 00 00 08 65 aa 02 d5 0a b4 75 38 77 b2 b0 8b 41 f8 63 13",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 63 00 00 00 00 00 00 00 02 71 84 f3 8c af 21 db 31 a4 de fc fb 53 c7 6b a2",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ]
+  }
+}

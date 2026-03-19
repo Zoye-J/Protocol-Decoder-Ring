@@ -1,0 +1,13 @@
+2026-03-19 17:00:47,154 - SandboxManager.sandbox_20260319_170047 - INFO - [TOOL] SandboxManager initialized with ID: sandbox_20260319_170047
+2026-03-19 17:00:47,165 - SandboxManager.sandbox_20260319_170047 - INFO - [FOLDER] Created isolated directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_tr9w3j7i
+2026-03-19 17:00:47,179 - SandboxManager.sandbox_20260319_170047 - INFO - [NET] Network isolation enabled (basic mode)
+2026-03-19 17:00:47,182 - SandboxManager.sandbox_20260319_170047 - DEBUG - [NET] Basic network isolation configured
+2026-03-19 17:00:47,183 - SandboxManager.sandbox_20260319_170047 - DEBUG - TEMP directory set to: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_tr9w3j7i
+2026-03-19 17:00:47,205 - SandboxManager.sandbox_20260319_170047 - INFO - [RUN] Starting application: uploads\20260319_170047_run_ds.bat
+2026-03-19 17:00:47,206 - SandboxManager.sandbox_20260319_170047 - INFO -       Arguments: None
+2026-03-19 17:00:47,206 - SandboxManager.sandbox_20260319_170047 - INFO -       Working directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_tr9w3j7i
+2026-03-19 17:00:47,277 - SandboxManager.sandbox_20260319_170047 - INFO - [PROC] Process: cmd.exe (PID: 24292)
+2026-03-19 17:00:48,290 - SandboxManager.sandbox_20260319_170047 - INFO - [DONE] Application finished with code: 1
+2026-03-19 17:00:48,292 - SandboxManager.sandbox_20260319_170047 - WARNING - STDERR: b'The system cannot find the path specified.\r\n'...
+2026-03-19 17:01:17,368 - SandboxManager.sandbox_20260319_170047 - INFO - [CLEAN] Cleaning up sandbox environment...
+2026-03-19 17:01:17,371 - SandboxManager.sandbox_20260319_170047 - INFO - [OK] Removed temporary directory: C:\Users\ASUS\AppData\Local\Temp\pdr_sandbox_tr9w3j7i
