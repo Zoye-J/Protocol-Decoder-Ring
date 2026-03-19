@@ -201,7 +201,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-pdr btn-pdr-ghost" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-pdr btn-pdr-primary" id="uploadBtn">Start Analysis</button>
+                <button type="button" class="btn-pdr btn-pdr-primary" id="uploadBtn">Start Analysis</button>
             </div>
         </div>
     </div>
@@ -250,10 +250,40 @@
 {% block extra_js %}
 <script>
 $(document).ready(function() {
+    // Initialize charts first (prevents canvas error)
+    window.trafficChart = null;
+    window.protocolChart = null;
+    
     loadStats();
     loadRecentAlerts();
     initCharts();
+    
+    // IMPORTANT: Call the modal binding function
+    if (typeof bindUploadModal === 'function') {
+        console.log('[PDR] Calling bindUploadModal');
+        bindUploadModal();
+    } else {
+        console.error('[PDR] bindUploadModal not found');
+    }
+    
+    // Also bind capture modal
+    if (typeof bindCaptureModal === 'function') {
+        bindCaptureModal();
+    }
+    
+    // Live chart updates
+    setInterval(function() {
+        if (window.trafficChart) {
+            const currentData = window.trafficChart.data.datasets[0].data;
+            const newData = currentData.map(val => 
+                Math.max(10, Math.floor(val + val * 0.1 * (Math.random() - 0.5)))
+            );
+            window.trafficChart.data.datasets[0].data = newData;
+            window.trafficChart.update();
+        }
+    }, 5000);
 });
+
  
 function loadStats() {
     $.get('/api/v1/status', function(d) {
@@ -315,6 +345,12 @@ function loadRecentAlerts() {
 }
  
 function initCharts() {
+    // Destroy existing charts before recreating
+    const existingTraffic = Chart.getChart('trafficChart');
+    const existingProto = Chart.getChart('protocolChart');
+    if (existingTraffic) existingTraffic.destroy();
+    if (existingProto) existingProto.destroy();
+
     const COLORS = ['#00d4ff','#2ed573','#ffa502','#a29bfe','#ff4757','#fd9644'];
     const monoFont = 'JetBrains Mono';
     Chart.defaults.color = '#8899bb';
@@ -438,31 +474,7 @@ function renderProtoChart(ctx, labels, values, colors, font) {
     });
 }
 
-//Ensure charts are properly initialized when page loads
-$(document).ready(function() {
-    // Store charts in window object to prevent garbage collection
-    window.trafficChart = null;
-    window.protocolChart = null;
-    
-    loadStats();
-    loadRecentAlerts();
-    initCharts();
-    
-    // Refresh charts periodically with slight variations to show activity
-    setInterval(function() {
-        if (window.trafficChart) {
-            // Add slight random variation to make chart look "live"
-            const currentData = window.trafficChart.data.datasets[0].data;
-            const newData = currentData.map(val => {
-                // Vary by ±10% to show activity
-                const variation = val * 0.1 * (Math.random() - 0.5);
-                return Math.max(10, Math.floor(val + variation));
-            });
-            window.trafficChart.data.datasets[0].data = newData;
-            window.trafficChart.update();
-        }
-    }, 5000); // Update every 5 seconds
-});
+
 </script>
 
 

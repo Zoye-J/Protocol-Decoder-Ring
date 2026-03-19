@@ -412,95 +412,127 @@ def api_get_reports():
 @require_api_key
 def api_analyze_file():
     """Submit new file for analysis"""
+    print("[DEBUG] API analyze/file called")
+    print("[DEBUG] Files in request:", request.files)
+    print("[DEBUG] Headers:", dict(request.headers))
+    
+    # Check if file exists in request
     if 'file' not in request.files:
+        print("[DEBUG] No file in request")
         return jsonify({"error": "No file provided"}), 400
     
     file = request.files['file']
     if file.filename == '':
+        print("[DEBUG] Empty filename")
         return jsonify({"error": "No file selected"}), 400
+    
+    print("[DEBUG] File received:", file.filename)
+    print("[DEBUG] File size:", len(file.read()) if hasattr(file, 'read') else "unknown")
+    file.seek(0)  # Reset file pointer after reading
     
     # Save uploaded file
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f"{timestamp}_{file.filename}"
     filepath = os.path.join('uploads', filename)
-    file.save(filepath)
+    
+    try:
+        file.save(filepath)
+        print(f"[DEBUG] File saved to: {filepath}")
+    except Exception as e:
+        print(f"[DEBUG] Error saving file: {e}")
+        return jsonify({"error": f"Failed to save file: {str(e)}"}), 500
     
     # Start analysis in background
     analysis_id = f"analysis_{timestamp}"
     custom_args = request.form.getlist('args') if request.form else []
     
     def run_analysis(args_list):
-        """Background analysis task"""
         try:
-            packets = []  # Will be filled by capture
-            
-            # Modules 1 & 2: Run app while capturing
+            packets = []
+
+            if not MODULES_AVAILABLE:
+                raise Exception("Analysis modules not available")
+
             with SandboxManager() as sandbox:
                 with PacketCapture() as capture:
-                    # Start capture FIRST
                     capture.start_capture(timeout=30)
-                    
-                    # THEN run the application
                     sandbox.run_application(filepath, args_list)
-                    
-                    # Let it run for 30 seconds
                     time.sleep(30)
-                    
-                    # Stop capture and get packets
                     capture.stop_capture_now()
                     packets = capture.get_packets()
-            
-            # Modules 3, 4, 5: Analyze captured traffic
+
             if packets:
-                # Module 3: Protocol Analysis
                 with ProtocolAnalyzer() as analyzer:
                     analyzer.load_packets(packets)
                     protocol_results = analyzer.analyze()
                     analyzer.generate_report()
-                
-                # Module 4: Exfiltration Detection
+
                 with ExfiltrationDetector() as detector:
                     detector.load_packets(packets)
                     exfil_results = detector.detect_exfiltration()
                     detector.generate_report()
-                
-                # Module 5: Signature Generation
+
                 with SignatureGenerator() as generator:
                     generator.load_analysis_results(protocol_results, exfil_results, packets)
                     generator.generate_signatures()
                     generator.generate_report()
-                
-                # Save combined results
+
                 combined = {
                     "analysis_id": analysis_id,
                     "timestamp": datetime.now().isoformat(),
                     "file": file.filename,
+                    "alerts": protocol_results.get('alerts', []) + exfil_results.get('alerts', []),
+                    "protocols": protocol_results.get('protocols', {}),
+                    "statistics": protocol_results.get('statistics', {}),
+                    "flow_count": protocol_results.get('flow_count', 0),
                     "protocol_analysis": protocol_results,
                     "exfiltration_detection": exfil_results,
                     "packet_count": len(packets)
                 }
             else:
-                # No packets captured
                 combined = {
                     "analysis_id": analysis_id,
                     "timestamp": datetime.now().isoformat(),
                     "file": file.filename,
-                    "error": "No packets captured",
-                    "packet_count": 0
+                    "alerts": [],
+                    "protocols": {},
+                    "statistics": {"total_packets": 0},
+                    "flow_count": 0,
+                    "packet_count": 0,
+                    "warning": "No packets captured — check Administrator privileges"
                 }
-            
-            # Save results
-            with open(f"output/analysis/{analysis_id}.json", 'w') as f:
+
+            os.makedirs('output/analysis', exist_ok=True)
+            with open(f"output/analysis/{analysis_id}.json", 'w', encoding='utf-8') as f:
                 json.dump(combined, f, indent=2, default=str)
-            
-            # Notify via WebSocket
+
             socketio.emit('analysis_complete', {
                 'analysis_id': analysis_id,
                 'status': 'success',
                 'packet_count': len(packets)
             })
-            
+
         except Exception as e:
+            import traceback
+            print(f"[ERROR] Analysis failed: {e}")
+            traceback.print_exc()
+
+            # Always save a result so polling doesn't loop forever
+            error_result = {
+                "analysis_id": analysis_id,
+                "timestamp": datetime.now().isoformat(),
+                "file": file.filename,
+                "alerts": [],
+                "protocols": {},
+                "statistics": {"total_packets": 0},
+                "flow_count": 0,
+                "packet_count": 0,
+                "error": str(e)
+            }
+            os.makedirs('output/analysis', exist_ok=True)
+            with open(f"output/analysis/{analysis_id}.json", 'w', encoding='utf-8') as f:
+                json.dump(error_result, f, indent=2, default=str)
+
             socketio.emit('analysis_complete', {
                 'analysis_id': analysis_id,
                 'status': 'error',
@@ -508,6 +540,7 @@ def api_analyze_file():
             })
     
     # Start background thread
+    print(f"[DEBUG] Starting background thread for analysis {analysis_id}")
     thread = threading.Thread(target=run_analysis, args=(custom_args,))
     thread.daemon = True
     thread.start()
@@ -517,7 +550,6 @@ def api_analyze_file():
         "status": "started",
         "message": "Analysis started in background"
     })
-    
 
 
 @app.route('/api/v1/signatures/generate', methods=['POST'])
@@ -668,6 +700,5 @@ if __name__ == '__main__':
     print(f"\nPress Ctrl+C to stop")
     print("=" * 60)
     
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000, 
-             use_reloader=True, reloader_options={'exclude_patterns': ['venv/*']})
+    socketio.run(app, debug=False, host='0.0.0.0', port=5000, use_reloader=False)
 

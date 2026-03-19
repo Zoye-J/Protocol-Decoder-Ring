@@ -27,9 +27,8 @@
 
 <p align="center">
   <br>
-  <sub>Built by <strong>Zoye-J</strong> · © 2026</sub>
+  <span style="font-size: 1.5em;">Built by <strong>Zoye-J</strong> · © 2026</span>
 </p>
-
 ---
 
 ## What is this?
@@ -518,7 +517,7 @@ This tool is intended for **educational purposes, authorized security research, 
 
 ## License
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) — see [LICENSE](LICENSE) for details.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) MIT © [Zoye-J](LICENSE)
 
 ---
 

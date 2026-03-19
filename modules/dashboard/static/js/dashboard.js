@@ -59,41 +59,133 @@ function initSocket() {
 /* ── Upload modal ── */
 function bindUploadModal() {
     const btn = document.getElementById('uploadBtn');
+    console.log('[PDR] uploadBtn found:', btn);
     if (!btn) return;
 
-    btn.addEventListener('click', function () {
+    // Remove any existing listeners to prevent duplicates
+    btn.replaceWith(btn.cloneNode(true));
+    const newBtn = document.getElementById('uploadBtn');
+    
+    newBtn.addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent any default behavior
+        console.log('[PDR] Upload button clicked'); // Debug log
+        
         const fileInput = document.getElementById('fileInput');
-        if (!fileInput || !fileInput.files.length) {
+        if (!fileInput) {
+            console.error('[PDR] File input not found');
+            showNotification('error', 'File input not found');
+            return;
+        }
+        
+        console.log('[PDR] Files selected:', fileInput.files.length);
+        
+        if (!fileInput.files.length) {
             showNotification('warning', 'Please select a file first');
             return;
         }
 
+        const file = fileInput.files[0];
+        console.log('[PDR] File to upload:', file.name, file.size, 'bytes');
+
         const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
+        formData.append('file', file);
 
         const progress = document.getElementById('uploadProgress');
         if (progress) progress.style.display = 'block';
-        btn.disabled = true;
-
+        
+        newBtn.disabled = true;
+        console.log('[PDR] Making fetch request to /api/v1/analyze/file...');
+        
         fetch('/api/v1/analyze/file', {
             method: 'POST',
-            headers: { 'X-API-Key': window.PDR_API_KEY || 'change-this-in-production' },
+            headers: { 
+                'X-API-Key': 'change-this-in-production' // Hardcode for testing
+            },
             body: formData
         })
-        .then(r => r.json())
+        .then(response => {
+            console.log('[PDR] Response status:', response.status);
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error || 'Upload failed') });
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('[PDR] Upload success:', data);
             if (data.error) throw new Error(data.error);
+            
             showNotification('success', 'Analysis started: ' + data.analysis_id);
-            const modal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+            
+            // Hide modal
+            const modalEl = document.getElementById('uploadModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
             if (modal) modal.hide();
+            
+            // Clear input
             fileInput.value = '';
+            
+            // Show a "waiting" notification
+            showNotification('info', 'Analysis running — results will appear in ~35 seconds');
+            
+            // Poll for completion
+            let attempts = 0;
+            const pollInterval = setInterval(function() {
+                attempts++;
+                console.log('[PDR] Polling analysis:', data.analysis_id, 'attempt', attempts);
+                
+                fetch('/api/v1/analysis/' + data.analysis_id)
+                    .then(r => r.json())
+                    .then(result => {
+                        if (!result.error) {
+                            console.log('[PDR] Analysis complete!');
+                            clearInterval(pollInterval);
+                            showNotification('success', 
+                                'Analysis complete — ' + 
+                                (result.alerts?.length || 0) + ' alerts found');
+                            
+                            // Reload page data
+                            if (typeof loadStats === 'function') loadStats();
+                            if (typeof loadRecentAlerts === 'function') loadRecentAlerts();
+                            if (typeof window.loadDashboardData === 'function') window.loadDashboardData();
+                            
+                            // Refresh analyses table
+                            const tbody = document.getElementById('analyses-tbody');
+                            if (tbody) {
+                                fetch('/api/v1/analyses')
+                                    .then(r => r.json())
+                                    .then(analyses => {
+                                        tbody.innerHTML = '';
+                                        analyses.slice(0, 10).forEach(a => {
+                                            const row = document.createElement('tr');
+                                            row.innerHTML = `
+                                                <td style="font-family:var(--font-mono);font-size:11px;color:var(--accent);">${a.id}</td>
+                                                <td style="font-family:var(--font-mono);font-size:11px;">${(a.timestamp||'').substring(0,19)}</td>
+                                                <td>${a.packets||0}</td>
+                                                <td>${a.alerts > 0 ? '<span class="badge-pdr badge-high">'+a.alerts+'</span>' : '0'}</td>
+                                                <td><a href="/analysis/${a.id}" class="btn-pdr btn-pdr-ghost" style="font-size:11px;padding:4px 10px;">View →</a></td>
+                                            `;
+                                            tbody.appendChild(row);
+                                        });
+                                    });
+                            }
+                        }
+                    })
+                    .catch(err => console.log('[PDR] Poll error:', err));
+                
+                // Stop polling after 2 minutes
+                if (attempts > 24) {
+                    clearInterval(pollInterval);
+                    showNotification('warning', 'Analysis is taking longer than expected — check Reports page');
+                }
+            }, 5000);
         })
         .catch(err => {
+            console.error('[PDR] Upload error:', err);
             showNotification('error', 'Upload failed: ' + err.message);
         })
         .finally(() => {
             if (progress) progress.style.display = 'none';
-            btn.disabled = false;
+            newBtn.disabled = false;
         });
     });
 }

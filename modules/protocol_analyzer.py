@@ -392,12 +392,15 @@ class ProtocolAnalyzer:
                     payload = bytes(packet.payload)
             elif isinstance(packet, dict):  # Dictionary format
                 raw = packet.get('raw_data', b'')
+                if raw is None:  # FIX: Handle None values
+                    continue
                 if isinstance(raw, str):
                     payload = raw.encode('utf-8', errors='ignore')
                 else:
                     payload = raw
             
-            if len(payload) < 20:  # Skip very small payloads
+            # FIX: Check if payload is None or empty
+            if payload is None or len(payload) < 20:  # Skip very small payloads
                 continue
             
             # Calculate Shannon entropy
@@ -431,7 +434,7 @@ class ProtocolAnalyzer:
         """
         Calculate Shannon entropy of data
         """
-        if not data:
+        if data is None or len(data) == 0:  
             return 0
         
         entropy = 0

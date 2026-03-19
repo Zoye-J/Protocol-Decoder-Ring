@@ -1,0 +1,18 @@
+2026-03-18 19:58:23,168 - PacketCapture.capture_20260318_195823 - INFO - [OK] Npcap found - packet capture available
+2026-03-18 19:58:23,170 - PacketCapture.capture_20260318_195823 - INFO - [TOOL] PacketCapture initialized with ID: capture_20260318_195823
+2026-03-18 19:58:23,171 - PacketCapture.capture_20260318_195823 - INFO - [TOOL] Capture method: scapy_npcap
+2026-03-18 19:58:23,184 - PacketCapture.capture_20260318_195823 - INFO - [START] Packet capture started
+2026-03-18 19:58:23,184 - PacketCapture.capture_20260318_195823 - INFO -          Interface: Default
+2026-03-18 19:58:23,191 - PacketCapture.capture_20260318_195823 - INFO -          Filter: None
+2026-03-18 19:58:23,192 - PacketCapture.capture_20260318_195823 - INFO -          Max packets: 10000
+2026-03-18 19:58:23,203 - PacketCapture.capture_20260318_195823 - INFO -          Timeout: 30s
+2026-03-18 19:58:26,304 - PacketCapture.capture_20260318_195823 - INFO - [PROGRESS] Captured 100 packets (31.9 pkt/s)
+2026-03-18 19:58:33,998 - PacketCapture.capture_20260318_195823 - INFO - [PROGRESS] Captured 200 packets (18.5 pkt/s)
+2026-03-18 19:58:38,572 - PacketCapture.capture_20260318_195823 - INFO - [PROGRESS] Captured 300 packets (19.5 pkt/s)
+2026-03-18 19:58:40,017 - PacketCapture.capture_20260318_195823 - INFO - [PROGRESS] Captured 400 packets (23.7 pkt/s)
+2026-03-18 19:58:45,184 - PacketCapture.capture_20260318_195823 - INFO - [PROGRESS] Captured 500 packets (22.7 pkt/s)
+2026-03-18 19:58:47,775 - PacketCapture.capture_20260318_195823 - INFO - [PROGRESS] Captured 600 packets (24.4 pkt/s)
+2026-03-18 19:58:49,639 - PacketCapture.capture_20260318_195823 - INFO - [PROGRESS] Captured 700 packets (26.4 pkt/s)
+2026-03-18 19:58:52,442 - PacketCapture.capture_20260318_195823 - INFO - [PROGRESS] Captured 800 packets (27.3 pkt/s)
+2026-03-18 19:58:53,201 - PacketCapture.capture_20260318_195823 - INFO - [STOP] Capture stopped - 828 packets captured
+2026-03-18 19:58:53,519 - PacketCapture.capture_20260318_195823 - INFO - [CLEAN] Packet capture cleaned up

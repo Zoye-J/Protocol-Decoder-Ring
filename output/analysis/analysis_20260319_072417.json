@@ -1,0 +1,13 @@
+{
+  "analysis_id": "analysis_20260319_072417",
+  "timestamp": "2026-03-19T07:24:48.076061",
+  "file": "test_beacon.bat",
+  "alerts": [],
+  "protocols": {},
+  "statistics": {
+    "total_packets": 0
+  },
+  "flow_count": 0,
+  "packet_count": 0,
+  "error": "invalid literal for int() with base 10: ''"
+}
