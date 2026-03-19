@@ -6,3 +6,6 @@
 2026-03-19 08:31:02,460 - PacketCapture.capture_20260319_083102 - INFO -          Filter: None
 2026-03-19 08:31:02,466 - PacketCapture.capture_20260319_083102 - INFO -          Max packets: 10000
 2026-03-19 08:31:02,466 - PacketCapture.capture_20260319_083102 - INFO -          Timeout: 30s
+2026-03-19 08:31:17,804 - PacketCapture.capture_20260319_083102 - INFO - [PROGRESS] Captured 100 packets (6.5 pkt/s)
+2026-03-19 08:31:32,468 - PacketCapture.capture_20260319_083102 - INFO - [STOP] Capture stopped - 140 packets captured
+2026-03-19 08:31:32,624 - PacketCapture.capture_20260319_083102 - INFO - [CLEAN] Packet capture cleaned up

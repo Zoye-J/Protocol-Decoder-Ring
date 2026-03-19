@@ -33,13 +33,13 @@
 </div>
  
 <!-- Format tabs + viewer -->
-<div style="display:grid;grid-template-columns:260px 1fr;gap:16px;">
+<div style="display:grid;grid-template-columns:300px 1fr;gap:16px;">
  
     <!-- File list sidebar -->
     <div class="pdr-card" style="height:fit-content;">
         <div class="card-head"><div class="card-head-title"><i class="fas fa-folder icon"></i> Rule Files</div></div>
         <div style="padding:8px;">
-            <div class="pdr-tabs" style="padding:0 8px;margin-bottom:8px;">
+            <div class="pdr-tabs" style="padding:0 8px;margin-bottom:8px;overflow-x:auto;flex-wrap:nowrap;">
                 {% for fmt in ['snort','suricata','yara','sigma','custom'] %}
                 <button class="pdr-tab {% if loop.first %}active{% endif %}"
                         style="padding:6px 10px;font-size:11px;"
