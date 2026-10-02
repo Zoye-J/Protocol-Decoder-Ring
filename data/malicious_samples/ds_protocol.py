@@ -173,15 +173,6 @@ def show_you_were_observed():
         )
         title_label.pack(pady=(40, 10))
         
-        # Subtitle - like "HEIR OF FIRE DELETED" but protocol-themed
-        subtitle_label = tk.Label(
-            bg_frame,
-            text="protocol heir",
-            font=subtitle_font,
-            fg="#4a3a2a",
-            bg="black"
-        )
-        subtitle_label.pack(pady=(0, 20))
         
         # Blood line at bottom
         tk.Frame(bg_frame, bg="#400000", height=2).pack(fill="x", padx=150, pady=(40, 80))
@@ -235,79 +226,48 @@ if __name__ == "__main__":
     
     # ── Opening ─────────────────────────────────────────────────────────────
     blank(5)
-    fade_in("...", ASH)
+    pause(0.5)
     sleep(1.5)
-    typewrite("The network stirs", GREY, 0.06)
+    typewrite("The quiet has been disturbed..", GREY, 0.06)
     sleep(2.0)
     
     blank()
     
     # ── PHASE I: ARRIVAL ────────────────────────────────────────────────────
-    typewrite("A foreign signal stirs in the dark.", WHITE, 0.05)
+    typewrite("An observer awakens beyond the glass.", WHITE, 0.05)
     sleep(1.2)
-    typewrite("An unknown process has awakened.", WHITE, 0.05)
+    typewrite("You were not meant to witness this...", WHITE, 0.05)
     sleep(1.2)
-    typewrite("The network feels your presence.", WHITE, 0.05)
-    sleep(1.2)
-    typewrite("Connection established beyond sight.", GREY, 0.05)
-    sleep(1.0)
     
     blank()
     
-    typewrite("Something listens between the packets.", DIM, 0.06)
+    typewrite("The unseen now turns its gaze toward you....", DKRED, 0.06)
     sleep(0.8)
-    typewrite("It has always been listening.", DIM, 0.08)
-    sleep(2.0)
     
     blank(2)
     pause(0.5)
     
     # ── PHASE II: THE BEACON ────────────────────────────────────────────────
-    typewrite("The signal calls home.", WHITE, 0.05)
+    typewrite("Your defenses were only a suggestion.", WHITE, 0.05)
     sleep(1.0)
     typewrite("Heartbeat transmitted into the void.", WHITE, 0.05)
     sleep(1.0)
     
     blank()
     
-    typewrite("The master awaits telemetry.", DKRED, 0.06)
-    sleep(1.0)
-    typewrite("Whispers travel through hidden ports.", WHITE, 0.06)
-    sleep(1.0)
-    typewrite("Trust has been misplaced.",DKRED, 0.07)
-    sleep(1.5)
-    
-    blank()
-    
-    bonfire_flicker("The beacon pulses.")
-    sleep(0.5)
-    typewrite("Once.", WHITE, 0.1)
-    sleep(0.5)
-    typewrite("Twice.",WHITE, 0.1)
-    sleep(0.5)
-    typewrite("Five times.", DKRED, 0.09)
-    sleep(2.0)
-    
-    blank(2)
+  
     
     # ── PHASE III: DISCOVERY ────────────────────────────────────────────────
-    typewrite("Patterns repeat...", WHITE, 0.06)
+    typewrite("The cycle resumes...", WHITE, 0.06)
     sleep(0.8)
     typewrite("...too perfectly.", DKRED, 0.08)
     sleep(1.2)
     
     blank()
     
-    typewrite("Entropy rises above threshold.", WHITE, 0.05)
-    sleep(1.0)
-    typewrite("The intervals betray you.", WHITE, 0.06)
-    sleep(1.0)
-    
-    blank()
-    
     ember_glow("Your defenses begin to falter.")
     sleep(1.0)
-    typewrite("Observation has begun.", DKRED, 0.07)
+    typewrite("Observation has begun...", WHITE, 0.07)
     sleep(1.0)
     
     blank()
@@ -323,19 +283,6 @@ if __name__ == "__main__":
     
     blank()
     
-    typewrite("Behavior classified.", WHITE, 0.05)
-    sleep(0.8)
-    typewrite("Patterns logged.", WHITE, 0.05)
-    sleep(0.8)
-    typewrite("Signatures extracted.", DKRED, 0.06)
-    sleep(1.0)
-    
-    blank()
-    
-    ember_glow("Analysis complete.")
-    sleep(1.5)
-    
-    blank()
     
     typewrite("Judgment...", WHITE, 0.09)
     sleep(0.8)
@@ -344,20 +291,6 @@ if __name__ == "__main__":
     
     blank(3)
     sleep(0.5)
-    
-    # ── FINAL MESSAGE ───────────────────────────────────────────────────────
-    print("    " + DKRED + "═" * 56 + RESET)
-    blank()
-    sleep(1.0)
-    
-    ember_glow("THE PROTOCOL REMEMBERS")
-    
-    blank()
-    sleep(0.5)
-    print("    " + DKRED + "═" * 56 + RESET)
-    blank(3)
-    
-    sleep(2.0)
     
     # ── DARK SOULS POPUP ─────────────────────────────────────────────────────
     # Now show the popup - it will appear after the console text completes

@@ -1,0 +1,255 @@
+{
+  "detection_id": "exfil_20260321_021114",
+  "timestamp": "2026-03-21T02:11:14.420711",
+  "statistics": {
+    "total_packets": 556,
+    "total_bytes": 237584,
+    "total_flows": 57,
+    "start_time": 1774037474.3790944,
+    "end_time": 1774037474.4182131,
+    "outbound_bytes": 89951,
+    "inbound_bytes": 147633,
+    "unique_destinations": [
+      "192.168.0.110",
+      "140.82.113.21",
+      "13.107.137.11",
+      "192.168.0.114",
+      "ff02::fb",
+      "20.189.173.15",
+      "103.60.172.20",
+      "135.232.92.34",
+      "23.55.235.109",
+      "52.104.49.55",
+      "23.223.245.55",
+      "192.168.0.100",
+      "192.168.0.111",
+      "142.251.150.119",
+      "224.0.0.1",
+      "192.168.0.109",
+      "151.101.194.137",
+      "13.67.9.5",
+      "192.168.0.105",
+      "192.168.0.113",
+      "192.168.0.255",
+      "8.8.8.8",
+      "192.168.0.102",
+      "150.171.28.12",
+      "224.0.0.251",
+      "192.178.211.188",
+      "192.168.0.103",
+      "ff02::16",
+      "239.255.255.250",
+      "224.0.0.252",
+      "52.123.252.19",
+      "192.168.0.106",
+      "20.189.173.27"
+    ]
+  },
+  "alerts": [
+    {
+      "type": "dns_exfiltration",
+      "severity": "high",
+      "timestamp": 1774037474.4032843,
+      "details": {
+        "suspicious_flows": [
+          {
+            "flow": "TCP_192.168.0.113:53478->13.107.137.11:443",
+            "packet_count": 45,
+            "large_packets": 20,
+            "total_bytes": 28452,
+            "reason": "large_dns_packets"
+          },
+          {
+            "flow": "TCP_192.168.0.113:53479->13.107.137.11:443",
+            "packet_count": 30,
+            "large_packets": 13,
+            "total_bytes": 18637,
+            "reason": "large_dns_packets"
+          },
+          {
+            "flow": "TCP_192.168.0.113:53480->13.107.137.11:443",
+            "packet_count": 30,
+            "large_packets": 14,
+            "total_bytes": 19345,
+            "reason": "large_dns_packets"
+          },
+          {
+            "flow": "TCP_192.168.0.113:53481->52.104.49.55:443",
+            "packet_count": 46,
+            "large_packets": 22,
+            "total_bytes": 31169,
+            "reason": "large_dns_packets"
+          },
+          {
+            "flow": "TCP_192.168.0.113:53484->13.67.9.5:443",
+            "packet_count": 23,
+            "large_packets": 9,
+            "total_bytes": 11297,
+            "reason": "large_dns_packets"
+          }
+        ],
+        "total_suspicious": 12,
+        "total_dns_flows": 39
+      },
+      "description": "Detected 12 suspicious DNS flows (possible exfiltration)"
+    },
+    {
+      "type": "possible_steganography",
+      "severity": "medium",
+      "timestamp": 1774037474.41669,
+      "details": {
+        "suspicious_transfers": [
+          {
+            "flow": "TCP_192.168.0.113:53478->13.107.137.11:443",
+            "total_kb": 27.79,
+            "large_packets": 18,
+            "total_packets": 45
+          },
+          {
+            "flow": "TCP_192.168.0.113:53479->13.107.137.11:443",
+            "total_kb": 18.2,
+            "large_packets": 12,
+            "total_packets": 30
+          },
+          {
+            "flow": "TCP_192.168.0.113:53480->13.107.137.11:443",
+            "total_kb": 18.89,
+            "large_packets": 12,
+            "total_packets": 30
+          },
+          {
+            "flow": "TCP_192.168.0.113:53481->52.104.49.55:443",
+            "total_kb": 30.44,
+            "large_packets": 21,
+            "total_packets": 46
+          },
+          {
+            "flow": "TCP_192.168.0.113:53484->13.67.9.5:443",
+            "total_kb": 11.03,
+            "large_packets": 6,
+            "total_packets": 23
+          }
+        ],
+        "note": "Image files detected - further analysis recommended"
+      },
+      "description": "Detected 12 potential image transfers (possible steganography)"
+    },
+    {
+      "type": "many_small_packets",
+      "severity": "low",
+      "timestamp": 1774037474.4181995,
+      "details": {
+        "small_packets": 267,
+        "percentage": 48.02
+      },
+      "description": "High percentage of very small packets (possible covert signaling)"
+    }
+  ],
+  "suspicious_flows": {
+    "TCP_192.168.0.113:53478->13.107.137.11:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 45,
+        "total_bytes": 28452
+      }
+    },
+    "TCP_192.168.0.113:53479->13.107.137.11:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 30,
+        "total_bytes": 18637
+      }
+    },
+    "TCP_192.168.0.113:53480->13.107.137.11:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 30,
+        "total_bytes": 19345
+      }
+    },
+    "TCP_192.168.0.113:53481->52.104.49.55:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 46,
+        "total_bytes": 31169
+      }
+    },
+    "TCP_192.168.0.113:53484->13.67.9.5:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 23,
+        "total_bytes": 11297
+      }
+    },
+    "TCP_192.168.0.113:53485->13.67.9.5:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 27,
+        "total_bytes": 13380
+      }
+    },
+    "TCP_192.168.0.113:53486->20.189.173.15:443": {
+      "reason": "dns_exfiltration_high_query_volume",
+      "severity": "high",
+      "details": {
+        "packet_count": 54,
+        "total_bytes": 23523
+      }
+    },
+    "TCP_192.168.0.113:53487->20.189.173.15:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 27,
+        "total_bytes": 11989
+      }
+    },
+    "TCP_192.168.0.113:53488->140.82.113.21:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 31,
+        "total_bytes": 12200
+      }
+    },
+    "TCP_192.168.0.113:53489->140.82.113.21:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 25,
+        "total_bytes": 10758
+      }
+    },
+    "TCP_192.168.0.113:53490->20.189.173.27:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 25,
+        "total_bytes": 11820
+      }
+    },
+    "TCP_192.168.0.113:53491->20.189.173.15:443": {
+      "reason": "dns_exfiltration_large_dns_packets",
+      "severity": "high",
+      "details": {
+        "packet_count": 37,
+        "total_bytes": 16571
+      }
+    }
+  },
+  "exfiltration_attempts": [],
+  "summary": {
+    "total_alerts": 3,
+    "high_severity": 1,
+    "medium_severity": 1,
+    "low_severity": 1,
+    "suspicious_flows": 12,
+    "warnings": 0
+  }
+}

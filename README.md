@@ -1,6 +1,6 @@
 # Protocol Decoder Ring
 
-> A network protocol sandbox that analyzes how malware communicates — capturing traffic, detecting threats, and automatically generating detection signatures.
+> A network protocol sandbox that analyzes how malware communicates capturing traffic, detecting threats, and automatically generating detection signatures.
 
 ## Built With
 
@@ -95,42 +95,42 @@ Suspicious File
 - Runs suspicious executables with redirected environment variables
 - Monitors CPU and memory usage in real time via `psutil`
 - Enforces configurable timeouts (default 5 minutes)
-- Automatic cleanup — no artifacts left on the host system
+- Automatic cleanup: no artifacts left on the host system
 - Context manager support (`with SandboxManager() as sandbox`)
 
 ### Packet Capture (Module 2)
 - Captures live traffic using Scapy + Npcap (Windows) or libpcap (Linux)
 - BPF filter support for targeted capture
-- Saves to standard `.pcap` format — open directly in Wireshark
+- Saves to standard `.pcap` format: open directly in Wireshark
 - Real-time statistics (rate, volume, protocol breakdown)
 - Loads existing PCAP files for offline analysis
 
 ### Protocol Analyzer (Module 3)
 - Signature-based protocol identification (HTTP, DNS, TLS, SSH, SMB, FTP)
-- **Shannon entropy analysis** — detects encrypted or obfuscated payloads
-- **C2 beacon detection** — identifies regular heartbeat patterns using coefficient of variation
-- **DNS tunneling detection** — flags long queries, high-entropy domains, excessive subdomains
-- **Packet size analysis** — detects fixed-size covert channels
-- **Timing pattern analysis** — identifies repeating inter-arrival intervals
+- **Shannon entropy analysis** : detects encrypted or obfuscated payloads
+- **C2 beacon detection** : identifies regular heartbeat patterns using coefficient of variation
+- **DNS tunneling detection** : flags long queries, high-entropy domains, excessive subdomains
+- **Packet size analysis** : detects fixed-size covert channels
+- **Timing pattern analysis** : identifies repeating inter-arrival intervals
 - HTTP anomaly detection (suspicious methods, unusually long URIs)
 - Reconstructs bidirectional TCP/UDP flows
 
 ### Exfiltration Detector (Module 4)
 - Detects large outbound data transfers (configurable threshold)
-- **DNS exfiltration** — high query volume, oversized packets, consistent sizing
-- **ICMP tunneling** — large ping payloads, unusual volumes
-- **HTTP exfiltration** — large POST uploads, beaconing patterns
-- **Covert channel detection** — fixed packet sizes, alternating binary encoding
-- **Timing channel detection** — microsecond-precision interval analysis
+- **DNS exfiltration** : high query volume, oversized packets, consistent sizing
+- **ICMP tunneling** : large ping payloads, unusual volumes
+- **HTTP exfiltration** : large POST uploads, beaconing patterns
+- **Covert channel detection** : fixed packet sizes, alternating binary encoding
+- **Timing channel detection** : microsecond-precision interval analysis
 - Data rate spike detection using statistical outlier analysis
 - Suspicious destination IP range flagging (configurable)
 
 ### Signature Generator (Module 5)
 - Automatically extracts patterns from analysis alerts
-- Generates **Snort IDS rules** — valid syntax, immediately deployable
-- Generates **Suricata rules** — with `dns.query` keyword support
-- Generates **YARA rules** — for memory and file scanning
-- Generates **Sigma rules** — SIEM-compatible (Splunk, Elastic, QRadar)
+- Generates **Snort IDS rules** : valid syntax, immediately deployable
+- Generates **Suricata rules** : with `dns.query` keyword support
+- Generates **YARA rules** : for memory and file scanning
+- Generates **Sigma rules** : SIEM-compatible (Splunk, Elastic, QRadar)
 - Exports **Custom JSON** threat intelligence
 - Configurable confidence thresholds and rule prefixes
 
@@ -462,10 +462,10 @@ Add `if logger.handlers: return logger` at the start of any `_setup_logging()` m
 
 ## Limitations
 
-- **Not kernel-level isolation** — Module 1 provides directory and environment isolation but not VM or container-based sandboxing. Sophisticated malware may detect or escape the environment.
-- **No network blocking** — Traffic is observed and analyzed, not blocked. The analyzed process makes real outbound connections.
-- **Windows-focused** — Live capture on Linux works but requires `libpcap` and root privileges. The sandbox uses Windows-specific process flags.
-- **Signature quality** — Auto-generated rules may produce false positives in production environments. Human review before deployment is recommended.
+- **Not kernel-level isolation** : Module 1 provides directory and environment isolation but not VM or container-based sandboxing. Sophisticated malware may detect or escape the environment.
+- **No network blocking** : Traffic is observed and analyzed, not blocked. The analyzed process makes real outbound connections.
+- **Windows-focused** : Live capture on Linux works but requires `libpcap` and root privileges. The sandbox uses Windows-specific process flags.
+- **Signature quality** : Auto-generated rules may produce false positives in production environments. Human review before deployment is recommended.
 
 ---
 
@@ -511,7 +511,7 @@ Contributions are welcome. For significant changes, open an issue first to discu
 
 ## Disclaimer
 
-This tool is intended for **educational purposes, authorized security research, and defensive security work only**. Only analyze files and network traffic you have explicit permission to analyze. Running malware samples carries inherent risk — use in an isolated, air-gapped environment whenever possible. The authors are not responsible for misuse.
+This tool is intended for **educational purposes, authorized security research, and defensive security work only**. Only analyze files and network traffic you have explicit permission to analyze. Running malware samples carries inherent risk: use in an isolated, air-gapped environment whenever possible. The authors are not responsible for misuse.
 
 ---
 

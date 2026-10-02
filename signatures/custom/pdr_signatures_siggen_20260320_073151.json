@@ -1,0 +1,341 @@
+{
+  "signature_id": "PDR-siggen_20260320_073151",
+  "generated": "2026-03-20T07:31:51.724211",
+  "analysis_id": "siggen_20260320_073151",
+  "patterns": {
+    "byte_sequences": [
+      {
+        "pattern": "11 00 ee ff 00 00 00 00",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 8
+      },
+      {
+        "pattern": "00 0b 13 e5 66 7d 4a 9b 55 80 00 00 00 00 00 0b 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0c 05 00 30 51 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 b0 7e 54 09 c6 e1 cd 45 ae a4 7f 41 74 19 d1 e5 d6 57 ab dd",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 01 f3 96 ea 55 ca e1 03 20 f2 de 71 39 f2 f0 df c0",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 d6 00 00 00 00 00 00 00 02 68 fb 9a 8b 90 3d f7 4f 80 fd 26 5f f1 ee 69 19",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 b0 7e 54 09 c6 e1 cd 45 ae a4 7f 41 74 19 d1 e5 7c 9b 86 5c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 01 1a 3f b9 8e 46 e1 f3 0c b8 2a c2 f9 48 22 36 5a",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 02 10 4d 50 9d ec 22 24 d6 79 00 12 be 59 0b ff d4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 b9 6d f6 ee ad 74 93 43 b0 19 7c ea 5e f0 17 f5 39 0e ed 26",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 01 1d d7 cf 03 0c 50 8a a1 3d 58 b0 db 36 09 99 4b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 c6 00 00 00 00 00 00 00 02 7e 02 16 2a 30 20 0e 49 cf a0 de 5a ef 97 6b 94",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 5d 00 00 00 00 00 00 00 01 39 ed 40 ad 32 ea b3 f5 5a 60 e0 3d 6e 72 c6 74",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 63 00 00 00 00 00 00 00 01 9a dd 33 2f b7 27 c6 81 e5 ad 41 33 12 f5 d4 84",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 58 00 00 00 00 00 00 00 01 d5 7e cc ee 21 f4 81 cc 68 76 ce c7 24 fb bb 8f",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "00 00 00 17 00 00 ff 01 00 01 00 00 00 00 00 0b 00",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 17
+      },
+      {
+        "pattern": "03 03 00 01 01 16 03 03 00 28 00 00 00 00 00 00 00 00 a4 0e 07 f1 d0 67 85 3d b9 0f 25 2d 7e f5 6c bb",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 90 00 00 00 00 00 00 00 01 fc 62 e5 b0 e7 82 24 77 43 b3 3b 56 9a ad e8 f0",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 29 12 00 00 00 00 00 00 00 01 bb 98 46 9e e3 37 d8 a4 e2 c7 4c 9c 30 1d ea 81",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 74 00 00 00 00 00 00 00 03 20 bf 01 a9 a7 f1 a4 eb 00 fc 9d 87 7e 3a 59 51",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 08 35 00 00 00 00 00 00 00 04 4a c7 01 1b 08 70 c0 d9 a1 63 dd 31 c1 b5 5a ce",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b 64 00 00 00 00 00 00 00 02 79 6d 28 4b 48 f4 96 ff 68 88 79 33 a8 bf 29 f4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0a 8f 00 00 00 00 00 00 00 02 b1 7e ec 36 82 38 f3 79 c9 f6 17 e5 6a 7a d2 d7",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 13 8c 00 00 00 00 00 00 00 02 14 a4 53 96 5d 9d d3 3b 0d f2 8d 32 00 6e 2b 6f",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "11 64 ec 1e 00 00 00 00 02 7d 00 00",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 12
+      },
+      {
+        "pattern": "03 03 00 01 01 16 03 03 00 28 00 00 00 00 00 00 00 00 6c 0f eb 43 b9 6d a7 78 f0 e7 e4 8a 34 b9 93 71",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 01 ed fb 6e a5 50 c3 23 8f 1a c5 72 ac 4d e1 c8 84",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 06 15 00 00 00 00 00 00 00 02 ca 3c 0e 21 3b fb 9a f6 81 d3 f2 cc 06 7c 85 30",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 bf 00 00 00 00 00 00 00 01 c5 a0 38 a5 5a 3f 18 2c ae ec 9c 3a 99 3b 7b 23",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 04 6b 00 00 00 00 00 00 00 03 c4 65 57 46 32 87 b6 73 0c 39 4f 89 dd 61 62 e4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 0b e6 00 00 00 00 00 00 00 04 50 cc a8 29 c1 ac 59 6e 55 c1 e0 e2 7f 37 f4 13",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 00 31 00 00 00 00 00 00 00 02 eb d6 cf 00 62 4b 68 b8 e6 ce 60 e1 cb ad 84 c6",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 01 c1 00 00 00 00 00 00 00 03 17 f4 b0 2f 38 e3 3e ba a0 31 db 24 6a 55 37 ec",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ],
+    "domain_patterns": [
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4fdsmte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4fdsmte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      }
+    ],
+    "ip_patterns": [],
+    "port_patterns": [],
+    "timing_patterns": [],
+    "size_patterns": []
+  },
+  "rules": {
+    "snort_count": 5,
+    "suricata_count": 5,
+    "yara_count": 2,
+    "sigma_count": 1
+  },
+  "threat_intel": {
+    "c2_servers": [],
+    "exfil_destinations": [],
+    "dns_patterns": [
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4mte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4mte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "194291\\-ipv4fdsmte.gr.global.aa\\-rt.sharepoint.com.",
+        "original": "194291-ipv4fdsmte.gr.global.aa-rt.sharepoint.com.",
+        "type": "dns_tunneling",
+        "confidence": 0.8
+      }
+    ],
+    "byte_signatures": [
+      {
+        "pattern": "11 00 ee ff 00 00 00 00",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 8
+      },
+      {
+        "pattern": "00 0b 13 e5 66 7d 4a 9b 55 80 00 00 00 00 00 0b 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0c 05 00 30 51 31",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 b0 7e 54 09 c6 e1 cd 45 ae a4 7f 41 74 19 d1 e5 d6 57 ab dd",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 01 f3 96 ea 55 ca e1 03 20 f2 de 71 39 f2 f0 df c0",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 09 d6 00 00 00 00 00 00 00 02 68 fb 9a 8b 90 3d f7 4f 80 fd 26 5f f1 ee 69 19",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 b0 7e 54 09 c6 e1 cd 45 ae a4 7f 41 74 19 d1 e5 7c 9b 86 5c",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 77 00 00 00 00 00 00 00 01 1a 3f b9 8e 46 e1 f3 0c b8 2a c2 f9 48 22 36 5a",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "17 03 03 07 8d 00 00 00 00 00 00 00 02 10 4d 50 9d ec 22 24 d6 79 00 12 be 59 0b ff d4",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      },
+      {
+        "pattern": "04 00 01 1a 00 00 8c a0 01 14 00 00 00 00 b9 6d f6 ee ad 74 93 43 b0 19 7c ea 5e f0 17 f5 39 0e ed 26",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 34
+      },
+      {
+        "pattern": "17 03 03 0a 6f 00 00 00 00 00 00 00 01 1d d7 cf 03 0c 50 8a a1 3d 58 b0 db 36 09 99 4b",
+        "type": "null_bytes",
+        "confidence": 0.6,
+        "length": 29
+      }
+    ]
+  }
+}
